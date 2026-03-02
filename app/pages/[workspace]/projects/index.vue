@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Header -->
-    <div class="flex items-center justify-between mb-8 animate-fade-up">
+    <div class="flex items-center justify-between mb-6 animate-fade-up">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Proyectos</h1>
         <p class="text-sm text-gray-500 mt-0.5">{{ store.projects.length }} proyecto{{ store.projects.length !== 1 ? 's' : '' }}</p>
@@ -9,6 +9,63 @@
       <UButton icon="i-heroicons-plus" color="primary" size="md" class="font-semibold" @click="showCreate = true">
         Nuevo proyecto
       </UButton>
+    </div>
+
+    <!-- Stat Cards Row -->
+    <div v-if="store.projects.length > 0" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 animate-fade-up">
+      <!-- Proyectos Totales -->
+      <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Proyectos Totales</p>
+        <div class="flex items-end justify-between">
+          <span class="text-4xl font-bold text-gray-900 tabular-nums">{{ store.projects.length }}</span>
+          <div class="flex items-end gap-0.5 h-10 w-20">
+            <div v-for="i in 7" :key="'p'+i" class="flex-1 rounded-sm bg-emerald-200" :style="{ height: `${barHeights.projects[i - 1]}%` }" />
+          </div>
+        </div>
+      </div>
+      <!-- Tareas Totales -->
+      <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Tareas Totales</p>
+        <div class="flex items-end justify-between">
+          <span class="text-4xl font-bold text-gray-900 tabular-nums">{{ totalTasks }}</span>
+          <div class="flex items-end gap-0.5 h-10 w-20">
+            <div v-for="i in 7" :key="'t'+i" class="flex-1 rounded-sm bg-emerald-300" :style="{ height: `${barHeights.tasks[i - 1]}%` }" />
+          </div>
+        </div>
+      </div>
+      <!-- Vencen Hoy -->
+      <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Vencen Hoy</p>
+        <div class="flex items-end justify-between">
+          <span class="text-4xl font-bold text-gray-900 tabular-nums">{{ dueTodayCount }}</span>
+          <div class="flex items-end gap-0.5 h-10 w-20">
+            <div v-for="i in 7" :key="'d'+i" class="flex-1 rounded-sm bg-emerald-200" :style="{ height: `${barHeights.dueToday[i - 1]}%` }" />
+          </div>
+        </div>
+      </div>
+      <!-- Completadas -->
+      <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Completadas</p>
+        <div class="flex items-end justify-between">
+          <span class="text-4xl font-bold text-gray-900 tabular-nums">{{ completedTaskCount }}</span>
+          <div class="flex items-end gap-0.5 h-10 w-20">
+            <div v-for="i in 7" :key="'c'+i" class="flex-1 rounded-sm bg-emerald-300" :style="{ height: `${barHeights.completed[i - 1]}%` }" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div v-if="store.projects.length > 0" class="flex items-center justify-between mb-6 animate-fade-up">
+      <p class="text-sm font-semibold text-gray-700">Tablero &mdash; Tareas del Sprint</p>
+      <div class="flex items-center gap-2">
+        <UButton variant="outline" size="sm" icon="i-heroicons-funnel" class="text-gray-600">
+          Filtros
+        </UButton>
+        <UButton color="primary" size="sm" icon="i-heroicons-plus" class="font-semibold" @click="showCreate = true">
+          Crear tarea
+        </UButton>
+      </div>
     </div>
 
     <!-- Loading -->
@@ -46,7 +103,7 @@
         :key="project.id"
         :to="`/${store.slug}/projects/${project.id}/kanban`"
       >
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 hover:border-focusflow-300 transition-all duration-200 cursor-pointer group h-full shadow-card hover:shadow-card-hover">
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 hover:border-focusflow-300 transition-all duration-200 cursor-pointer group h-full shadow-sm hover:shadow-md">
           <div class="flex items-start gap-3">
             <div class="w-4 h-4 rounded-full mt-0.5 shrink-0" :style="{ backgroundColor: project.color }" />
             <div class="min-w-0 flex-1">
@@ -132,6 +189,65 @@ const showCreate = ref(false)
 const creating = ref(false)
 const createError = ref('')
 const newProject = reactive({ name: '', description: '', priority: 'medium', template: 'simple' })
+
+// Task stats
+const totalTasks = ref(0)
+const completedTaskCount = ref(0)
+const dueTodayCount = ref(0)
+
+// Generate stable random bar heights (decorative mini charts)
+function generateBarHeights() {
+  return Array.from({ length: 7 }, () => Math.round(20 + Math.random() * 80))
+}
+const barHeights = reactive({
+  projects: generateBarHeights(),
+  tasks: generateBarHeights(),
+  dueToday: generateBarHeights(),
+  completed: generateBarHeights(),
+})
+
+// Load stats when workspace is available
+watch(() => store.workspace?.id, async (wsId) => {
+  if (!wsId || store.projects.length === 0) return
+  try {
+    const supabase = useSupabaseClient()
+    const projectIds = store.projects.map((p: any) => p.id)
+
+    const { count: total } = await supabase
+      .from('tasks')
+      .select('*', { count: 'exact', head: true })
+      .in('project_id', projectIds)
+    totalTasks.value = total || 0
+
+    // Completed tasks (last column per project)
+    const { data: cols } = await supabase
+      .from('kanban_columns')
+      .select('id, project_id, position')
+      .in('project_id', projectIds)
+      .order('position', { ascending: false })
+
+    if (cols && cols.length > 0) {
+      const lastCols = new Map<string, string>()
+      for (const col of cols as any[]) {
+        if (!lastCols.has(col.project_id)) lastCols.set(col.project_id, col.id)
+      }
+      const { count: done } = await supabase
+        .from('tasks')
+        .select('*', { count: 'exact', head: true })
+        .in('column_id', Array.from(lastCols.values()))
+      completedTaskCount.value = done || 0
+    }
+
+    // Due today
+    const today = new Date().toISOString().slice(0, 10)
+    const { count: dueToday } = await supabase
+      .from('tasks')
+      .select('*', { count: 'exact', head: true })
+      .in('project_id', projectIds)
+      .eq('due_date', today)
+    dueTodayCount.value = dueToday || 0
+  } catch { /* silent */ }
+}, { immediate: true })
 
 const priorityOptions = [
   { label: 'Baja', value: 'low' },
