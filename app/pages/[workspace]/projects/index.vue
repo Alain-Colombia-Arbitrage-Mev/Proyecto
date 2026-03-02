@@ -333,6 +333,30 @@ const templateConfigs = [
       { title: 'Archivado', color: '#9CA3AF' },
     ],
   },
+  {
+    label: 'Marketing', value: 'marketing', cols: 7,
+    columns: [
+      { title: 'Ideas', color: '#EC4899' },
+      { title: 'Planificación', color: '#8B5CF6' },
+      { title: 'Creación', color: '#3B82F6' },
+      { title: 'Revisión', color: '#F59E0B' },
+      { title: 'Aprobado', color: '#10B981' },
+      { title: 'Publicado', color: '#06B6D4' },
+      { title: 'Análisis', color: '#6366F1' },
+    ],
+  },
+  {
+    label: 'Agentes AI', value: 'ai_agents', cols: 7,
+    columns: [
+      { title: 'Prompts Pendientes', color: '#6B7280' },
+      { title: 'Diseño de Agente', color: '#8B5CF6' },
+      { title: 'Entrenamiento', color: '#3B82F6' },
+      { title: 'Testing', color: '#F59E0B' },
+      { title: 'Evaluación', color: '#F97316' },
+      { title: 'Producción', color: '#10B981' },
+      { title: 'Monitoreo', color: '#06B6D4' },
+    ],
+  },
 ]
 
 async function handleCreateProject() {

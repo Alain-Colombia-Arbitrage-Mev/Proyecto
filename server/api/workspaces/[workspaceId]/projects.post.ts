@@ -57,6 +57,24 @@ const TEMPLATES: Record<string, { title: string; color: string }[]> = {
     { title: 'Done', color: '#10B981' },
     { title: 'Archivado', color: '#9CA3AF' },
   ],
+  marketing: [
+    { title: 'Ideas', color: '#EC4899' },
+    { title: 'Planificación', color: '#8B5CF6' },
+    { title: 'Creación', color: '#3B82F6' },
+    { title: 'Revisión', color: '#F59E0B' },
+    { title: 'Aprobado', color: '#10B981' },
+    { title: 'Publicado', color: '#06B6D4' },
+    { title: 'Análisis', color: '#6366F1' },
+  ],
+  ai_agents: [
+    { title: 'Prompts Pendientes', color: '#6B7280' },
+    { title: 'Diseño de Agente', color: '#8B5CF6' },
+    { title: 'Entrenamiento', color: '#3B82F6' },
+    { title: 'Testing', color: '#F59E0B' },
+    { title: 'Evaluación', color: '#F97316' },
+    { title: 'Producción', color: '#10B981' },
+    { title: 'Monitoreo', color: '#06B6D4' },
+  ],
 }
 
 export default defineEventHandler(async (event) => {

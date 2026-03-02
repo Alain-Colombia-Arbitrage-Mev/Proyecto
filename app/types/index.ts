@@ -1,7 +1,7 @@
 export type UserRole = 'superadmin' | 'owner' | 'admin' | 'member' | 'viewer'
 export type ProjectStatus = 'planning' | 'active' | 'review' | 'completed' | 'paused'
 export type Priority = 'critical' | 'high' | 'medium' | 'low'
-export type KanbanTemplate = 'simple' | 'kanban' | 'dev' | 'devops' | 'support' | 'scrum' | 'scrumban' | 'custom'
+export type KanbanTemplate = 'simple' | 'kanban' | 'dev' | 'devops' | 'support' | 'scrum' | 'scrumban' | 'marketing' | 'ai_agents' | 'custom'
 
 export interface Workspace {
   id: string

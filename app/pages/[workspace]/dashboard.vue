@@ -582,9 +582,14 @@ const statBarHeights = computed(() => {
 
 const templateOptions = [
   { label: 'Simple (3 col)', value: 'simple' },
+  { label: 'Kanban Clásico (5 col)', value: 'kanban' },
   { label: 'Dev IT (6 col)', value: 'dev' },
-  { label: 'Soporte (5 col)', value: 'support' },
-  { label: 'Scrum (5 col)', value: 'scrum' },
+  { label: 'DevOps (8 col)', value: 'devops' },
+  { label: 'Soporte (6 col)', value: 'support' },
+  { label: 'Scrum (6 col)', value: 'scrum' },
+  { label: 'Scrumban (8 col)', value: 'scrumban' },
+  { label: 'Marketing (7 col)', value: 'marketing' },
+  { label: 'Agentes AI (7 col)', value: 'ai_agents' },
 ]
 
 const recentProjects = computed(() => store.projects.slice(0, 5))
