@@ -339,9 +339,78 @@ No uses <think> tags.`
       break
     }
 
-    default:
+    default: {
+      // Check if this is a doc agent action
+      if (isDocAgentAction(action)) {
+        const docConfig = getDocAgentConfig(action)!
+        if (!context.projectId || typeof context.projectId !== 'string') {
+          throw createError({ statusCode: 400, message: 'projectId is required' })
+        }
+
+        const docAgentWsId = await getWorkspaceIdFromProject(supabase, context.projectId)
+        await requireWorkspaceMember(event, docAgentWsId)
+        resolvedWorkspaceId = docAgentWsId
+
+        // Gather workspace data
+        const { data: projects } = await supabase
+          .from('projects')
+          .select('id, name, description, status, priority, kanban_template')
+          .eq('workspace_id', docAgentWsId)
+          .limit(50)
+
+        const projectIds = (projects || []).map((p: any) => p.id)
+        const [{ data: columns }, { data: taskStats }] = await Promise.all([
+          supabase
+            .from('kanban_columns')
+            .select('title, project_id, position')
+            .in('project_id', projectIds.length ? projectIds : ['__none__']),
+          supabase
+            .from('tasks')
+            .select('project_id, priority, column_id')
+            .in('project_id', projectIds.length ? projectIds : ['__none__']),
+        ])
+
+        // For frontend_design agent: fetch library docs via Context7
+        let libraryDocs = ''
+        if (action === 'doc_frontend_design') {
+          const libraries = ['vue', 'nuxt', 'tailwindcss', 'pinia']
+          const docResults = await Promise.allSettled(
+            libraries.map(lib => getLibraryDocumentation(lib))
+          )
+          const docs = docResults
+            .filter((r): r is PromiseFulfilledResult<string> => r.status === 'fulfilled' && !!r.value)
+            .map(r => r.value)
+          if (docs.length > 0) {
+            libraryDocs = docs.join('\n\n')
+          }
+        }
+
+        const sessionId = createSessionId()
+        systemPrompt = buildDocAgentSystemPrompt(docConfig, libraryDocs || undefined)
+        userPrompt = `Session ID: ${sessionId}\nWorkspace con ${projects?.length || 0} proyectos:\n${JSON.stringify({ projects, columns: columns?.length, tasks: taskStats?.length }, null, 2)}`
+
+        // Store metadata for post-processing
+        ;(event.context as any)._docAgentMeta = {
+          config: docConfig,
+          sessionId,
+          workspaceId: docAgentWsId,
+          projectId: context.projectId,
+        }
+        break
+      }
+
       throw createError({ statusCode: 400, message: 'Unknown action' })
+    }
   }
+
+  // Prompt optimization — compress long prompts via fast LLM
+  const optimized = await optimizePrompt({
+    systemPrompt,
+    userPrompt,
+    skipOptimization: shouldSkipOptimization(action),
+  })
+  systemPrompt = optimized.systemPrompt
+  userPrompt = optimized.userPrompt
 
   // Build messages array — include chat history if available
   const chatHistory = (event.context as any)._chatHistory as Array<{ role: string; content: string }> | undefined
@@ -378,7 +447,8 @@ No uses <think> tags.`
         model: 'minimax/minimax-m2.5',
         messages,
         temperature: 0.7,
-        max_tokens: action === 'document_architecture' ? 16384 : 8192,
+        max_tokens: action === 'document_architecture' ? 16384
+          : (event.context as any)._docAgentMeta?.config?.maxTokens || 8192,
       },
     })
   } catch (fetchError: any) {
@@ -450,14 +520,17 @@ No uses <think> tags.`
             .select()
             .single()
 
-          // 2. Find first column of the project (position=0)
-          const { data: firstColumn } = await supabase
+          // 2. Find columns of the project to distribute tasks intelligently
+          const { data: allColumns } = await supabase
             .from('kanban_columns')
-            .select('id')
+            .select('id, title, position')
             .eq('project_id', meta.projectId)
             .order('position', { ascending: true })
-            .limit(1)
-            .maybeSingle()
+
+          // Use second column (first actionable) if available, else first
+          const firstColumn = allColumns && allColumns.length > 1
+            ? allColumns[1]
+            : allColumns?.[0] || null
 
           // 3. Generate tasks with a DEDICATED second AI call
           const VALID_PRIORITIES = ['low', 'medium', 'high', 'critical']
@@ -686,6 +759,37 @@ Responde SOLO con el JSON array, sin markdown, sin texto extra, sin <think> tags
         } catch (postErr: any) {
           console.error('[document_architecture] Post-processing error:', postErr.message)
           // Return AI data even if post-processing fails
+          return { type: 'json', data: { ...parsed, tasksCreated: 0, postError: postErr.message } }
+        }
+      }
+    }
+
+    // Post-processing for doc agent actions
+    if (isDocAgentAction(action) && parsed?.title) {
+      const docMeta = (event.context as any)._docAgentMeta
+      if (docMeta) {
+        try {
+          const result = await postProcessDocAgent({
+            supabase,
+            config: docMeta.config,
+            parsed,
+            sessionId: docMeta.sessionId,
+            workspaceId: docMeta.workspaceId,
+            projectId: docMeta.projectId,
+            userId: user.id,
+            openrouterApiKey,
+            userPrompt,
+          })
+
+          return {
+            type: 'json',
+            data: {
+              ...parsed,
+              ...result,
+            },
+          }
+        } catch (postErr: any) {
+          console.error(`[${action}] Post-processing error:`, postErr.message)
           return { type: 'json', data: { ...parsed, tasksCreated: 0, postError: postErr.message } }
         }
       }

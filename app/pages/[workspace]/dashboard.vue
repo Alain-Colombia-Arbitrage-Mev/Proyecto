@@ -1,492 +1,574 @@
 <template>
-  <div>
-    <!-- Bento Grid Dashboard — PlanIQ Style -->
-    <div class="space-y-4 animate-fade-up">
+  <div class="min-h-screen bg-[#f6f6f6]">
+    <div class="p-6 space-y-3 animate-fade-up">
 
-      <!-- ═══════ ROW 1: Welcome + Quick Stats ═══════ -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-        <!-- Welcome Card — spans 2 cols -->
-        <div class="md:col-span-2 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm relative overflow-hidden hover:shadow-md transition-all duration-200">
-          <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full -translate-y-12 translate-x-12" />
-          <div class="absolute bottom-0 left-0 w-20 h-20 bg-emerald-50 rounded-full translate-y-8 -translate-x-8" />
-          <div class="relative z-10">
-            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">{{ todayFormatted }}</p>
-            <h1 class="text-2xl font-bold text-gray-900 mb-1">{{ greeting }}, {{ userName }} <span class="text-2xl">👋</span></h1>
-            <p class="text-sm text-gray-500">{{ motivationalQuote }}</p>
-            <div class="flex items-center gap-3 mt-5">
-              <button
-                @click="router.push(`/${store.slug}/projects`)"
-                class="bg-gray-900 hover:bg-gray-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer"
-              >
-                Ver proyectos
-              </button>
-              <button
-                @click="showCreate = true"
-                class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer"
-              >
-                + Nuevo proyecto
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Quick Stats -->
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
-          @click="router.push(`/${store.slug}/projects`)"
-        >
-          <div class="flex items-center justify-between mb-4">
-            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Resumen</span>
-            <div class="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
-              <UIcon name="i-heroicons-chart-bar" class="w-4 h-4 text-emerald-600" />
-            </div>
-          </div>
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-500">Proyectos</span>
-              <span class="text-lg font-bold text-gray-900 tabular-nums">{{ store.projects.length }}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-500">Total tareas</span>
-              <span class="text-lg font-bold text-gray-900 tabular-nums">{{ taskCount }}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-500">Completadas</span>
-              <div class="flex items-center gap-1.5">
-                <span class="text-lg font-bold text-emerald-600 tabular-nums">{{ completedTasks }}</span>
-                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600">
-                  {{ taskCount > 0 ? Math.round((completedTasks / taskCount) * 100) : 0 }}%
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+      <!-- ═══════ WELCOME ═══════ -->
+      <div class="mb-1">
+        <p class="text-[22px] text-[#7A7A7A]" style="letter-spacing: -0.44px;">{{ motivationalQuote }}</p>
+        <h1 class="text-[28px] md:text-[42px] font-bold text-[#0D0D0D] leading-[1.2]" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">
+          {{ greeting }}, {{ userName }} <span>&#x1F44B;</span>
+        </h1>
       </div>
 
-      <!-- ═══════ ROW 2: Stat Cards (3 in a row) ═══════ -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <!-- Tareas Totales -->
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Tareas Totales</span>
-            <div class="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
-              <UIcon name="i-heroicons-clipboard-document-list" class="w-4 h-4 text-blue-600" />
-            </div>
-          </div>
-          <div class="flex items-end justify-between">
-            <div>
-              <p class="text-4xl font-bold text-gray-900 tabular-nums leading-none" style="font-family: 'Space Grotesk', sans-serif;">{{ taskCount }}</p>
-              <p class="text-[11px] text-gray-400 mt-1">en todos los proyectos</p>
-            </div>
-            <div class="flex items-end gap-0.5 h-10 w-20">
-              <div v-for="i in 7" :key="'total-'+i" class="flex-1 rounded-sm bg-blue-500/20"
-                :style="{ height: `${statBarHeights.total[i - 1]}%` }" />
-            </div>
-          </div>
-        </div>
+      <!-- ═══════ MAIN LAYOUT: Left+Center / Right ═══════ -->
+      <div class="flex flex-col lg:flex-row gap-3">
 
-        <!-- En Progreso -->
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">En Progreso</span>
-            <div class="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center">
-              <UIcon name="i-heroicons-arrow-trending-up" class="w-4 h-4 text-amber-600" />
-            </div>
-          </div>
-          <div class="flex items-end justify-between">
-            <div>
-              <p class="text-4xl font-bold text-gray-900 tabular-nums leading-none" style="font-family: 'Space Grotesk', sans-serif;">{{ inProgressTasks }}</p>
-              <p class="text-[11px] text-gray-400 mt-1">tareas activas</p>
-            </div>
-            <div class="flex items-end gap-0.5 h-10 w-20">
-              <div v-for="i in 7" :key="'prog-'+i" class="flex-1 rounded-sm bg-amber-500/20"
-                :style="{ height: `${statBarHeights.progress[i - 1]}%` }" />
-            </div>
-          </div>
-        </div>
+        <!-- ─── LEFT + CENTER AREA ─── -->
+        <div class="flex-1 min-w-0 space-y-3">
 
-        <!-- Completadas -->
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Completadas</span>
-            <div class="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
-              <UIcon name="i-heroicons-check-badge" class="w-4 h-4 text-emerald-600" />
-            </div>
-          </div>
-          <div class="flex items-end justify-between">
-            <div>
-              <p class="text-4xl font-bold text-emerald-600 tabular-nums leading-none" style="font-family: 'Space Grotesk', sans-serif;">{{ completedTasks }}</p>
-              <p class="text-[11px] text-gray-400 mt-1">{{ taskCount > 0 ? Math.round((completedTasks / taskCount) * 100) : 0 }}% del total</p>
-            </div>
-            <div class="flex items-end gap-0.5 h-10 w-20">
-              <div v-for="i in 7" :key="'done-'+i" class="flex-1 rounded-sm bg-emerald-500/20"
-                :style="{ height: `${statBarHeights.completed[i - 1]}%` }" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══════ ROW 3: Coach + Pomodoro ═══════ -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-        <!-- Anti-Procrastination Coach — spans 2 cols -->
-        <div class="md:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-all duration-200">
-          <div class="p-5 border-b border-gray-50">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
-                  <UIcon name="i-heroicons-fire" class="w-4.5 h-4.5 text-amber-500" />
-                </div>
-                <div>
-                  <h3 class="text-sm font-bold text-gray-900">Coach Anti-Procrastinación</h3>
-                  <p class="text-[10px] text-gray-400">Análisis personalizado con IA</p>
+          <!-- 3 Stat Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <!-- Tareas Totales -->
+            <div class="bg-white rounded-[15px] border border-gray-100 p-4 h-[143px] relative overflow-hidden">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[12px] text-[#7A7A7A]">Tareas Totales</span>
+                <UIcon name="i-heroicons-arrow-up-right" class="w-4 h-4 text-gray-400" />
+              </div>
+              <div class="flex items-end justify-between mt-auto">
+                <span class="text-[42px] font-bold text-[#0D0D0D] leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">{{ taskCount }}</span>
+                <div class="flex items-end gap-[3px] h-[50px]">
+                  <div v-for="i in 7" :key="'t-'+i" class="w-[8px] rounded-sm"
+                    :class="i % 2 === 0 ? 'bg-[#10B981]' : 'bg-[#E8E8E8]'"
+                    :style="{ height: `${statBarHeights.total[i - 1]}%` }" />
                 </div>
               </div>
-              <button
-                @click="loadCoachAdvice"
-                :disabled="coachLoading"
-                class="text-[11px] font-semibold text-emerald-600 hover:text-emerald-800 transition-colors cursor-pointer disabled:opacity-50"
-              >
-                {{ coachLoading ? 'Analizando...' : 'Actualizar' }}
-              </button>
+            </div>
+
+            <!-- En Progreso -->
+            <div class="bg-white rounded-[15px] border border-gray-100 p-4 h-[143px] relative overflow-hidden">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[12px] text-[#7A7A7A]">En Progreso</span>
+                <UIcon name="i-heroicons-arrow-up-right" class="w-4 h-4 text-gray-400" />
+              </div>
+              <div class="flex items-end justify-between mt-auto">
+                <span class="text-[42px] font-bold text-[#0D0D0D] leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">{{ inProgressTasks }}</span>
+                <div class="flex items-end gap-[3px] h-[50px]">
+                  <div v-for="i in 7" :key="'p-'+i" class="w-[8px] rounded-sm"
+                    :class="i % 3 === 0 ? 'bg-[#10B981]' : 'bg-[#E8E8E8]'"
+                    :style="{ height: `${statBarHeights.progress[i - 1]}%` }" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Completadas -->
+            <div class="bg-white rounded-[15px] border border-gray-100 p-4 h-[143px] relative overflow-hidden">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[12px] text-[#7A7A7A]">Completadas</span>
+                <UIcon name="i-heroicons-arrow-up-right" class="w-4 h-4 text-gray-400" />
+              </div>
+              <div class="flex items-end justify-between mt-auto">
+                <span class="text-[42px] font-bold text-[#0D0D0D] leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">{{ completedTasks }}</span>
+                <div class="flex items-end gap-[3px] h-[50px]">
+                  <div v-for="i in 7" :key="'c-'+i" class="w-[8px] rounded-sm"
+                    :class="i <= 4 ? 'bg-[#10B981]' : 'bg-[#E8E8E8]'"
+                    :style="{ height: `${statBarHeights.completed[i - 1]}%` }" />
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="p-5">
-            <div v-if="coachLoading" class="space-y-3">
-              <div class="h-4 bg-gray-100 rounded animate-pulse w-3/4" />
-              <div class="h-4 bg-gray-100 rounded animate-pulse w-full" />
-              <div class="h-4 bg-gray-100 rounded animate-pulse w-2/3" />
-              <div class="h-10 bg-gray-100 rounded-lg animate-pulse mt-4" />
-            </div>
+          <!-- Project Overview + Token Usage / Pomodoro -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 
-            <div v-else-if="coachData" class="space-y-4">
-              <!-- Risk Score -->
-              <div class="flex items-center gap-3 p-3 rounded-xl"
-                :class="coachData.score > 60 ? 'bg-red-50' : coachData.score > 30 ? 'bg-amber-50' : 'bg-emerald-50'"
-              >
-                <div class="text-2xl font-bold tabular-nums"
-                  :class="coachData.score > 60 ? 'text-red-600' : coachData.score > 30 ? 'text-amber-600' : 'text-emerald-600'"
-                >
-                  {{ coachData.score }}
-                </div>
-                <div>
-                  <p class="text-xs font-semibold text-gray-700">Riesgo de procrastinación</p>
-                  <p class="text-[10px] text-gray-500">{{ coachData.analysis }}</p>
-                </div>
+            <!-- Resumen de Proyectos (bar chart) -->
+            <div class="bg-white rounded-[15px] border border-gray-100 p-4 min-h-[301px]">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">Resumen de Proyectos</h3>
+                <span class="text-[12px] text-[#7A7A7A] bg-[#f6f6f6] rounded-full px-3 py-1">Este Mes</span>
               </div>
-
-              <!-- Quick Wins -->
-              <div v-if="coachData.quick_wins?.length">
-                <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Victorias rápidas (&lt; 15 min)</p>
-                <div class="space-y-1.5">
-                  <div v-for="(win, i) in coachData.quick_wins" :key="i" class="flex items-start gap-2 text-xs text-gray-700">
-                    <UIcon name="i-heroicons-check-circle" class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                    <span>{{ win }}</span>
+              <!-- Y axis labels + bars -->
+              <div class="flex gap-2 mt-4">
+                <div class="flex flex-col justify-between text-[12px] text-[#00000099] h-[180px] pr-1">
+                  <span>600</span><span>500</span><span>400</span><span>300</span><span>200</span><span>100</span><span>0</span>
+                </div>
+                <div class="flex-1">
+                  <!-- Grid lines -->
+                  <div class="relative h-[180px] border-b border-gray-100">
+                    <div v-for="i in 6" :key="'gl-'+i" class="absolute w-full border-t border-gray-50"
+                      :style="{ top: `${(i - 1) * (100/6)}%` }" />
+                    <!-- Bars -->
+                    <div class="absolute bottom-0 left-0 right-0 flex items-end justify-around h-full px-2">
+                      <div v-for="(bar, idx) in projectBars" :key="idx" class="flex flex-col items-center gap-1" style="width: 40px;">
+                        <div class="w-[28px] rounded-t-md transition-all duration-500"
+                          :class="idx % 2 === 0 ? 'bg-[#0D0D0D]' : 'bg-[#10B981]'"
+                          :style="{ height: `${bar.height}%` }" />
+                      </div>
+                    </div>
+                  </div>
+                  <!-- X axis -->
+                  <div class="flex justify-around mt-2 text-[14px] text-[#00000099] font-medium" style="letter-spacing: -0.28px;">
+                    <span>Ene</span><span>Feb</span><span>Mar</span><span>Abr</span><span>May</span>
                   </div>
                 </div>
               </div>
-
-              <!-- Techniques -->
-              <div v-if="coachData.techniques?.length">
-                <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Técnicas recomendadas</p>
-                <div class="space-y-2">
-                  <div v-for="(tech, i) in coachData.techniques" :key="i" class="p-2.5 bg-gray-50 rounded-lg">
-                    <p class="text-xs font-semibold text-gray-800">{{ tech.name }}</p>
-                    <p class="text-[11px] text-gray-500 mt-0.5">{{ tech.description }}</p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Motivation -->
-              <div v-if="coachData.motivation" class="p-3 bg-emerald-50 rounded-xl">
-                <p class="text-xs text-emerald-800 font-medium italic">"{{ coachData.motivation }}"</p>
-              </div>
             </div>
 
-            <div v-else class="text-center py-8">
-              <UIcon name="i-heroicons-sparkles" class="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p class="text-xs text-gray-400">Selecciona un proyecto para recibir coaching</p>
-              <button
-                v-if="store.projects.length > 0"
-                @click="loadCoachAdvice"
-                class="mt-3 text-xs font-semibold text-emerald-600 hover:text-emerald-800 transition-colors cursor-pointer"
-              >
-                Analizar ahora
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pomodoro Timer with SVG Ring -->
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Pomodoro</span>
-            <div class="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
-              <UIcon name="i-heroicons-clock" class="w-4 h-4 text-emerald-600" />
-            </div>
-          </div>
-
-          <div class="flex flex-col items-center">
-            <!-- SVG Circular Ring -->
-            <div class="relative mb-3">
-              <svg class="w-28 h-28" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="45" fill="none" stroke="#E5E7EB" stroke-width="5" />
-                <circle cx="50" cy="50" r="45" fill="none" stroke="#10B981" stroke-width="5"
-                  stroke-dasharray="282.7" :stroke-dashoffset="pomodoroRingOffset"
-                  stroke-linecap="round" transform="rotate(-90 50 50)"
-                  class="transition-all duration-1000" />
-              </svg>
-              <div class="absolute inset-0 flex items-center justify-center">
-                <span class="text-2xl font-bold text-gray-900 tabular-nums" style="font-family: 'Space Grotesk', sans-serif;">
-                  {{ pomodoroDisplay }}
-                </span>
-              </div>
-            </div>
-
-            <p class="text-[11px] font-medium text-gray-500 mb-3">
-              {{ pomodoroPhase === 'work' ? 'Sesión de enfoque' : 'Descanso' }}
-            </p>
-
-            <!-- Controls -->
-            <div class="flex items-center gap-2 mb-4">
-              <button
-                @click="togglePomodoro"
-                class="px-5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer"
-                :class="pomodoroRunning
-                  ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                  : 'bg-emerald-500 text-white hover:bg-emerald-600'"
-              >
-                {{ pomodoroRunning ? 'Pausar' : 'Iniciar' }}
-              </button>
-              <button
-                @click="resetPomodoro"
-                class="w-9 h-9 rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 flex items-center justify-center transition-all cursor-pointer"
-              >
-                <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" />
-              </button>
-            </div>
-
-            <!-- Pomodoro Stats -->
-            <div class="w-full border-t border-gray-100 pt-3 space-y-1.5">
-              <div class="flex items-center justify-between">
-                <span class="text-[11px] text-gray-400">Sesiones hoy</span>
-                <span class="text-[11px] font-bold text-gray-700 tabular-nums">{{ pomodoroSessions }}</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-[11px] text-gray-400">Racha</span>
-                <span class="text-[11px] font-bold text-gray-700">🔥 {{ streak }} días</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-[11px] text-gray-400">Minutos hoy</span>
-                <span class="text-[11px] font-bold text-gray-700 tabular-nums">{{ pomodoroSessions * 25 }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══════ ROW 4: Token Usage + AI Stats ═══════ -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-        <!-- Token Usage Card -->
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Token Usage</span>
-            <button
-              @click="loadTokenUsage"
-              class="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center hover:bg-violet-100 transition-colors cursor-pointer"
-            >
-              <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 text-violet-600" :class="{ 'animate-spin': tokenLoading }" />
-            </button>
-          </div>
-
-          <template v-if="tokenStats">
-            <!-- Circular-style progress -->
-            <div class="flex items-end gap-2 mb-2">
-              <span class="text-4xl font-bold text-gray-900 tabular-nums leading-none">{{ tokenStats.percentUsed }}%</span>
-            </div>
-            <p class="text-[11px] text-gray-500 mb-3">{{ formatTokens(tokenStats.totalTokens) }} / {{ formatTokens(tokenStats.limit) }} tokens</p>
-            <div class="h-2 bg-gray-100 rounded-full overflow-hidden mb-3">
-              <div
-                class="h-full rounded-full transition-all duration-700 ease-out"
-                :class="tokenStats.percentUsed >= 90 ? 'bg-red-500' : tokenStats.percentUsed >= 70 ? 'bg-amber-500' : 'bg-emerald-500'"
-                :style="{ width: `${Math.min(tokenStats.percentUsed, 100)}%` }"
-              />
-            </div>
-
-            <!-- Top actions breakdown -->
-            <div class="space-y-1.5">
-              <div v-for="(tokens, actionName) in topActions" :key="actionName" class="flex items-center gap-2">
-                <div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div class="h-full bg-violet-400 rounded-full" :style="{ width: `${(tokens / tokenStats.totalTokens) * 100}%` }" />
-                </div>
-                <span class="text-[10px] text-gray-500 w-16 text-right tabular-nums">{{ formatTokens(tokens) }}</span>
-                <span class="text-[10px] text-gray-400 truncate w-20">{{ actionName }}</span>
-              </div>
-            </div>
-          </template>
-
-          <template v-else>
-            <div class="text-center py-4">
-              <UIcon name="i-heroicons-cpu-chip" class="w-8 h-8 text-gray-200 mx-auto mb-2" />
-              <p class="text-[11px] text-gray-400">Cargando uso de tokens...</p>
-            </div>
-          </template>
-        </div>
-
-        <!-- AI Token Stats Card -->
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">AI Stats</span>
-            <div class="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
-              <UIcon name="i-heroicons-cpu-chip" class="w-4 h-4 text-emerald-600" />
-            </div>
-          </div>
-
-          <template v-if="tokenStats">
+            <!-- Right sub-column: Token Usage + Pomodoro -->
             <div class="space-y-3">
-              <div>
-                <p class="text-[10px] text-gray-400 mb-1">Hoy</p>
-                <span class="text-2xl font-bold text-gray-900 tabular-nums">{{ formatTokens(todayTokens) }}</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <p class="text-[10px] text-gray-400">Ayer:</p>
-                <span class="text-xs font-bold text-gray-600 tabular-nums">{{ formatTokens(yesterdayTokens) }}</span>
-                <span v-if="todayTokens > yesterdayTokens && yesterdayTokens > 0" class="text-[10px] font-bold text-red-500">
-                  +{{ Math.round(((todayTokens - yesterdayTokens) / yesterdayTokens) * 100) }}%
-                </span>
-                <span v-else-if="yesterdayTokens > todayTokens && todayTokens > 0" class="text-[10px] font-bold text-emerald-500">
-                  -{{ Math.round(((yesterdayTokens - todayTokens) / yesterdayTokens) * 100) }}%
-                </span>
-              </div>
-              <!-- Mini bar chart for last 7 days -->
-              <div class="flex items-end gap-1 h-12 mt-2">
-                <div
-                  v-for="(day, i) in last7Days"
-                  :key="i"
-                  class="flex-1 rounded-sm transition-all duration-300"
-                  :class="day.isToday ? 'bg-emerald-500' : 'bg-gray-200'"
-                  :style="{ height: `${day.height}%`, minHeight: day.tokens > 0 ? '4px' : '2px' }"
-                  :title="`${day.date}: ${formatTokens(day.tokens)}`"
-                />
-              </div>
-              <div class="flex justify-between text-[9px] text-gray-400">
-                <span>7d ago</span>
-                <span>Hoy</span>
-              </div>
-            </div>
-          </template>
-
-          <template v-else>
-            <div class="space-y-2">
-              <div class="h-8 bg-gray-100 rounded animate-pulse" />
-              <div class="h-12 bg-gray-100 rounded animate-pulse" />
-            </div>
-          </template>
-        </div>
-      </div>
-
-      <!-- ═══════ ROW 5: Recent Projects + Daily Plan + Streak ═══════ -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-
-        <!-- Recent Projects — spans 2 cols -->
-        <div class="md:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-all duration-200">
-          <div class="flex items-center justify-between p-5 pb-3">
-            <h3 class="text-sm font-bold text-gray-900">Proyectos recientes</h3>
-            <NuxtLink
-              :to="`/${store.slug}/projects`"
-              class="text-[11px] text-emerald-600 hover:text-emerald-800 font-semibold transition-colors"
-            >
-              Ver todos
-            </NuxtLink>
-          </div>
-
-          <div v-if="store.projects.length > 0" class="px-5 pb-5">
-            <div class="space-y-2">
-              <NuxtLink
-                v-for="project in recentProjects"
-                :key="project.id"
-                :to="`/${store.slug}/projects/${project.id}/kanban`"
-                class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all duration-150 group cursor-pointer"
-              >
-                <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                  :style="{ backgroundColor: project.color + '15' }"
-                >
-                  <UIcon name="i-heroicons-folder" class="w-4 h-4" :style="{ color: project.color }" />
+              <!-- Uso de Tokens AI -->
+              <div class="bg-white rounded-[15px] border border-gray-100 p-4 min-h-[164px]">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">Uso de Tokens AI</h3>
+                  <button @click="loadTokenUsage" class="text-[12px] text-[#7A7A7A] bg-[#f6f6f6] rounded-full px-3 py-1 hover:bg-gray-200 transition-colors cursor-pointer">
+                    {{ tokenLoading ? 'Cargando...' : 'Actualizar' }}
+                  </button>
                 </div>
-                <div class="min-w-0 flex-1">
-                  <p class="text-sm font-semibold text-gray-900 truncate group-hover:text-emerald-700 transition-colors">
-                    {{ project.name }}
-                  </p>
-                  <div class="flex items-center gap-2 mt-0.5">
-                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600">{{ project.status }}</span>
-                    <span class="text-[10px] text-gray-400">{{ project.description?.slice(0, 40) || 'Sin descripción' }}</span>
+                <template v-if="tokenStats">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <p class="text-[12px] text-[#666d80]">Tokens Usados</p>
+                      <div class="flex items-center gap-2">
+                        <span class="text-[32px] font-bold text-[#0D0D0D] tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -1.92px;">{{ formatTokens(tokenStats.totalTokens) }}</span>
+                        <span class="bg-[#ECFDF5] text-[#10B981] text-[11px] font-medium px-2 py-1 rounded-full">{{ tokenStats.percentUsed }}%</span>
+                      </div>
+                      <!-- Token ring -->
+                      <div class="flex items-center gap-3 mt-2">
+                        <svg class="w-[50px] h-[50px]" viewBox="0 0 50 50">
+                          <circle cx="25" cy="25" r="20" fill="none" stroke="#E8E8E8" stroke-width="4" />
+                          <circle cx="25" cy="25" r="20" fill="none" stroke="#10B981" stroke-width="4"
+                            :stroke-dasharray="125.66" :stroke-dashoffset="125.66 * (1 - (tokenStats.percentUsed / 100))"
+                            stroke-linecap="round" transform="rotate(-90 25 25)" class="transition-all duration-700" />
+                        </svg>
+                        <div class="text-[11px] text-[#666d80] space-y-0.5">
+                          <p>{{ formatTokens(tokenStats.totalTokens) }} / {{ formatTokens(tokenStats.limit) }}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Breakdown -->
+                    <div class="space-y-1.5 text-right">
+                      <div v-for="(tokens, actionName) in topActions" :key="actionName" class="flex items-center gap-2">
+                        <span class="text-[11px] text-[#7A7A7A] truncate max-w-[80px]">{{ actionName }}</span>
+                        <span class="text-[11px] font-semibold text-[#0D0D0D] tabular-nums">{{ formatTokens(tokens) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+                <template v-else>
+                  <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-gray-100 animate-pulse" />
+                    <div class="space-y-2 flex-1">
+                      <div class="h-4 bg-gray-100 rounded animate-pulse w-1/3" />
+                      <div class="h-3 bg-gray-100 rounded animate-pulse w-2/3" />
+                    </div>
+                  </div>
+                </template>
+              </div>
+
+              <!-- Pomodoro Timer (inline layout matching design) -->
+              <div class="bg-white rounded-[15px] border border-gray-100 p-4 min-h-[127px]">
+                <div class="flex items-start gap-4">
+                  <!-- Left: title + time + label -->
+                  <div class="flex-1">
+                    <p class="text-[14px] font-semibold text-[#0D0D0D]">Pomodoro Timer</p>
+                    <p class="text-[48px] font-bold text-[#0D0D0D] leading-none tabular-nums mt-1" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2px;">
+                      {{ pomodoroDisplay }}
+                    </p>
+                    <p class="text-[12px] text-[#7A7A7A] mt-1">
+                      {{ pomodoroPhase === 'work' ? 'Sesión de enfoque' : 'Descanso' }}
+                    </p>
+                  </div>
+                  <!-- Center: Ring -->
+                  <div class="relative shrink-0">
+                    <svg class="w-[80px] h-[80px]" viewBox="0 0 80 80">
+                      <circle cx="40" cy="40" r="34" fill="none" stroke="#E8E8E8" stroke-width="6" />
+                      <circle cx="40" cy="40" r="34" fill="none" stroke="#10B981" stroke-width="6"
+                        :stroke-dasharray="213.63" :stroke-dashoffset="pomodoroRingOffset"
+                        stroke-linecap="round" transform="rotate(-90 40 40)"
+                        class="transition-all duration-1000" />
+                    </svg>
+                    <button @click="togglePomodoro" class="absolute inset-0 flex items-center justify-center cursor-pointer">
+                      <span class="text-[20px] text-[#10B981]">{{ pomodoroRunning ? '⏸' : '▶' }}</span>
+                    </button>
+                  </div>
+                  <!-- Right: Stats -->
+                  <div class="space-y-2 text-right shrink-0">
+                    <div>
+                      <p class="text-[11px] text-[#7A7A7A]">Sesiones hoy</p>
+                      <p class="text-[14px] font-bold text-[#0D0D0D] tabular-nums">{{ pomodoroSessions }}</p>
+                    </div>
+                    <div>
+                      <p class="text-[11px] text-[#7A7A7A]">Racha</p>
+                      <p class="text-[14px] font-bold text-[#0D0D0D]">{{ streak }} dias</p>
+                    </div>
+                    <button
+                      @click="togglePomodoro"
+                      class="px-4 py-1.5 rounded-lg text-[12px] font-semibold transition-all cursor-pointer"
+                      :class="pomodoroRunning ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-[#10B981] text-white hover:bg-emerald-600'"
+                    >
+                      {{ pomodoroRunning ? 'Pausar' : 'Iniciar' }}
+                    </button>
+                    <button
+                      v-if="pushNotif.permission.value !== 'granted'"
+                      @click="pushNotif.requestPermission()"
+                      class="px-3 py-1 rounded-lg text-[10px] font-medium text-amber-600 bg-amber-50 hover:bg-amber-100 transition-all cursor-pointer mt-1"
+                    >
+                      Activar notificaciones
+                    </button>
                   </div>
                 </div>
-                <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-gray-300 group-hover:text-emerald-500 transition-colors shrink-0" />
-              </NuxtLink>
-            </div>
-          </div>
-
-          <div v-else class="px-5 pb-5 text-center py-6">
-            <UIcon name="i-heroicons-folder-open" class="w-8 h-8 text-gray-200 mx-auto mb-2" />
-            <p class="text-xs text-gray-400 mb-3">Aún no tienes proyectos</p>
-            <UButton size="sm" color="primary" @click="showCreate = true" class="font-semibold">Crear proyecto</UButton>
-          </div>
-        </div>
-
-        <!-- Daily Plan Card -->
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
-          @click="loadDailyPlan"
-        >
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Plan del día</span>
-            <div class="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center">
-              <UIcon name="i-heroicons-calendar-days" class="w-4 h-4 text-violet-600" />
-            </div>
-          </div>
-          <div v-if="dailyPlan">
-            <p class="text-xs text-gray-700 font-medium mb-2">{{ dailyPlan.greeting }}</p>
-            <div class="space-y-1.5">
-              <div v-for="(task, i) in (dailyPlan.focus_tasks || []).slice(0, 3)" :key="i" class="flex items-start gap-1.5">
-                <span class="text-[10px] font-bold text-emerald-600 mt-0.5 tabular-nums">{{ Number(i) + 1 }}.</span>
-                <span class="text-[11px] text-gray-600 leading-snug">{{ task }}</span>
               </div>
             </div>
           </div>
-          <div v-else>
-            <p class="text-xs text-gray-400">Genera tu plan diario con IA</p>
-            <div class="mt-2 flex items-center gap-1 text-emerald-600">
-              <UIcon name="i-heroicons-sparkles" class="w-3 h-3" />
-              <span class="text-[10px] font-semibold">Click para generar</span>
+
+          <!-- Task List + Ranking -->
+          <div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-3">
+
+            <!-- Lista de Tareas (table) -->
+            <div class="bg-white rounded-[15px] border border-gray-100 overflow-hidden min-h-[269px]">
+              <div class="flex items-center justify-between p-4 pb-2">
+                <div class="flex items-center gap-3">
+                  <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">Tablero</h3>
+                  <!-- Project dropdown selector -->
+                  <select
+                    v-model="filterProjectId"
+                    class="text-[12px] font-medium text-[#0D0D0D] bg-[#f6f6f6] rounded-full px-3 py-1 border-0 outline-none cursor-pointer hover:bg-gray-200 transition-colors appearance-none pr-6"
+                    style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%237A7A7A%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 8px center; background-size: 14px;"
+                  >
+                    <option value="">Todas las tareas</option>
+                    <option v-for="p in store.projects" :key="p.id" :value="p.id">{{ p.name }}</option>
+                  </select>
+                  <!-- Filtros button -->
+                  <button
+                    class="text-[12px] font-medium px-3 py-1 rounded-full transition-all cursor-pointer"
+                    :class="showFilters ? 'bg-[#0D0D0D] text-white' : 'text-[#7A7A7A] bg-[#f6f6f6] hover:bg-gray-200'"
+                    @click="showFilters = !showFilters"
+                  >
+                    <span class="flex items-center gap-1">
+                      <UIcon name="i-heroicons-funnel" class="w-3 h-3" />
+                      Filtros
+                    </span>
+                  </button>
+                </div>
+                <NuxtLink :to="`/${store.slug}/projects`" class="text-[12px] text-[#10B981] font-semibold hover:text-emerald-700 transition-colors">
+                  Ver todo
+                </NuxtLink>
+              </div>
+              <!-- Filter row -->
+              <div v-if="showFilters" class="px-4 pb-2 flex items-center gap-2">
+                <select
+                  v-model="filterPriority"
+                  class="text-[11px] font-medium text-[#7A7A7A] bg-[#f6f6f6] rounded-full px-2.5 py-1 border-0 outline-none cursor-pointer"
+                >
+                  <option value="">Prioridad</option>
+                  <option value="urgent">Urgente</option>
+                  <option value="high">Alta</option>
+                  <option value="medium">Media</option>
+                  <option value="low">Baja</option>
+                </select>
+                <select
+                  v-model="filterStatus"
+                  class="text-[11px] font-medium text-[#7A7A7A] bg-[#f6f6f6] rounded-full px-2.5 py-1 border-0 outline-none cursor-pointer"
+                >
+                  <option value="">Estado</option>
+                  <option value="done">Hecho</option>
+                  <option value="progress">En progreso</option>
+                </select>
+                <button
+                  v-if="filterPriority || filterStatus"
+                  class="text-[11px] text-red-500 font-medium cursor-pointer hover:text-red-700"
+                  @click="filterPriority = ''; filterStatus = ''"
+                >
+                  Limpiar
+                </button>
+              </div>
+              <!-- Table header -->
+              <div class="grid grid-cols-[2fr_1fr_1fr] md:grid-cols-[1.5fr_1fr_0.8fr_0.8fr_0.8fr_0.8fr] px-4 py-2 text-[12px] font-medium text-[#7A7A7A] border-b border-gray-50">
+                <span>Nombre</span>
+                <span class="hidden md:block">Proyecto</span>
+                <span>Fecha</span>
+                <span class="hidden md:block">Estado</span>
+                <span>Prioridad</span>
+                <span class="hidden md:block">Deadline</span>
+              </div>
+              <!-- Table rows -->
+              <div v-if="filteredTasks.length > 0">
+                <div v-for="task in filteredTasks" :key="task.id"
+                  class="grid grid-cols-[2fr_1fr_1fr] md:grid-cols-[1.5fr_1fr_0.8fr_0.8fr_0.8fr_0.8fr] px-4 py-2.5 text-[12px] border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                      <span class="text-[10px] font-bold text-emerald-700">{{ task.title?.charAt(0)?.toUpperCase() }}</span>
+                    </div>
+                    <span class="text-[#0D0D0D] font-medium truncate">{{ task.title }}</span>
+                  </div>
+                  <span class="text-[#7A7A7A] truncate hidden md:block">{{ task.projectName || '—' }}</span>
+                  <span class="text-[#7A7A7A]">{{ task.dateShort }}</span>
+                  <span class="hidden md:block">
+                    <span class="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                      :class="task.isCompleted ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'">
+                      {{ task.isCompleted ? 'Hecho' : 'En progreso' }}
+                    </span>
+                  </span>
+                  <span>
+                    <span class="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                      :class="{
+                        'bg-red-50 text-red-600': task.priority === 'high' || task.priority === 'urgent',
+                        'bg-amber-50 text-amber-600': task.priority === 'medium',
+                        'bg-blue-50 text-blue-600': task.priority === 'low',
+                      }">
+                      {{ task.priority === 'high' || task.priority === 'urgent' ? 'Alta' : task.priority === 'medium' ? 'Media' : 'Baja' }}
+                    </span>
+                  </span>
+                  <span class="hidden md:block">
+                    <span v-if="task.deadlineLabel"
+                      class="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                      :class="task.deadlineBg + ' ' + task.deadlineColor">
+                      {{ task.deadlineLabel }}
+                    </span>
+                    <span v-else class="text-[10px] text-gray-300">—</span>
+                  </span>
+                </div>
+              </div>
+              <div v-else class="flex flex-col items-center justify-center py-10 text-[#7A7A7A]">
+                <UIcon name="i-heroicons-clipboard-document-list" class="w-8 h-8 text-gray-300 mb-2" />
+                <p class="text-[12px]">{{ recentTasks.length > 0 ? 'Sin resultados con estos filtros' : 'No hay tareas recientes' }}</p>
+              </div>
+            </div>
+
+            <!-- Ranking de Proyectos -->
+            <div class="bg-white rounded-[15px] border border-gray-100 p-4 min-h-[269px]">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">Ranking de Proyectos</h3>
+              </div>
+              <div class="space-y-2">
+                <NuxtLink
+                  v-for="(project, idx) in rankedProjects"
+                  :key="project.id"
+                  :to="`/${store.slug}/projects/${project.id}/kanban`"
+                  class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-all group cursor-pointer"
+                >
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                    :style="{ backgroundColor: project.color + '20' }">
+                    <UIcon name="i-heroicons-folder" class="w-4 h-4" :style="{ color: project.color }" />
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[13px] font-medium text-[#0D0D0D] truncate group-hover:text-[#10B981] transition-colors">{{ project.name }}</p>
+                    <p class="text-[10px] text-[#7A7A7A]">{{ project.taskCount || 0 }} tareas</p>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <div class="w-[50px] h-[5px] bg-gray-100 rounded-full overflow-hidden">
+                      <div class="h-full bg-[#10B981] rounded-full transition-all duration-500"
+                        :style="{ width: `${project.progress || 0}%` }" />
+                    </div>
+                    <span class="text-[10px] font-medium text-[#7A7A7A] tabular-nums w-6 text-right">{{ project.progress || 0 }}%</span>
+                  </div>
+                </NuxtLink>
+                <div v-if="rankedProjects.length === 0" class="text-center py-6">
+                  <p class="text-[12px] text-[#7A7A7A]">No hay proyectos</p>
+                  <button @click="showCreate = true" class="mt-2 text-[12px] font-semibold text-[#10B981] hover:text-emerald-700 cursor-pointer">
+                    + Crear proyecto
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Streak / Consistency Tracker -->
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Racha</span>
-            <div class="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
-              <UIcon name="i-heroicons-fire" class="w-4 h-4 text-orange-500" />
+        <!-- ─── RIGHT COLUMN (fixed width) ─── -->
+        <div class="w-full lg:w-[396px] lg:shrink-0 space-y-3">
+
+          <!-- Coach Anti-Procrastinación -->
+          <div class="bg-white rounded-[15px] border border-gray-100 overflow-hidden">
+            <div class="flex items-center justify-between p-4 pb-2">
+              <h3 class="text-[16px] font-semibold text-[#0D0D0D]">Coach Anti-Procrastinación</h3>
+              <span class="text-[12px] text-[#7A7A7A] bg-[#f6f6f6] rounded-full px-3 py-1 cursor-pointer hover:bg-gray-200 transition-colors"
+                @click="loadCoachAdvice">
+                {{ coachLoading ? 'Analizando...' : 'Actualizar' }}
+              </span>
+            </div>
+
+            <div class="p-4 pt-2">
+              <!-- Loading state -->
+              <div v-if="coachLoading" class="space-y-3">
+                <div class="h-4 bg-gray-100 rounded animate-pulse w-3/4" />
+                <div class="h-4 bg-gray-100 rounded animate-pulse w-full" />
+                <div class="h-4 bg-gray-100 rounded animate-pulse w-2/3" />
+              </div>
+
+              <!-- Coach content -->
+              <div v-else-if="coachData" class="space-y-3">
+                <div class="flex items-center gap-3 p-3 rounded-xl"
+                  :class="coachData.score > 60 ? 'bg-red-50' : coachData.score > 30 ? 'bg-amber-50' : 'bg-emerald-50'">
+                  <div class="text-2xl font-bold tabular-nums"
+                    :class="coachData.score > 60 ? 'text-red-600' : coachData.score > 30 ? 'text-amber-600' : 'text-emerald-600'">
+                    {{ coachData.score }}
+                  </div>
+                  <div>
+                    <p class="text-[12px] font-semibold text-[#0D0D0D]">Riesgo de procrastinación</p>
+                    <p class="text-[11px] text-[#7A7A7A]">{{ coachData.analysis }}</p>
+                  </div>
+                </div>
+                <div v-if="coachData.quick_wins?.length">
+                  <p class="text-[10px] font-bold uppercase tracking-widest text-[#7A7A7A] mb-2">Victorias rápidas</p>
+                  <div class="space-y-1.5">
+                    <div v-for="(win, i) in coachData.quick_wins.slice(0, 3)" :key="i" class="flex items-start gap-2 text-[12px] text-[#0D0D0D]">
+                      <UIcon name="i-heroicons-check-circle" class="w-4 h-4 text-[#10B981] shrink-0 mt-0.5" />
+                      <span>{{ win }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="coachData.motivation" class="p-3 bg-emerald-50 rounded-xl">
+                  <p class="text-[12px] text-emerald-800 font-medium italic">"{{ coachData.motivation }}"</p>
+                </div>
+              </div>
+
+              <!-- Empty / AI Chat bubble style -->
+              <div v-else class="space-y-3">
+                <div class="flex items-start gap-3">
+                  <div class="w-10 h-10 rounded-full bg-[#0D0D0D] flex items-center justify-center shrink-0">
+                    <UIcon name="i-heroicons-sparkles" class="w-5 h-5 text-white" />
+                  </div>
+                  <div class="bg-[#f6f6f6] rounded-2xl rounded-tl-sm p-3 flex-1">
+                    <p class="text-[13px] text-[#0D0D0D] font-medium">Buenos dias, {{ userName }}.</p>
+                    <p class="text-[12px] text-[#7A7A7A] mt-1">¿Qué te está bloqueando hoy?</p>
+                  </div>
+                </div>
+                <button
+                  @click="loadCoachAdvice"
+                  class="w-full bg-[#10B981] hover:bg-emerald-600 text-white text-[12px] font-semibold py-2.5 rounded-lg transition-all cursor-pointer"
+                >
+                  Analizar ahora
+                </button>
+              </div>
             </div>
           </div>
-          <div class="text-center">
-            <span class="text-3xl font-bold text-gray-900 tabular-nums">{{ streak }}</span>
-            <p class="text-[10px] text-gray-400 mt-1">días consecutivos productivo</p>
-            <div class="flex items-center justify-center gap-1 mt-3">
-              <div v-for="day in 7" :key="day"
-                class="w-5 h-5 rounded-md flex items-center justify-center text-[8px] font-bold"
-                :class="day <= streak % 7 ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-400'"
-              >
-                {{ ['L','M','X','J','V','S','D'][(day - 1) % 7] }}
+
+          <!-- AI Token Usage (detailed) -->
+          <div class="bg-white rounded-[15px] border border-gray-100 p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="bg-[#f6f6f6] text-[12px] text-[#7A7A7A] rounded-full px-3 py-1 cursor-pointer" :class="aiTab === 'overview' ? 'bg-[#0D0D0D] text-white' : ''" @click="aiTab = 'overview'">General</span>
+                <span class="bg-[#f6f6f6] text-[12px] text-[#7A7A7A] rounded-full px-3 py-1 cursor-pointer" :class="aiTab === 'daily' ? 'bg-[#0D0D0D] text-white' : ''" @click="aiTab = 'daily'">Diario</span>
               </div>
+            </div>
+
+            <template v-if="tokenStats">
+              <!-- Overview tab -->
+              <div v-if="aiTab === 'overview'" class="space-y-3">
+                <div class="flex items-center gap-4">
+                  <svg class="w-[80px] h-[80px] shrink-0" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="34" fill="none" stroke="#E8E8E8" stroke-width="6" />
+                    <circle cx="40" cy="40" r="34" fill="none" stroke="#10B981" stroke-width="6"
+                      :stroke-dasharray="213.63" :stroke-dashoffset="213.63 * (1 - tokenStats.percentUsed / 100)"
+                      stroke-linecap="round" transform="rotate(-90 40 40)" class="transition-all duration-700" />
+                    <text x="40" y="38" text-anchor="middle" font-size="14" font-weight="700" fill="#0D0D0D" style="font-family: 'Space Grotesk'">{{ tokenStats.percentUsed }}%</text>
+                    <text x="40" y="50" text-anchor="middle" font-size="8" fill="#7A7A7A">usado</text>
+                  </svg>
+                  <div class="space-y-2 flex-1">
+                    <div v-for="(tokens, actionName) in topActions" :key="actionName">
+                      <div class="flex items-center justify-between text-[11px] mb-0.5">
+                        <span class="text-[#7A7A7A]">{{ actionName }}</span>
+                        <span class="font-semibold text-[#0D0D0D] tabular-nums">{{ formatTokens(tokens) }}</span>
+                      </div>
+                      <div class="h-[3px] bg-gray-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-[#10B981] rounded-full" :style="{ width: `${(tokens / tokenStats.totalTokens) * 100}%` }" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Daily tab -->
+              <div v-else class="space-y-3">
+                <div>
+                  <p class="text-[11px] text-[#7A7A7A]">Hoy</p>
+                  <span class="text-[28px] font-bold text-[#0D0D0D] tabular-nums" style="font-family: 'Space Grotesk';">{{ formatTokens(todayTokens) }}</span>
+                  <span v-if="todayTokens > yesterdayTokens && yesterdayTokens > 0" class="text-[11px] font-bold text-red-500 ml-2">
+                    +{{ Math.round(((todayTokens - yesterdayTokens) / yesterdayTokens) * 100) }}%
+                  </span>
+                </div>
+                <div class="flex items-end gap-1 h-[60px]">
+                  <div v-for="(day, i) in last7Days" :key="i"
+                    class="flex-1 rounded-sm transition-all duration-300"
+                    :class="day.isToday ? 'bg-[#10B981]' : 'bg-gray-200'"
+                    :style="{ height: `${day.height}%`, minHeight: day.tokens > 0 ? '4px' : '2px' }"
+                    :title="`${day.date}: ${formatTokens(day.tokens)}`" />
+                </div>
+                <div class="flex justify-between text-[9px] text-[#7A7A7A]">
+                  <span>7d ago</span><span>Hoy</span>
+                </div>
+              </div>
+            </template>
+            <template v-else>
+              <div class="space-y-2">
+                <div class="h-[80px] bg-gray-100 rounded-lg animate-pulse" />
+              </div>
+            </template>
+          </div>
+
+          <!-- Lo-fi Music Player (dark) -->
+          <div class="bg-[#0D0D0D] rounded-[15px] p-3 border border-[#1F1F1F]">
+            <div class="flex items-center gap-3">
+              <!-- Play/Pause -->
+              <button @click="lofi.toggle()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all cursor-pointer shrink-0">
+                <span v-if="lofi.isLoading.value" class="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                <UIcon v-else :name="lofi.isPlaying.value ? 'i-heroicons-pause-solid' : 'i-heroicons-play-solid'" class="w-4 h-4 text-white" />
+              </button>
+              <!-- Station info -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="text-[12px] font-semibold text-white truncate">{{ lofi.currentStation.value.emoji }} {{ lofi.currentStation.value.name }}</span>
+                  <span v-if="lofi.isPlaying.value" class="flex gap-[2px] items-end h-3">
+                    <span v-for="i in 3" :key="i" class="w-[2px] bg-[#10B981] rounded-full animate-pulse" :style="{ height: `${6 + (i * 3)}px`, animationDelay: `${i * 0.15}s` }" />
+                  </span>
+                </div>
+                <p class="text-[10px] text-white/50 truncate">{{ lofi.currentQuote.value }}</p>
+              </div>
+              <!-- Skip -->
+              <button @click="lofi.skip()" class="text-white/50 hover:text-white transition-colors cursor-pointer shrink-0">
+                <UIcon name="i-heroicons-forward" class="w-4 h-4" />
+              </button>
+              <!-- Volume -->
+              <input type="range" min="0" max="100" :value="lofi.volume.value * 100"
+                @input="lofi.setVolume(($event.target as HTMLInputElement).valueAsNumber / 100)"
+                class="w-14 h-1 accent-[#10B981] cursor-pointer" />
+            </div>
+            <!-- Progress bar (decorative for radio) -->
+            <div class="mt-2 h-[3px] bg-[#374151] rounded-full overflow-hidden">
+              <div class="h-full bg-[#10B981] rounded-full transition-all duration-1000"
+                :style="{ width: lofi.isPlaying.value ? '60%' : '0%' }" />
+            </div>
+          </div>
+
+          <!-- Daily Plan (compact) -->
+          <div class="bg-white rounded-[15px] border border-gray-100 p-4 cursor-pointer hover:shadow-sm transition-all"
+            @click="loadDailyPlan">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-[14px] font-semibold text-[#0D0D0D]">Plan del dia</h3>
+              <div class="w-6 h-6 rounded-full bg-violet-50 flex items-center justify-center">
+                <UIcon name="i-heroicons-sparkles" class="w-3.5 h-3.5 text-violet-600" />
+              </div>
+            </div>
+            <div v-if="dailyPlan">
+              <p class="text-[12px] text-[#0D0D0D] font-medium mb-2">{{ dailyPlan.greeting }}</p>
+              <div class="space-y-1">
+                <div v-for="(task, i) in (dailyPlan.focus_tasks || []).slice(0, 3)" :key="i" class="flex items-start gap-1.5">
+                  <span class="text-[10px] font-bold text-[#10B981] mt-0.5 tabular-nums">{{ Number(i) + 1 }}.</span>
+                  <span class="text-[11px] text-[#7A7A7A] leading-snug">{{ task }}</span>
+                </div>
+              </div>
+            </div>
+            <div v-else class="flex items-center gap-2 text-[#10B981]">
+              <UIcon name="i-heroicons-sparkles" class="w-3.5 h-3.5" />
+              <span class="text-[11px] font-semibold">Generar plan con IA</span>
             </div>
           </div>
         </div>
       </div>
 
+      <!-- ═══════ QUICK ACTIONS BAR ═══════ -->
+      <div class="flex items-center gap-3">
+        <button
+          @click="router.push(`/${store.slug}/projects`)"
+          class="bg-white hover:bg-gray-50 text-[#0D0D0D] text-[12px] font-semibold px-4 py-2 rounded-lg border border-gray-100 transition-all cursor-pointer"
+        >
+          Ver proyectos
+        </button>
+        <button
+          @click="showCreate = true"
+          class="bg-[#10B981] hover:bg-emerald-600 text-white text-[12px] font-semibold px-4 py-2 rounded-lg transition-all cursor-pointer"
+        >
+          + Nuevo proyecto
+        </button>
+      </div>
     </div>
 
     <!-- Quick create project modal -->
@@ -523,6 +605,9 @@ definePageMeta({ middleware: 'auth' })
 const router = useRouter()
 const store = useWorkspaceStore()
 const auth = useAuthStore()
+const lofi = useLofiPlayer()
+const pushNotif = usePushNotifications()
+const deadline = useTaskDeadline()
 
 const taskCount = ref(0)
 const completedTasks = ref(0)
@@ -541,10 +626,10 @@ const dailyPlan = ref<any>(null)
 const tokenStats = ref<TokenUsageStats | null>(null)
 const tokenLoading = ref(false)
 
-// Focus score
-const focusScore = ref(72)
+// AI tab
+const aiTab = ref<'overview' | 'daily'>('overview')
 
-// Streak (local for now)
+// Streak
 const streak = ref(3)
 
 // Pomodoro timer
@@ -554,17 +639,42 @@ const pomodoroPhase = ref<'work' | 'break'>('work')
 const pomodoroSessions = ref(0)
 let pomodoroInterval: ReturnType<typeof setInterval> | null = null
 
-// In-progress tasks (derived)
+// Recent tasks for the table
+const recentTasks = ref<any[]>([])
+
+// Filters
+const filterProjectId = ref('')
+const filterPriority = ref('')
+const filterStatus = ref('')
+const showFilters = ref(false)
+
+const filteredTasks = computed(() => {
+  let tasks = recentTasks.value
+  if (filterProjectId.value) {
+    tasks = tasks.filter(t => t.projectId === filterProjectId.value)
+  }
+  if (filterPriority.value) {
+    tasks = tasks.filter(t => t.priority === filterPriority.value)
+  }
+  if (filterStatus.value === 'done') {
+    tasks = tasks.filter(t => t.isCompleted)
+  } else if (filterStatus.value === 'progress') {
+    tasks = tasks.filter(t => !t.isCompleted)
+  }
+  return tasks
+})
+
+// In-progress tasks
 const inProgressTasks = computed(() => taskCount.value - completedTasks.value)
 
-// Pomodoro SVG ring computed
+// Pomodoro ring (circumference = 2 * PI * 34 ≈ 213.63)
 const pomodoroTotal = computed(() => pomodoroPhase.value === 'work' ? 25 * 60 : 5 * 60)
 const pomodoroRingOffset = computed(() => {
   const progress = pomodoroSeconds.value / pomodoroTotal.value
-  return 282.7 * (1 - progress)
+  return 213.63 * (1 - progress)
 })
 
-// Decorative stat bar heights (seeded from task counts so they look consistent)
+// Stat bar heights
 const statBarHeights = computed(() => {
   const seed = (n: number, offset: number) => {
     const vals = []
@@ -580,6 +690,25 @@ const statBarHeights = computed(() => {
   }
 })
 
+// Project bar chart data (per-project task counts)
+const projectBars = computed(() => {
+  const projects = store.projects.slice(0, 5)
+  const maxTasks = Math.max(...projects.map(p => (p as any)._taskCount || 1), 1)
+  return projects.map(p => ({
+    name: p.name,
+    height: Math.max(((p as any)._taskCount || Math.floor(Math.random() * 50 + 10)) / maxTasks * 100, 5),
+  }))
+})
+
+// Ranked projects with progress
+const rankedProjects = computed(() => {
+  return store.projects.slice(0, 5).map(p => ({
+    ...p,
+    taskCount: (p as any)._taskCount || 0,
+    progress: taskCount.value > 0 ? Math.round((completedTasks.value / taskCount.value) * 100) : 0,
+  }))
+})
+
 const templateOptions = [
   { label: 'Simple (3 col)', value: 'simple' },
   { label: 'Kanban Clásico (5 col)', value: 'kanban' },
@@ -590,9 +719,9 @@ const templateOptions = [
   { label: 'Scrumban (8 col)', value: 'scrumban' },
   { label: 'Marketing (7 col)', value: 'marketing' },
   { label: 'Agentes AI (7 col)', value: 'ai_agents' },
+  { label: 'Backend Senior Dev (9 col)', value: 'backend_senior_dev' },
+  { label: 'Frontend & Design (8 col)', value: 'frontend_design' },
 ]
-
-const recentProjects = computed(() => store.projects.slice(0, 5))
 
 const userName = computed(() => {
   const email = auth.userEmail || ''
@@ -606,12 +735,8 @@ const greeting = computed(() => {
   return 'Buenas noches'
 })
 
-const todayFormatted = computed(() => {
-  try { return format(new Date(), "EEEE d 'de' MMMM", { locale: es }) } catch { return '' }
-})
-
 const motivationalQuotes = [
-  'El progreso, no la perfección, es lo que importa.',
+  '¿Listo para conquistar tus proyectos?',
   'Cada tarea completada es un paso hacia tu meta.',
   'Empieza por lo más pequeño, el momentum hará el resto.',
   'Tu yo del futuro te agradecerá empezar hoy.',
@@ -674,6 +799,7 @@ function togglePomodoro() {
     if (pomodoroInterval) clearInterval(pomodoroInterval)
     pomodoroRunning.value = false
   } else {
+    pushNotif.requestPermission()
     pomodoroRunning.value = true
     pomodoroInterval = setInterval(() => {
       if (pomodoroSeconds.value > 0) {
@@ -683,9 +809,13 @@ function togglePomodoro() {
         pomodoroRunning.value = false
         if (pomodoroPhase.value === 'work') {
           pomodoroSessions.value++
+          pushNotif.sendLocal('Pomodoro completado!', { body: 'Toma un descanso de 5 minutos.' })
+          pushNotif.playSound()
           pomodoroPhase.value = 'break'
           pomodoroSeconds.value = 5 * 60
         } else {
+          pushNotif.sendLocal('Descanso terminado!', { body: 'Hora de enfocarse de nuevo.' })
+          pushNotif.playSound()
           pomodoroPhase.value = 'work'
           pomodoroSeconds.value = 25 * 60
         }
@@ -712,11 +842,10 @@ async function loadTokenUsage() {
   tokenLoading.value = false
 }
 
-// Load task stats
+// Load task stats + recent tasks
 watch(() => store.workspace?.id, async (wsId) => {
   if (!wsId || store.projects.length === 0) return
 
-  // Load token stats
   loadTokenUsage()
 
   try {
@@ -750,10 +879,33 @@ watch(() => store.workspace?.id, async (wsId) => {
       completedTasks.value = done || 0
     }
 
-    // Calculate focus score
-    if (taskCount.value > 0) {
-      const ratio = completedTasks.value / taskCount.value
-      focusScore.value = Math.round(ratio * 100)
+    // Load recent tasks for the table
+    const { data: tasks } = await supabase
+      .from('tasks')
+      .select('id, title, priority, created_at, column_id, project_id, due_date')
+      .in('project_id', projectIds)
+      .order('created_at', { ascending: false })
+      .limit(20)
+
+    if (tasks) {
+      const projectMap = new Map(store.projects.map(p => [p.id, p.name]))
+      const lastColSet = new Set(cols ? Array.from(new Map(cols.map((c: any) => [c.project_id, c.id]) as any).values()) : [])
+
+      recentTasks.value = tasks.map((t: any) => {
+        const dlInfo = deadline.getDeadlineInfo(t.due_date)
+        return {
+          id: t.id,
+          title: t.title,
+          priority: t.priority || 'medium',
+          projectId: t.project_id,
+          projectName: projectMap.get(t.project_id) || '—',
+          dateShort: t.created_at ? format(new Date(t.created_at), 'MMM d', { locale: es }) : '—',
+          isCompleted: lastColSet.has(t.column_id),
+          deadlineLabel: dlInfo?.label || null,
+          deadlineColor: dlInfo?.colorClass || '',
+          deadlineBg: dlInfo?.bgClass || '',
+        }
+      })
     }
   } catch { /* silent */ }
 }, { immediate: true })
@@ -812,7 +964,30 @@ async function handleCreate() {
   }
 }
 
+// Deadline check: trigger every 15 min from the client
+let deadlineCheckInterval: ReturnType<typeof setInterval> | null = null
+
+async function triggerDeadlineCheck() {
+  if (!store.workspace?.id) return
+  try {
+    const user = useSupabaseUser()
+    await $fetch('/api/cron/check-deadlines', {
+      method: 'POST',
+      body: { userId: user.value?.id },
+    })
+  } catch {}
+}
+
+watch(() => store.workspace?.id, (id) => {
+  if (id) {
+    triggerDeadlineCheck()
+    if (deadlineCheckInterval) clearInterval(deadlineCheckInterval)
+    deadlineCheckInterval = setInterval(triggerDeadlineCheck, 15 * 60 * 1000)
+  }
+}, { immediate: true })
+
 onUnmounted(() => {
   if (pomodoroInterval) clearInterval(pomodoroInterval)
+  if (deadlineCheckInterval) clearInterval(deadlineCheckInterval)
 })
 </script>

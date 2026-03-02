@@ -36,8 +36,29 @@ export default defineEventHandler(async (event) => {
     if (page > 20) break
   }
 
-  return members.map(m => ({
-    ...m,
-    email: emailMap[m.user_id] || null,
-  }))
+  // Fetch project_members for this workspace (table may not exist if migration 012 not applied)
+  let pmByUser: Record<string, string[]> = {}
+  try {
+    const { data: pmData } = await supabase
+      .from('project_members')
+      .select('user_id, project_id')
+      .eq('workspace_id', workspaceId)
+
+    for (const pm of pmData || []) {
+      if (!pmByUser[pm.user_id]) pmByUser[pm.user_id] = []
+      pmByUser[pm.user_id]!.push(pm.project_id)
+    }
+  } catch {
+    // project_members table may not exist yet
+  }
+
+  return members.map(m => {
+    const isAdminPlus = ['admin', 'owner', 'superadmin'].includes(m.role)
+    return {
+      ...m,
+      email: emailMap[m.user_id] || null,
+      has_all_projects: isAdminPlus,
+      project_ids: isAdminPlus ? [] : (pmByUser[m.user_id] || []),
+    }
+  })
 })

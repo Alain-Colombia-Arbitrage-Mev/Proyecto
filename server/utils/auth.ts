@@ -106,3 +106,65 @@ export async function requireWorkspaceRole(event: H3Event, workspaceId: string, 
 
   return { user, membership }
 }
+
+/**
+ * Check if user can access a specific project.
+ * admin/owner/superadmin → always pass.
+ * member/viewer → must have entry in project_members.
+ */
+export async function requireProjectAccess(event: H3Event, workspaceId: string, projectId: string) {
+  const { user, membership } = await requireWorkspaceMember(event, workspaceId)
+
+  // admin+ has access to all projects
+  const level = ROLE_LEVELS[membership.role] ?? 0
+  if (level >= ROLE_LEVELS.admin!) {
+    return { user, membership }
+  }
+
+  // member/viewer — check project_members
+  const supabase = serverSupabaseServiceRole(event)
+  const { data } = await supabase
+    .from('project_members')
+    .select('id')
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (!data) {
+    throw createError({ statusCode: 403, message: 'No tienes acceso a este proyecto' })
+  }
+
+  return { user, membership }
+}
+
+/**
+ * Get the project IDs a user can access in a workspace.
+ * Returns null if user has access to ALL projects (admin+).
+ * Returns string[] for member/viewer with specific project access.
+ */
+export async function getUserProjectIds(
+  event: H3Event,
+  workspaceId: string,
+  userId: string,
+  role: string,
+): Promise<string[] | null> {
+  // admin+ sees all projects
+  const level = ROLE_LEVELS[role] ?? 0
+  if (level >= ROLE_LEVELS.admin!) {
+    return null
+  }
+
+  const supabase = serverSupabaseServiceRole(event)
+  try {
+    const { data } = await supabase
+      .from('project_members')
+      .select('project_id')
+      .eq('workspace_id', workspaceId)
+      .eq('user_id', userId)
+
+    return (data || []).map(d => d.project_id)
+  } catch {
+    // project_members table may not exist yet — return null to show all
+    return null
+  }
+}

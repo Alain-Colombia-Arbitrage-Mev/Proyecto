@@ -60,7 +60,8 @@
           </div>
           <div class="min-w-0 flex-1">
             <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Ahora sonando</p>
-            <p class="text-sm font-bold text-gray-900 truncate">{{ currentStation.name }}</p>
+            <p class="text-sm font-bold text-gray-900 truncate">{{ currentTrack.title }}</p>
+            <p class="text-[10px] text-gray-500 truncate">{{ currentTrack.artist }} &middot; {{ currentStation.name }}</p>
             <div class="flex items-center gap-1.5 mt-0.5">
               <span v-if="isPlaying" class="flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -97,14 +98,14 @@
       </div>
 
       <!-- Main Controls -->
-      <div class="bg-white px-5 py-3 flex items-center justify-center gap-4">
-        <!-- Skip back (restart) -->
+      <div class="bg-white px-5 py-3 flex items-center justify-center gap-3">
+        <!-- Prev track -->
         <button
           class="w-8 h-8 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all cursor-pointer"
-          @click="resetSession()"
-          title="Reiniciar sesión"
+          @click="prevTrack()"
+          title="Tema anterior"
         >
-          <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" />
+          <UIcon name="i-heroicons-backward" class="w-4 h-4" />
         </button>
 
         <!-- Play/Pause (big button) -->
@@ -119,13 +120,23 @@
           <UIcon v-else name="i-heroicons-play" class="w-6 h-6 ml-0.5" />
         </button>
 
-        <!-- Skip next -->
+        <!-- Next track -->
         <button
           class="w-8 h-8 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all cursor-pointer"
-          @click="skip()"
-          title="Siguiente estación"
+          @click="nextTrack()"
+          title="Siguiente tema"
         >
           <UIcon name="i-heroicons-forward" class="w-4 h-4" />
+        </button>
+
+        <!-- Track list toggle -->
+        <button
+          class="w-8 h-8 rounded-xl flex items-center justify-center transition-all cursor-pointer"
+          :class="showTrackList ? 'text-gray-900 bg-gray-100' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'"
+          @click="toggleTrackList()"
+          title="Lista de canciones"
+        >
+          <UIcon name="i-heroicons-queue-list" class="w-4 h-4" />
         </button>
       </div>
 
@@ -173,6 +184,46 @@
           </span>
         </div>
       </div>
+
+      <!-- Track List (expandable) -->
+      <transition name="track-list">
+        <div v-if="showTrackList" class="bg-white border-t border-gray-100 max-h-[180px] overflow-y-auto track-list-scroll">
+          <div class="px-3 py-2">
+            <p class="text-[9px] font-bold uppercase tracking-widest text-gray-300 px-2 mb-1.5">
+              Canciones &middot; {{ currentStation.tracks.length }} temas
+            </p>
+            <div class="space-y-0.5">
+              <button
+                v-for="(track, idx) in currentStation.tracks"
+                :key="idx"
+                class="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer"
+                :class="currentTrackIndex === idx
+                  ? 'font-semibold text-gray-900'
+                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'"
+                :style="currentTrackIndex === idx ? { backgroundColor: currentStation.color + '10' } : {}"
+                @click="selectTrack(idx)"
+              >
+                <!-- Track number / playing indicator -->
+                <span class="w-5 text-center shrink-0">
+                  <span v-if="isPlaying && currentTrackIndex === idx" class="flex items-end justify-center gap-[2px] h-3">
+                    <span class="w-[2px] rounded-full animate-bar-1" :style="{ backgroundColor: currentStation.color }" />
+                    <span class="w-[2px] rounded-full animate-bar-2" :style="{ backgroundColor: currentStation.color }" />
+                    <span class="w-[2px] rounded-full animate-bar-3" :style="{ backgroundColor: currentStation.color }" />
+                  </span>
+                  <span v-else class="text-[10px] tabular-nums" :style="currentTrackIndex === idx ? { color: currentStation.color } : {}">{{ idx + 1 }}</span>
+                </span>
+                <!-- Track info -->
+                <div class="flex-1 min-w-0 text-left">
+                  <p class="truncate text-[11px]">{{ track.title }}</p>
+                  <p class="truncate text-[9px] text-gray-400">{{ track.artist }}</p>
+                </div>
+                <!-- Duration -->
+                <span class="text-[10px] text-gray-400 tabular-nums shrink-0">{{ track.duration }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
 
       <!-- Error message -->
       <div v-if="hasError" class="bg-red-50 px-5 py-2 flex items-center gap-2">
@@ -222,6 +273,9 @@ const {
   stations,
   currentStation,
   currentStationId,
+  currentTrack,
+  currentTrackIndex,
+  showTrackList,
   isPlaying,
   isExpanded,
   isLoading,
@@ -235,6 +289,10 @@ const {
   setStation,
   setVolume,
   skip,
+  nextTrack,
+  prevTrack,
+  selectTrack,
+  toggleTrackList,
   expand,
   collapse,
   resetSession,
@@ -250,6 +308,31 @@ const {
 .player-slide-leave-to {
   opacity: 0;
   transform: translateY(20px) scale(0.92);
+}
+
+.track-list-enter-active,
+.track-list-leave-active {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+.track-list-enter-from,
+.track-list-leave-to {
+  max-height: 0 !important;
+  opacity: 0;
+}
+.track-list-enter-to {
+  max-height: 180px;
+}
+
+.track-list-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.track-list-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.track-list-scroll::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 2px;
 }
 
 @keyframes bar1 {

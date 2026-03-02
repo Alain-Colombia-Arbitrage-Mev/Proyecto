@@ -357,6 +357,33 @@ const templateConfigs = [
       { title: 'Monitoreo', color: '#06B6D4' },
     ],
   },
+  {
+    label: 'Backend Senior Dev', value: 'backend_senior_dev', cols: 9,
+    columns: [
+      { title: 'Backlog', color: '#6B7280' },
+      { title: 'Diseño de API', color: '#8B5CF6' },
+      { title: 'Desarrollo', color: '#3B82F6' },
+      { title: 'Code Review', color: '#6366F1' },
+      { title: 'Testing / QA', color: '#F59E0B' },
+      { title: 'Seguridad / RLS', color: '#EF4444' },
+      { title: 'Deploy / DevOps', color: '#F97316' },
+      { title: 'Producción', color: '#10B981' },
+      { title: 'Monitoreo', color: '#14B8A6' },
+    ],
+  },
+  {
+    label: 'Frontend & Design', value: 'frontend_design', cols: 8,
+    columns: [
+      { title: 'Inspiración', color: '#EC4899' },
+      { title: 'Wireframes', color: '#8B5CF6' },
+      { title: 'Diseño UI', color: '#6366F1' },
+      { title: 'Prototipo', color: '#3B82F6' },
+      { title: 'Desarrollo Frontend', color: '#F59E0B' },
+      { title: 'Review / QA Visual', color: '#F97316' },
+      { title: 'Integración', color: '#14B8A6' },
+      { title: 'Publicado', color: '#10B981' },
+    ],
+  },
 ]
 
 async function handleCreateProject() {

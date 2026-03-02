@@ -2,7 +2,7 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
-  await requireWorkspaceRole(event, workspaceId, 'admin')
+  const { user } = await requireWorkspaceRole(event, workspaceId, 'admin')
 
   const body = await readBody(event)
   const supabase = serverSupabaseServiceRole(event)
@@ -45,16 +45,33 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 409, message: 'Este usuario ya es miembro del workspace' })
   }
 
+  const assignedRole = body.role || 'member'
+
   const { data: member, error } = await supabase
     .from('workspace_members')
     .insert({
       workspace_id: workspaceId,
       user_id: targetUser.id,
-      role: body.role || 'member',
+      role: assignedRole,
     })
     .select()
     .single()
 
   if (error) throw createError({ statusCode: 500, message: 'Error adding member' })
-  return { ...member, email: targetUser.email }
+
+  // For member/viewer roles: assign specific project access
+  const isAdminPlus = ['admin', 'owner', 'superadmin'].includes(assignedRole)
+  const projectIds: string[] = body.project_ids || []
+
+  if (!isAdminPlus && projectIds.length > 0) {
+    const rows = projectIds.map(pid => ({
+      project_id: pid,
+      user_id: targetUser.id,
+      workspace_id: workspaceId,
+      granted_by: user.id,
+    }))
+    await supabase.from('project_members').insert(rows)
+  }
+
+  return { ...member, email: targetUser.email, project_ids: isAdminPlus ? null : projectIds }
 })

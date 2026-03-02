@@ -1,3 +1,9 @@
+export interface LofiTrack {
+  title: string
+  artist: string
+  duration: string
+}
+
 export interface LofiStation {
   id: string
   name: string
@@ -5,6 +11,7 @@ export interface LofiStation {
   url: string
   color: string
   fallbackUrls: string[]
+  tracks: LofiTrack[]
 }
 
 // Reliable 24/7 internet radio streams with fallbacks
@@ -19,6 +26,16 @@ const stations: LofiStation[] = [
       'https://stream.zeno.fm/yan2rq923fhvv',
       'https://stream.zeno.fm/4lygnz923fhvv',
     ],
+    tracks: [
+      { title: 'Midnight Coffee', artist: 'Lofi Dreamer', duration: '3:24' },
+      { title: 'Rainy Window', artist: 'Chillhop Music', duration: '2:58' },
+      { title: 'Study Session', artist: 'Beats by Nola', duration: '3:42' },
+      { title: 'Paper Planes', artist: 'Kupla', duration: '2:15' },
+      { title: 'Autumn Leaves', artist: 'Mellow Vibes', duration: '4:01' },
+      { title: 'City Lights', artist: 'Lofi Dreamer', duration: '3:33' },
+      { title: 'Morning Brew', artist: 'Sleepy Fish', duration: '2:47' },
+      { title: 'Sunset Drive', artist: 'Philanthrope', duration: '3:18' },
+    ],
   },
   {
     id: 'chillhop',
@@ -29,6 +46,15 @@ const stations: LofiStation[] = [
     fallbackUrls: [
       'https://stream.zeno.fm/0r0xa792kwzuv',
       'https://stream.zeno.fm/f3wvbbqmdg8uv',
+    ],
+    tracks: [
+      { title: 'Warm Glow', artist: 'Aso', duration: '3:12' },
+      { title: 'Focus Mode', artist: 'Idealism', duration: '2:44' },
+      { title: 'Vanilla Latte', artist: 'Jazzinuf', duration: '3:56' },
+      { title: 'Quiet Hours', artist: 'Leavv', duration: '2:31' },
+      { title: 'Bookstore', artist: 'Wun Two', duration: '3:08' },
+      { title: 'Daydream', artist: 'In Love With a Ghost', duration: '2:55' },
+      { title: 'Golden Hour', artist: 'Aso', duration: '3:40' },
     ],
   },
   {
@@ -41,6 +67,14 @@ const stations: LofiStation[] = [
       'https://stream.zeno.fm/kvnlxbtmcg8uv',
       'https://stream.zeno.fm/4lygnz923fhvv',
     ],
+    tracks: [
+      { title: 'Ocean Drift', artist: 'Ambient World', duration: '5:12' },
+      { title: 'Cosmic Waves', artist: 'Stars of the Lid', duration: '7:23' },
+      { title: 'Deep Space', artist: 'Brian Eno', duration: '6:44' },
+      { title: 'Underwater', artist: 'Hammock', duration: '4:58' },
+      { title: 'Cloud Atlas', artist: 'Tycho', duration: '5:31' },
+      { title: 'Aurora', artist: 'Ambient World', duration: '6:02' },
+    ],
   },
   {
     id: 'jazz-study',
@@ -51,6 +85,15 @@ const stations: LofiStation[] = [
     fallbackUrls: [
       'https://stream.zeno.fm/0r0xa792kwzuv',
       'https://stream.zeno.fm/yan2rq923fhvv',
+    ],
+    tracks: [
+      { title: 'Blue Note Session', artist: 'Jazz Vibes', duration: '4:15' },
+      { title: 'Smooth Sax', artist: 'Late Night Jazz', duration: '3:42' },
+      { title: 'Cafe Paris', artist: 'Bossa Nova Trio', duration: '3:58' },
+      { title: 'Piano Bar', artist: 'Jazz Collective', duration: '4:30' },
+      { title: 'Swing Low', artist: 'Vintage Jazz', duration: '3:22' },
+      { title: 'Midnight Blues', artist: 'Jazz Vibes', duration: '5:01' },
+      { title: 'Gentle Keys', artist: 'Piano Lounge', duration: '3:45' },
     ],
   },
   {
@@ -63,6 +106,14 @@ const stations: LofiStation[] = [
       'https://stream.zeno.fm/f3wvbbqmdg8uv',
       'https://stream.zeno.fm/2x3mpsq4yzzuv',
     ],
+    tracks: [
+      { title: 'Rain Forest', artist: 'Nature Sounds', duration: '8:00' },
+      { title: 'Creek & Birds', artist: 'Calm Nature', duration: '6:30' },
+      { title: 'Thunder Calm', artist: 'Storm Sounds', duration: '7:15' },
+      { title: 'Wind Meadow', artist: 'Nature Sounds', duration: '5:45' },
+      { title: 'Ocean Shore', artist: 'Calm Nature', duration: '9:00' },
+      { title: 'Night Cricket', artist: 'Nocturnal', duration: '6:20' },
+    ],
   },
   {
     id: 'white-noise',
@@ -73,6 +124,13 @@ const stations: LofiStation[] = [
     fallbackUrls: [
       'https://stream.zeno.fm/kvnlxbtmcg8uv',
       'https://stream.zeno.fm/f3wvbbqmdg8uv',
+    ],
+    tracks: [
+      { title: 'Pure White', artist: 'Noise Generator', duration: '10:00' },
+      { title: 'Pink Noise', artist: 'Sleep Aid', duration: '10:00' },
+      { title: 'Brown Noise', artist: 'Deep Focus', duration: '10:00' },
+      { title: 'Fan Humming', artist: 'Ambient Machine', duration: '8:00' },
+      { title: 'Static Calm', artist: 'Noise Generator', duration: '10:00' },
     ],
   },
 ]
@@ -100,6 +158,8 @@ const volume = ref(0.7)
 const isLoading = ref(false)
 const hasError = ref(false)
 const errorMessage = ref('')
+const currentTrackIndex = ref(0)
+const showTrackList = ref(false)
 
 // Session timer
 const sessionStartTime = ref<number | null>(null)
@@ -116,6 +176,11 @@ export function useLofiPlayer() {
   const currentStation = computed(() =>
     stations.find(s => s.id === currentStationId.value) || stations[0]!
   )
+
+  const currentTrack = computed(() => {
+    const station = currentStation.value
+    return station.tracks[currentTrackIndex.value] || station.tracks[0] || { title: 'Live Stream', artist: station.name, duration: '--:--' }
+  })
 
   const sessionTimeFormatted = computed(() => {
     const secs = sessionElapsed.value
@@ -282,6 +347,7 @@ export function useLofiPlayer() {
       isPlaying.value = false
     }
     currentStationId.value = stationId
+    currentTrackIndex.value = 0
     hasError.value = false
     errorMessage.value = ''
     fallbackIndex = 0
@@ -294,6 +360,26 @@ export function useLofiPlayer() {
     volume.value = Math.max(0, Math.min(1, v))
     if (audio) audio.volume = volume.value
     saveState()
+  }
+
+  function nextTrack() {
+    const station = currentStation.value
+    currentTrackIndex.value = (currentTrackIndex.value + 1) % station.tracks.length
+  }
+
+  function prevTrack() {
+    const station = currentStation.value
+    currentTrackIndex.value = currentTrackIndex.value > 0
+      ? currentTrackIndex.value - 1
+      : station.tracks.length - 1
+  }
+
+  function selectTrack(index: number) {
+    currentTrackIndex.value = index
+  }
+
+  function toggleTrackList() {
+    showTrackList.value = !showTrackList.value
   }
 
   function skip() {
@@ -323,6 +409,9 @@ export function useLofiPlayer() {
     stations,
     currentStation,
     currentStationId,
+    currentTrack,
+    currentTrackIndex,
+    showTrackList,
     isPlaying,
     isExpanded,
     isLoading,
@@ -338,6 +427,10 @@ export function useLofiPlayer() {
     setStation,
     setVolume,
     skip,
+    nextTrack,
+    prevTrack,
+    selectTrack,
+    toggleTrackList,
     expand,
     collapse,
     suggestFocusMusic,

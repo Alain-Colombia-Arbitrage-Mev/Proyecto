@@ -1,7 +1,7 @@
 export type UserRole = 'superadmin' | 'owner' | 'admin' | 'member' | 'viewer'
 export type ProjectStatus = 'planning' | 'active' | 'review' | 'completed' | 'paused'
 export type Priority = 'critical' | 'high' | 'medium' | 'low'
-export type KanbanTemplate = 'simple' | 'kanban' | 'dev' | 'devops' | 'support' | 'scrum' | 'scrumban' | 'marketing' | 'ai_agents' | 'custom'
+export type KanbanTemplate = 'simple' | 'kanban' | 'dev' | 'devops' | 'support' | 'scrum' | 'scrumban' | 'marketing' | 'ai_agents' | 'backend_senior_dev' | 'frontend_design' | 'custom'
 
 export interface Workspace {
   id: string
@@ -151,8 +151,8 @@ export interface MemoryEmbedding {
   id: string
   workspace_id: string
   project_id?: string
-  agent_type: 'memory' | 'architecture' | 'task'
-  content_type: 'task' | 'document' | 'chat' | 'decision'
+  agent_type: 'memory' | 'architecture' | 'task' | 'backend_arch' | 'aws_expert' | 'frontend_design' | 'marketing' | 'ai_agents_doc'
+  content_type: 'task' | 'document' | 'chat' | 'decision' | 'doc_session'
   content_text: string
   metadata: Record<string, unknown>
   created_by?: string
@@ -186,6 +186,40 @@ export interface TokenUsageStats {
   percentUsed: number
   byAction: Record<string, number>
   byDay: { date: string; tokens: number }[]
+}
+
+export interface ProjectMember {
+  id: string
+  project_id: string
+  user_id: string
+  workspace_id: string
+  granted_by?: string
+  created_at: string
+}
+
+// Doc Agent types
+export type DocAgentAction = 'doc_backend_architecture' | 'doc_aws_expert' | 'doc_frontend_design' | 'doc_marketing' | 'doc_ai_agents'
+
+export interface DocAgentConfig {
+  action: DocAgentAction
+  name: string
+  description: string
+  icon: string
+  color: string
+  folder: string
+  agentType: string
+  docType: string
+  maxTokens: number
+  tags: string[]
+}
+
+export interface DocSession {
+  sessionId: string
+  action: DocAgentAction
+  workspaceId: string
+  projectId: string
+  userId: string
+  createdAt: string
 }
 
 export interface ActivityLog {

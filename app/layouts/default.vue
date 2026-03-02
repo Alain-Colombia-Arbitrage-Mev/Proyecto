@@ -67,8 +67,14 @@
         </div>
       </div>
 
-      <!-- Bottom: user + collapse -->
+      <!-- Notifications + user + collapse -->
       <div class="border-t border-gray-100">
+        <div v-if="!collapsed" class="px-3 pt-2">
+          <NotificationBell />
+        </div>
+        <div v-else class="flex justify-center pt-2">
+          <NotificationBell />
+        </div>
         <div class="flex items-center gap-2 p-2" :class="collapsed ? 'justify-center' : ''">
           <NuxtLink
             :to="`/${store.slug}/settings`"
@@ -111,6 +117,7 @@
         </div>
         <span class="font-semibold text-sm text-gray-900 truncate">{{ store.workspace?.name || 'FocusFlow' }}</span>
       </div>
+      <NotificationBell />
     </header>
 
     <!-- Main Content -->
@@ -174,6 +181,7 @@ watch(() => route.params.id as string, (id) => {
 const mainNav = computed(() => [
   { label: 'Dashboard', icon: 'i-heroicons-squares-2x2', to: `/${workspaceSlug.value}/dashboard` },
   { label: 'Proyectos', icon: 'i-heroicons-folder-open', to: `/${workspaceSlug.value}/projects` },
+  { label: 'AI Agents', icon: 'i-heroicons-cpu-chip', to: `/${workspaceSlug.value}/agents` },
   { label: 'Archivos', icon: 'i-heroicons-document-duplicate', to: `/${workspaceSlug.value}/files` },
   { label: 'Equipo', icon: 'i-heroicons-user-group', to: `/${workspaceSlug.value}/team` },
   { label: 'Ajustes', icon: 'i-heroicons-cog-6-tooth', to: `/${workspaceSlug.value}/settings` },
@@ -182,8 +190,8 @@ const mainNav = computed(() => [
 const mobileNav = computed(() => [
   { label: 'Home', icon: 'i-heroicons-squares-2x2', to: `/${workspaceSlug.value}/dashboard` },
   { label: 'Proyectos', icon: 'i-heroicons-folder-open', to: `/${workspaceSlug.value}/projects` },
+  { label: 'AI Agents', icon: 'i-heroicons-cpu-chip', to: `/${workspaceSlug.value}/agents` },
   { label: 'Archivos', icon: 'i-heroicons-document-duplicate', to: `/${workspaceSlug.value}/files` },
-  { label: 'Equipo', icon: 'i-heroicons-user-group', to: `/${workspaceSlug.value}/team` },
   { label: 'Ajustes', icon: 'i-heroicons-cog-6-tooth', to: `/${workspaceSlug.value}/settings` },
 ])
 
