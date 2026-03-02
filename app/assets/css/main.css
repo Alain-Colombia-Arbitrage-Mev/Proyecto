@@ -1,0 +1,93 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme {
+  /* FocusFlow — Teal accent on pure white
+     Professional, distinctive, calm authority */
+  --color-focusflow-50: #f0fdfa;
+  --color-focusflow-100: #ccfbf1;
+  --color-focusflow-200: #99f6e4;
+  --color-focusflow-300: #5eead4;
+  --color-focusflow-400: #2dd4bf;
+  --color-focusflow-500: #14b8a6;
+  --color-focusflow-600: #0d9488;
+  --color-focusflow-700: #0f766e;
+  --color-focusflow-800: #115e59;
+  --color-focusflow-900: #134e4a;
+  --color-focusflow-950: #042f2e;
+
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* Force light mode */
+:root {
+  color-scheme: light;
+}
+
+/* Smooth scrolling */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Card shadows — refined, layered */
+.shadow-card {
+  box-shadow:
+    0 1px 2px 0 rgb(0 0 0 / 0.04),
+    0 1px 3px 0 rgb(0 0 0 / 0.03);
+}
+.shadow-card-hover {
+  box-shadow:
+    0 4px 12px -2px rgb(0 0 0 / 0.06),
+    0 2px 4px -1px rgb(0 0 0 / 0.03);
+}
+.shadow-card-lg {
+  box-shadow:
+    0 8px 24px -4px rgb(0 0 0 / 0.08),
+    0 4px 8px -2px rgb(0 0 0 / 0.03);
+}
+
+/* Fade-in animation */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up {
+  animation: fade-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.delay-100 { animation-delay: 80ms; }
+.delay-200 { animation-delay: 160ms; }
+.delay-300 { animation-delay: 240ms; }
+.delay-400 { animation-delay: 320ms; }
+
+/* Bento card hover lift */
+.bento-card {
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms ease;
+}
+.bento-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Pulse for critical tasks */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.4); }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
