@@ -361,7 +361,7 @@ EJEMPLOS de consultas que requieren texto:
 - "Qué prioridad debería tener X?" → texto
 - "Explica qué hace este proyecto" → texto
 
-No uses <think> tags. No uses markdown.
+No uses <think> tags. No uses markdown.`
       userPrompt = message
 
       // Inject history into the messages array for this call
