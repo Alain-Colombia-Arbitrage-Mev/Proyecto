@@ -18,7 +18,7 @@ export const TASK_AGENTS: Record<string, TaskAgentConfig> = {
     icon: 'i-heroicons-calendar-days',
     color: '#6366F1',
     agentType: 'sprint_planner',
-    maxTokens: 8192,
+    maxTokens: 12288,
     tags: ['sprint', 'planificación', 'priorización'],
   },
   agent_task_generator: {
@@ -28,7 +28,7 @@ export const TASK_AGENTS: Record<string, TaskAgentConfig> = {
     icon: 'i-heroicons-queue-list',
     color: '#0EA5E9',
     agentType: 'task_generator',
-    maxTokens: 8192,
+    maxTokens: 16384,
     tags: ['tareas', 'generación', 'context7'],
   },
   agent_workload_analyzer: {
@@ -48,7 +48,7 @@ export const TASK_AGENTS: Record<string, TaskAgentConfig> = {
     icon: 'i-heroicons-arrow-trending-up',
     color: '#14B8A6',
     agentType: 'task_improver',
-    maxTokens: 12288,
+    maxTokens: 16384,
     tags: ['mejora', 'calidad', 'estimación'],
   },
 }
@@ -78,7 +78,16 @@ Responde en JSON con:
 - "prioritized_existing": array de { "task_id": string, "title": string, "recommended_priority": "low"|"medium"|"high"|"critical", "reason": string } (tareas existentes reordenadas por prioridad)
 - "new_tasks": array de { "title": string, "description": string, "priority": "low"|"medium"|"high"|"critical", "tags": string[], "estimated_hours": number } (3-5 nuevas tareas que faltan para completar el sprint goal)
 - "risks": string[] (riesgos del sprint)
-- "velocity_estimate": number (story points o horas totales estimadas)`,
+- "velocity_estimate": number (story points o horas totales estimadas)
+
+IMPORTANTE — Cada tarea en "new_tasks" debe tener un "description" COMPLETO y DETALLADO con:
+1. **Objetivo**: Qué se logra al completar esta tarea (1 línea)
+2. **Pasos de implementación**: Lista numerada de pasos concretos para ejecutar la tarea (4-8 pasos)
+3. **Archivos/rutas involucrados**: Archivos que se deben crear o modificar (si aplica)
+4. **Criterios de aceptación**: Checklist con ✅ de condiciones que deben cumplirse
+5. **Notas técnicas**: Dependencias, patrones a seguir, o consideraciones especiales
+
+El description debe ser lo suficientemente detallado para que un desarrollador pueda ejecutar la tarea SIN preguntar nada adicional.`,
 
     agent_task_generator: `Eres un tech lead senior que genera tareas técnicas detalladas y accionables.
 Usa la documentación real de frameworks y librerías proporcionada para generar tareas específicas con código de referencia.
@@ -89,11 +98,35 @@ Responde en JSON con:
 - "dependencies": array de { "task_index": number, "depends_on": number[] } (dependencias entre tareas)
 - "tech_notes": string (notas técnicas relevantes basadas en la documentación)
 
-Cada tarea debe ser:
-- Específica y ejecutable (no genérica)
-- Con criterios de aceptación claros
-- Con estimación realista en horas
-- Etiquetada con tags técnicos relevantes`,
+IMPORTANTE — Cada tarea DEBE tener un "description" COMPLETO con instrucciones de implementación detalladas:
+
+El description de cada tarea debe incluir TODAS estas secciones (usa markdown):
+
+## Objetivo
+Qué se logra al completar esta tarea (1 línea clara).
+
+## Pasos de implementación
+1. Paso concreto con detalle técnico (qué archivo crear/modificar, qué función escribir)
+2. Otro paso con código de referencia si aplica
+3. ... (mínimo 4 pasos, máximo 10)
+
+## Archivos involucrados
+- \`ruta/del/archivo.ts\` — descripción de cambios
+- \`otra/ruta/componente.vue\` — qué agregar
+
+## Código de referencia
+\`\`\`typescript
+// Snippet de código clave que guíe la implementación
+\`\`\`
+
+## Criterios de aceptación
+- ✅ Criterio 1
+- ✅ Criterio 2
+
+## Notas técnicas
+Dependencias, patrones, APIs externas, consideraciones de seguridad o performance.
+
+El description debe ser lo suficientemente detallado para que un desarrollador junior pueda ejecutar la tarea SIN necesidad de preguntar. Incluye imports, nombres de funciones, y patrones del framework correspondiente.`,
 
     agent_workload_analyzer: `Eres un Project Manager senior experto en análisis de carga de trabajo y optimización de equipos.
 Analiza las tareas del proyecto, su distribución entre miembros y estado actual.
@@ -116,7 +149,7 @@ Responde en JSON con:
     "task_id": string,
     "original_title": string,
     "improved_title": string,
-    "improved_description": string (incluir criterios de aceptación como checklist markdown),
+    "improved_description": string,
     "suggested_priority": "low"|"medium"|"high"|"critical",
     "suggested_estimated_hours": number,
     "suggested_tags": string[],
@@ -125,7 +158,29 @@ Responde en JSON con:
   }
 - "overall_quality_before": number (promedio 1-10)
 - "overall_quality_after": number (promedio 1-10)
-- "missing_tasks": array de { "title": string, "description": string, "priority": string, "tags": string[], "estimated_hours": number } (tareas que faltan basándose en gaps detectados)`,
+- "missing_tasks": array de { "title": string, "description": string, "priority": string, "tags": string[], "estimated_hours": number } (tareas que faltan basándose en gaps detectados)
+
+IMPORTANTE — El campo "improved_description" DEBE ser un manual completo de implementación con markdown:
+
+## Objetivo
+Qué se logra al completar esta tarea.
+
+## Pasos de implementación
+1. Paso detallado con archivos y funciones específicas
+2. Paso con código de referencia cuando aplique
+3. ... (mínimo 4 pasos)
+
+## Archivos involucrados
+- \`ruta/archivo\` — qué cambiar
+
+## Criterios de aceptación
+- ✅ Criterio verificable 1
+- ✅ Criterio verificable 2
+
+## Notas técnicas
+Dependencias, edge cases, consideraciones de seguridad/performance.
+
+Cada "missing_tasks" también debe tener description con el mismo nivel de detalle.`,
   }
 
   let prompt = basePrompts[config.action] || ''

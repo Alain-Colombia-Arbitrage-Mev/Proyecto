@@ -331,10 +331,19 @@ Tareas actuales:\n${taskSummary || 'Sin tareas'}`
 
 REGLAS ESTRICTAS:
 1. Si el usuario pide CREAR, SUGERIR, GENERAR o LISTAR tareas → responde ÚNICAMENTE con un JSON array:
-   [{"title":"...","description":"...","priority":"medium","tags":["..."]}]
+   [{"title":"...","description":"...","priority":"medium","tags":["..."],"estimated_hours":N}]
    Sin texto adicional antes ni después del JSON.
 
 2. Para cualquier otra consulta → responde en texto plano en español (máximo 5 líneas).
+
+IMPORTANTE — Cada tarea generada DEBE tener un "description" COMPLETO y DETALLADO con instrucciones paso a paso para implementarla. El description debe incluir:
+- **Objetivo**: Qué se logra (1 línea)
+- **Pasos de implementación**: Lista numerada de 4-8 pasos concretos (archivos a crear/modificar, funciones, APIs, etc.)
+- **Archivos involucrados**: Rutas de archivos relevantes
+- **Criterios de aceptación**: Checklist con ✅ de condiciones que se deben cumplir
+- **Notas técnicas**: Dependencias, patrones, consideraciones de seguridad/performance
+
+El description debe ser lo suficientemente detallado para que un desarrollador pueda ejecutar la tarea sin preguntar nada adicional. Incluye código de referencia cuando sea útil.
 
 EJEMPLOS de peticiones que requieren JSON array de tareas:
 - "Crea tareas para el módulo de pagos" → JSON array
@@ -350,7 +359,7 @@ EJEMPLOS de consultas que requieren texto:
 - "Qué prioridad debería tener X?" → texto
 - "Explica qué hace este proyecto" → texto
 
-No uses <think> tags. No uses markdown.`
+No uses <think> tags. No uses markdown.
       userPrompt = message
 
       // Inject history into the messages array for this call
@@ -690,12 +699,32 @@ Genera exactamente 8 tareas en formato JSON array. Distribuye las tareas así:
 
 Cada tarea:
 - "title": string (acción concreta en español, ej: "Configurar pipeline CI/CD con GitHub Actions")
-- "description": string (2-3 líneas con pasos concretos y criterios de aceptación)
+- "description": string (INSTRUCCIONES COMPLETAS — ver formato abajo)
 - "priority": "low" | "medium" | "high" | "critical"
 - "tags": string[] (2-3 tags de: backend, devops, ci-cd, docker, testing, seguridad, monitoring, api, database, documentación, infraestructura)
 - "estimated_hours": number
 
-Las tareas deben ser específicas y ejecutables, no genéricas. Incluye herramientas concretas (Docker, GitHub Actions, Grafana, etc.).
+FORMATO DEL DESCRIPTION — Cada tarea debe incluir instrucciones completas:
+
+## Objetivo
+Qué se logra al completar esta tarea (1 línea).
+
+## Pasos de implementación
+1. Paso detallado con archivos y comandos específicos
+2. Paso con configuración o código de referencia
+3. ... (mínimo 4 pasos, máximo 8)
+
+## Archivos involucrados
+- ruta/del/archivo — qué crear o modificar
+
+## Criterios de aceptación
+- ✅ Criterio verificable
+- ✅ Otro criterio
+
+## Notas técnicas
+Dependencias, herramientas concretas (Docker, GitHub Actions, Grafana, etc.), consideraciones de seguridad.
+
+Las tareas deben ser específicas y ejecutables, no genéricas. El description debe permitir que un dev ejecute la tarea sin preguntar nada.
 Responde SOLO con el JSON array, sin markdown, sin texto extra, sin <think> tags.`,
                     },
                     {
@@ -704,7 +733,7 @@ Responde SOLO con el JSON array, sin markdown, sin texto extra, sin <think> tags
                     },
                   ],
                   temperature: 0.7,
-                  max_tokens: 2048,
+                  max_tokens: 6144,
                 },
               })
 
@@ -752,7 +781,7 @@ Responde SOLO con el JSON array, sin markdown, sin texto extra, sin <think> tags
                     project_id: meta.projectId,
                     column_id: firstColumn.id,
                     title: String(aiTask.title).slice(0, 500),
-                    description: aiTask.description ? String(aiTask.description).slice(0, 5000) : null,
+                    description: aiTask.description ? String(aiTask.description).slice(0, 10000) : null,
                     priority: VALID_PRIORITIES.includes(aiTask.priority) ? aiTask.priority : 'medium',
                     assignees: [user.id],
                     reporter_id: user.id,
@@ -954,7 +983,7 @@ Responde SOLO con el JSON array, sin markdown, sin texto extra, sin <think> tags
                   project_id: taMeta.projectId,
                   column_id: firstColumn.id,
                   title: String(t.title).slice(0, 500),
-                  description: t.description ? String(t.description).slice(0, 5000) : null,
+                  description: t.description ? String(t.description).slice(0, 10000) : null,
                   priority: VALID_PRIORITIES.includes(t.priority) ? t.priority : 'medium',
                   assignees: [user.id],
                   reporter_id: user.id,
@@ -987,7 +1016,7 @@ Responde SOLO con el JSON array, sin markdown, sin texto extra, sin <think> tags
               if (!imp.task_id) continue
               const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
               if (imp.improved_title) updates.title = String(imp.improved_title).slice(0, 500)
-              if (imp.improved_description) updates.description = String(imp.improved_description).slice(0, 5000)
+              if (imp.improved_description) updates.description = String(imp.improved_description).slice(0, 10000)
               if (VALID_PRIORITIES.includes(imp.suggested_priority)) updates.priority = imp.suggested_priority
               if (typeof imp.suggested_estimated_hours === 'number') updates.estimated_hours = imp.suggested_estimated_hours
               if (Array.isArray(imp.suggested_tags)) updates.tags = imp.suggested_tags.map((t: any) => String(t).slice(0, 50))
@@ -1020,7 +1049,7 @@ Responde SOLO con el JSON array, sin markdown, sin texto extra, sin <think> tags
                   project_id: taMeta.projectId,
                   column_id: firstCol.id,
                   title: String(t.title).slice(0, 500),
-                  description: t.description ? String(t.description).slice(0, 5000) : null,
+                  description: t.description ? String(t.description).slice(0, 10000) : null,
                   priority: VALID_PRIORITIES.includes(t.priority) ? t.priority : 'medium',
                   assignees: [user.id],
                   reporter_id: user.id,
