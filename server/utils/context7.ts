@@ -1,5 +1,14 @@
 const CONTEXT7_BASE_URL = 'https://context7.com/api/v1'
 
+function getContext7Headers(): Record<string, string> {
+  const { context7Key } = useRuntimeConfig()
+  const headers: Record<string, string> = {}
+  if (context7Key) {
+    headers['Authorization'] = `Bearer ${context7Key}`
+  }
+  return headers
+}
+
 interface Context7Library {
   id: string
   title: string
@@ -20,7 +29,8 @@ export async function resolveLibrary(name: string): Promise<Context7Library | nu
     const response = await $fetch<any>(`${CONTEXT7_BASE_URL}/search`, {
       method: 'GET',
       params: { query: name },
-      timeout: 5000,
+      headers: getContext7Headers(),
+      timeout: 8000,
     })
 
     const results = response?.results || response?.data || response
@@ -58,7 +68,8 @@ export async function fetchLibraryDocs(
     const response = await $fetch<any>(`${CONTEXT7_BASE_URL}/libraries/${libraryId}/docs`, {
       method: 'GET',
       params,
-      timeout: 10000,
+      headers: getContext7Headers(),
+      timeout: 15000,
     })
 
     if (response?.content || response?.text) {

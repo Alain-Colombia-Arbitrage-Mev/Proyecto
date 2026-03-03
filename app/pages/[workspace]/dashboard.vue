@@ -156,20 +156,25 @@
 
               <!-- Pomodoro Timer (inline layout matching design) -->
               <div class="bg-white rounded-[15px] border border-gray-100 p-4 min-h-[127px]">
+                <!-- Top row: Timer + Ring -->
                 <div class="flex items-start gap-4">
                   <!-- Left: title + time + label -->
-                  <div class="flex-1">
+                  <div class="flex-1 min-w-0">
                     <p class="text-[14px] font-semibold text-[#0D0D0D]">Pomodoro Timer</p>
-                    <p class="text-[48px] font-bold text-[#0D0D0D] leading-none tabular-nums mt-1" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2px;">
+                    <p class="text-[36px] sm:text-[48px] font-bold text-[#0D0D0D] leading-none tabular-nums mt-1" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2px;">
                       {{ pomodoroDisplay }}
                     </p>
                     <p class="text-[12px] text-[#7A7A7A] mt-1">
                       {{ pomodoroPhase === 'work' ? 'Sesión de enfoque' : 'Descanso' }}
                     </p>
+                    <p v-if="pomodoro.activeTask.value" class="text-[11px] text-emerald-600 font-medium mt-0.5 truncate">
+                      Enfocado en: {{ pomodoro.activeTask.value.title }}
+                    </p>
+                    <p v-else class="text-[11px] text-gray-400 mt-0.5">Sesión libre</p>
                   </div>
                   <!-- Center: Ring -->
                   <div class="relative shrink-0">
-                    <svg class="w-[80px] h-[80px]" viewBox="0 0 80 80">
+                    <svg class="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" viewBox="0 0 80 80">
                       <circle cx="40" cy="40" r="34" fill="none" stroke="#E8E8E8" stroke-width="6" />
                       <circle cx="40" cy="40" r="34" fill="none" stroke="#10B981" stroke-width="6"
                         :stroke-dasharray="213.63" :stroke-dashoffset="pomodoroRingOffset"
@@ -180,8 +185,10 @@
                       <span class="text-[20px] text-[#10B981]">{{ pomodoroRunning ? '⏸' : '▶' }}</span>
                     </button>
                   </div>
-                  <!-- Right: Stats -->
-                  <div class="space-y-2 text-right shrink-0">
+                </div>
+                <!-- Bottom row: Stats + Controls (always visible) -->
+                <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
+                  <div class="flex items-center gap-4">
                     <div>
                       <p class="text-[11px] text-[#7A7A7A]">Sesiones hoy</p>
                       <p class="text-[14px] font-bold text-[#0D0D0D] tabular-nums">{{ pomodoroSessions }}</p>
@@ -190,6 +197,8 @@
                       <p class="text-[11px] text-[#7A7A7A]">Racha</p>
                       <p class="text-[14px] font-bold text-[#0D0D0D]">{{ streak }} dias</p>
                     </div>
+                  </div>
+                  <div class="flex items-center gap-2">
                     <button
                       @click="togglePomodoro"
                       class="px-4 py-1.5 rounded-lg text-[12px] font-semibold transition-all cursor-pointer"
@@ -200,9 +209,9 @@
                     <button
                       v-if="pushNotif.permission.value !== 'granted'"
                       @click="pushNotif.requestPermission()"
-                      class="px-3 py-1 rounded-lg text-[10px] font-medium text-amber-600 bg-amber-50 hover:bg-amber-100 transition-all cursor-pointer mt-1"
+                      class="px-3 py-1 rounded-lg text-[10px] font-medium text-amber-600 bg-amber-50 hover:bg-amber-100 transition-all cursor-pointer"
                     >
-                      Activar notificaciones
+                      Activar notif.
                     </button>
                   </div>
                 </div>
@@ -363,8 +372,8 @@
           </div>
         </div>
 
-        <!-- ─── RIGHT COLUMN (fixed width) ─── -->
-        <div class="w-full lg:w-[396px] lg:shrink-0 space-y-3">
+        <!-- ─── RIGHT COLUMN (fixed width, scrollable on mobile) ─── -->
+        <div class="w-full lg:w-[396px] lg:shrink-0 space-y-3 overflow-visible">
 
           <!-- Coach Anti-Procrastinación -->
           <div class="bg-white rounded-[15px] border border-gray-100 overflow-hidden">
@@ -435,9 +444,18 @@
           <!-- AI Token Usage (detailed) -->
           <div class="bg-white rounded-[15px] border border-gray-100 p-4">
             <div class="flex items-center justify-between mb-3">
+              <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">Sesiones de hoy</h3>
               <div class="flex items-center gap-2">
-                <span class="bg-[#f6f6f6] text-[12px] text-[#7A7A7A] rounded-full px-3 py-1 cursor-pointer" :class="aiTab === 'overview' ? 'bg-[#0D0D0D] text-white' : ''" @click="aiTab = 'overview'">General</span>
-                <span class="bg-[#f6f6f6] text-[12px] text-[#7A7A7A] rounded-full px-3 py-1 cursor-pointer" :class="aiTab === 'daily' ? 'bg-[#0D0D0D] text-white' : ''" @click="aiTab = 'daily'">Diario</span>
+                <span
+                  class="text-[12px] rounded-full px-3 py-1 cursor-pointer transition-colors"
+                  :class="aiTab === 'overview' ? 'bg-[#0D0D0D] text-white' : 'bg-[#f6f6f6] text-[#7A7A7A] hover:bg-gray-200'"
+                  @click="aiTab = 'overview'"
+                >General</span>
+                <span
+                  class="text-[12px] rounded-full px-3 py-1 cursor-pointer transition-colors"
+                  :class="aiTab === 'daily' ? 'bg-[#0D0D0D] text-white' : 'bg-[#f6f6f6] text-[#7A7A7A] hover:bg-gray-200'"
+                  @click="aiTab = 'daily'"
+                >Diario</span>
               </div>
             </div>
 
@@ -506,7 +524,7 @@
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2">
                   <span class="text-[12px] font-semibold text-white truncate">{{ lofi.currentStation.value.emoji }} {{ lofi.currentStation.value.name }}</span>
-                  <span v-if="lofi.isPlaying.value" class="flex gap-[2px] items-end h-3">
+                  <span v-if="lofi.isPlaying.value" class="flex gap-[2px] items-end h-3 shrink-0">
                     <span v-for="i in 3" :key="i" class="w-[2px] bg-[#10B981] rounded-full animate-pulse" :style="{ height: `${6 + (i * 3)}px`, animationDelay: `${i * 0.15}s` }" />
                   </span>
                 </div>
@@ -516,15 +534,16 @@
               <button @click="lofi.skip()" class="text-white/50 hover:text-white transition-colors cursor-pointer shrink-0">
                 <UIcon name="i-heroicons-forward" class="w-4 h-4" />
               </button>
-              <!-- Volume -->
+            </div>
+            <!-- Volume + Progress row -->
+            <div class="flex items-center gap-3 mt-2">
+              <div class="flex-1 h-[3px] bg-[#374151] rounded-full overflow-hidden">
+                <div class="h-full bg-[#10B981] rounded-full transition-all duration-1000"
+                  :style="{ width: lofi.isPlaying.value ? '60%' : '0%' }" />
+              </div>
               <input type="range" min="0" max="100" :value="lofi.volume.value * 100"
                 @input="lofi.setVolume(($event.target as HTMLInputElement).valueAsNumber / 100)"
-                class="w-14 h-1 accent-[#10B981] cursor-pointer" />
-            </div>
-            <!-- Progress bar (decorative for radio) -->
-            <div class="mt-2 h-[3px] bg-[#374151] rounded-full overflow-hidden">
-              <div class="h-full bg-[#10B981] rounded-full transition-all duration-1000"
-                :style="{ width: lofi.isPlaying.value ? '60%' : '0%' }" />
+                class="w-16 h-1 accent-[#10B981] cursor-pointer shrink-0" />
             </div>
           </div>
 
@@ -608,6 +627,7 @@ const auth = useAuthStore()
 const lofi = useLofiPlayer()
 const pushNotif = usePushNotifications()
 const deadline = useTaskDeadline()
+const pomodoro = usePomodoroTimer()
 
 const taskCount = ref(0)
 const completedTasks = ref(0)
@@ -632,12 +652,11 @@ const aiTab = ref<'overview' | 'daily'>('overview')
 // Streak
 const streak = ref(3)
 
-// Pomodoro timer
-const pomodoroSeconds = ref(25 * 60)
-const pomodoroRunning = ref(false)
-const pomodoroPhase = ref<'work' | 'break'>('work')
-const pomodoroSessions = ref(0)
-let pomodoroInterval: ReturnType<typeof setInterval> | null = null
+// Pomodoro timer (singleton composable)
+const pomodoroSeconds = pomodoro.seconds
+const pomodoroRunning = pomodoro.running
+const pomodoroPhase = pomodoro.phase
+const pomodoroSessions = pomodoro.sessions
 
 // Recent tasks for the table
 const recentTasks = ref<any[]>([])
@@ -667,12 +686,8 @@ const filteredTasks = computed(() => {
 // In-progress tasks
 const inProgressTasks = computed(() => taskCount.value - completedTasks.value)
 
-// Pomodoro ring (circumference = 2 * PI * 34 ≈ 213.63)
-const pomodoroTotal = computed(() => pomodoroPhase.value === 'work' ? 25 * 60 : 5 * 60)
-const pomodoroRingOffset = computed(() => {
-  const progress = pomodoroSeconds.value / pomodoroTotal.value
-  return 213.63 * (1 - progress)
-})
+// Pomodoro ring (from composable)
+const pomodoroRingOffset = pomodoro.ringOffset
 
 // Stat bar heights
 const statBarHeights = computed(() => {
@@ -788,48 +803,9 @@ function formatTokens(n: number): string {
   return String(n)
 }
 
-const pomodoroDisplay = computed(() => {
-  const m = Math.floor(pomodoroSeconds.value / 60)
-  const s = pomodoroSeconds.value % 60
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-})
-
-function togglePomodoro() {
-  if (pomodoroRunning.value) {
-    if (pomodoroInterval) clearInterval(pomodoroInterval)
-    pomodoroRunning.value = false
-  } else {
-    pushNotif.requestPermission()
-    pomodoroRunning.value = true
-    pomodoroInterval = setInterval(() => {
-      if (pomodoroSeconds.value > 0) {
-        pomodoroSeconds.value--
-      } else {
-        if (pomodoroInterval) clearInterval(pomodoroInterval)
-        pomodoroRunning.value = false
-        if (pomodoroPhase.value === 'work') {
-          pomodoroSessions.value++
-          pushNotif.sendLocal('Pomodoro completado!', { body: 'Toma un descanso de 5 minutos.' })
-          pushNotif.playSound()
-          pomodoroPhase.value = 'break'
-          pomodoroSeconds.value = 5 * 60
-        } else {
-          pushNotif.sendLocal('Descanso terminado!', { body: 'Hora de enfocarse de nuevo.' })
-          pushNotif.playSound()
-          pomodoroPhase.value = 'work'
-          pomodoroSeconds.value = 25 * 60
-        }
-      }
-    }, 1000)
-  }
-}
-
-function resetPomodoro() {
-  if (pomodoroInterval) clearInterval(pomodoroInterval)
-  pomodoroRunning.value = false
-  pomodoroPhase.value = 'work'
-  pomodoroSeconds.value = 25 * 60
-}
+const pomodoroDisplay = pomodoro.display
+const togglePomodoro = pomodoro.togglePomodoro
+const resetPomodoro = pomodoro.resetPomodoro
 
 // Load token usage stats
 async function loadTokenUsage() {
@@ -964,11 +940,19 @@ async function handleCreate() {
   }
 }
 
-// Deadline check: trigger every 15 min from the client
+// Deadline check: trigger every 15 min, deduplicated across tabs via localStorage lock
 let deadlineCheckInterval: ReturnType<typeof setInterval> | null = null
+const DEADLINE_LOCK_KEY = 'focusflow-deadline-check-ts'
+const DEADLINE_INTERVAL_MS = 15 * 60 * 1000
 
 async function triggerDeadlineCheck() {
   if (!store.workspace?.id) return
+  // Tab dedup: skip if another tab ran the check within the last 14 min
+  try {
+    const lastRun = Number(localStorage.getItem(DEADLINE_LOCK_KEY) || '0')
+    if (Date.now() - lastRun < DEADLINE_INTERVAL_MS - 60_000) return
+    localStorage.setItem(DEADLINE_LOCK_KEY, String(Date.now()))
+  } catch {}
   try {
     const user = useSupabaseUser()
     await $fetch('/api/cron/check-deadlines', {
@@ -982,12 +966,11 @@ watch(() => store.workspace?.id, (id) => {
   if (id) {
     triggerDeadlineCheck()
     if (deadlineCheckInterval) clearInterval(deadlineCheckInterval)
-    deadlineCheckInterval = setInterval(triggerDeadlineCheck, 15 * 60 * 1000)
+    deadlineCheckInterval = setInterval(triggerDeadlineCheck, DEADLINE_INTERVAL_MS)
   }
 }, { immediate: true })
 
 onUnmounted(() => {
-  if (pomodoroInterval) clearInterval(pomodoroInterval)
   if (deadlineCheckInterval) clearInterval(deadlineCheckInterval)
 })
 </script>

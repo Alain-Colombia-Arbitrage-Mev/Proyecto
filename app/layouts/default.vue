@@ -133,6 +133,25 @@
       </div>
     </main>
 
+    <!-- Floating Pomodoro Indicator -->
+    <Transition name="slide-up">
+      <div
+        v-if="pomodoro.activeTask.value && pomodoro.running.value"
+        class="fixed bottom-24 md:bottom-6 right-4 md:right-20 z-40 flex items-center gap-2 bg-white/95 backdrop-blur-sm border border-emerald-200 rounded-full pl-3 pr-1.5 py-1.5 shadow-lg"
+      >
+        <span class="text-sm">&#x23F1;</span>
+        <span class="text-[11px] font-medium text-gray-700 max-w-[120px] truncate">{{ pomodoro.activeTask.value.title }}</span>
+        <span class="text-[12px] font-bold text-emerald-600 tabular-nums">{{ pomodoro.display.value }}</span>
+        <button
+          class="w-6 h-6 rounded-full bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-500 flex items-center justify-center transition-colors"
+          @click="pomodoro.togglePomodoro()"
+          title="Pausar"
+        >
+          <UIcon name="i-heroicons-pause" class="w-3 h-3" />
+        </button>
+      </div>
+    </Transition>
+
     <!-- Lofi Player -->
     <LofiPlayer />
 
@@ -159,6 +178,7 @@
 const route = useRoute()
 const store = useWorkspaceStore()
 const auth = useAuthStore()
+const pomodoro = usePomodoroTimer()
 
 const collapsed = ref(false)
 
@@ -199,3 +219,15 @@ function isActiveProject(projectId: string) {
   return route.params.id === projectId
 }
 </script>
+
+<style scoped>
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+.slide-up-enter-from,
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(12px);
+}
+</style>

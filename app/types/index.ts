@@ -73,6 +73,8 @@ export interface Task {
   tracked_hours: number
   position: number
   tags: string[]
+  figma_links?: FigmaLink[]
+  labels?: Label[]
   column_entered_at: string
   ai_suggested_priority?: string
   ai_decomposed: boolean
@@ -104,6 +106,24 @@ export interface Label {
   workspace_id: string
   name: string
   color: string
+}
+
+export interface TaskAttachment {
+  id: string
+  task_id: string
+  workspace_id: string
+  file_name: string
+  file_path: string
+  file_size: number
+  mime_type: string
+  uploaded_by?: string
+  created_at: string
+  url?: string // signed URL from API
+}
+
+export interface FigmaLink {
+  url: string
+  label?: string
 }
 
 export interface Notification {

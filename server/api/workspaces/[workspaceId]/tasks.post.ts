@@ -1,4 +1,6 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
+import { notifyUser } from '~~/server/utils/notifications'
+import { taskAssignedEmailHtml } from '~~/server/utils/email'
 
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
@@ -32,25 +34,68 @@ export default defineEventHandler(async (event) => {
     if (maxPos && maxPos.length > 0) position = maxPos[0].position + 1
   }
 
+  // Build insert payload conditionally. figma_links only gets included when
+  // explicitly provided by the caller — this keeps the endpoint compatible with
+  // databases where migration 014 (ADD COLUMN figma_links) has not yet been applied.
+  // If the column is missing and we unconditionally send the field, Postgres will
+  // reject the insert with "column does not exist" which surfaces as a 500.
+  const insertPayload: Record<string, unknown> = {
+    project_id: body.project_id,
+    column_id: body.column_id || null,
+    title: body.title,
+    description: body.description || null,
+    priority: body.priority || 'medium',
+    assignees: body.assignees || [],
+    reporter_id: user.id,
+    due_date: body.due_date || null,
+    estimated_hours: body.estimated_hours || null,
+    position,
+    tags: body.tags || [],
+  }
+
+  // Only include figma_links when the caller sends it (migration may not be applied yet)
+  if (body.figma_links !== undefined) {
+    insertPayload.figma_links = body.figma_links
+  }
+
   const { data: task, error } = await supabase
     .from('tasks')
-    .insert({
-      project_id: body.project_id,
-      column_id: body.column_id || null,
-      title: body.title,
-      description: body.description || null,
-      priority: body.priority || 'medium',
-      assignees: body.assignees || [],
-      reporter_id: user.id,
-      due_date: body.due_date || null,
-      estimated_hours: body.estimated_hours || null,
-      position,
-      tags: body.tags || [],
-    })
+    .insert(insertPayload)
     .select()
     .single()
 
-  if (error) throw createError({ statusCode: 500, message: 'Error creating task' })
+  if (error) {
+    console.error('[tasks.post] Supabase insert error:', error.message, error.details, error.hint)
+    throw createError({ statusCode: 500, message: 'Error creating task' })
+  }
+
+  // Notify assignees (fire-and-forget)
+  const newAssignees: string[] = task.assignees || []
+  if (newAssignees.length > 0) {
+    const { data: proj } = await supabase.from('projects').select('name').eq('id', task.project_id).maybeSingle()
+    const projectName = proj?.name || 'Proyecto'
+
+    let assignerName = 'Alguien'
+    try {
+      const { data: profile } = await supabase.auth.admin.getUserById(user.id)
+      assignerName = profile?.user?.user_metadata?.full_name || profile?.user?.email || 'Alguien'
+    } catch {}
+
+    for (const assigneeId of newAssignees) {
+      if (assigneeId === user.id) continue
+      notifyUser({
+        event,
+        userId: assigneeId,
+        type: 'task_assigned',
+        title: `Tarea asignada: ${task.title}`,
+        body: `${assignerName} te asignó "${task.title}" en ${projectName}`,
+        entityType: 'task',
+        entityId: task.id,
+        emailSubject: `Tarea asignada: ${task.title}`,
+        emailHtml: taskAssignedEmailHtml(task.title, projectName, assignerName),
+      }).catch(() => {})
+    }
+  }
 
   // Auto-store task as memory for the task agent (fire-and-forget)
   storeMemory({

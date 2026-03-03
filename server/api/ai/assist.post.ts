@@ -71,8 +71,11 @@ export default defineEventHandler(async (event) => {
 
   const supabase = serverSupabaseServiceRole(event)
 
-  // Resolve workspaceId for token tracking
+  // Resolve workspaceId for token tracking — accept from context as global fallback
   let resolvedWorkspaceId: string | null = null
+  if (context.workspaceId && typeof context.workspaceId === 'string') {
+    resolvedWorkspaceId = context.workspaceId
+  }
 
   let systemPrompt = ''
   let userPrompt = ''
@@ -260,6 +263,12 @@ Responde SOLO con el JSON object, sin markdown ni texto extra.`
       const message = String(context.message || '').slice(0, MAX_MESSAGE_LENGTH)
       if (!message) throw createError({ statusCode: 400, message: 'message is required' })
 
+      // Resolve workspaceId from project or directly from context
+      if (context.workspaceId && typeof context.workspaceId === 'string' && !resolvedWorkspaceId) {
+        await requireWorkspaceMember(event, context.workspaceId)
+        resolvedWorkspaceId = context.workspaceId
+      }
+
       // Build project context if available
       let projectContext = ''
       let chatWsId = ''
@@ -318,18 +327,30 @@ Tareas actuales:\n${taskSummary || 'Sin tareas'}`
         .filter((h: any) => h.role && h.text)
         .map((h: any) => ({ role: h.role as string, content: String(h.text).slice(0, MAX_HISTORY_MSG_LENGTH) }))
 
-      systemPrompt = `Eres un asistente inteligente de gestión de proyectos integrado en FocusFlow.
-Tienes acceso al contexto del proyecto actual del usuario.${projectContext}${memoryContext}
+      systemPrompt = `Eres un asistente de gestión de proyectos en FocusFlow.${projectContext}${memoryContext}
 
-Puedes ayudar con:
-- Sugerir tareas (responde con JSON array: [{title, description, priority, tags}])
-- Dar consejos anti-procrastinación y productividad
-- Analizar carga de trabajo y prioridades
-- Responder preguntas sobre el proyecto
+REGLAS ESTRICTAS:
+1. Si el usuario pide CREAR, SUGERIR, GENERAR o LISTAR tareas → responde ÚNICAMENTE con un JSON array:
+   [{"title":"...","description":"...","priority":"medium","tags":["..."]}]
+   Sin texto adicional antes ni después del JSON.
 
-Si el usuario pide crear o sugerir tareas, responde SOLO con un JSON array de tareas.
-Para cualquier otra cosa, responde en texto plano en español. Máximo 4-5 líneas.
-No uses <think> tags.`
+2. Para cualquier otra consulta → responde en texto plano en español (máximo 5 líneas).
+
+EJEMPLOS de peticiones que requieren JSON array de tareas:
+- "Crea tareas para el módulo de pagos" → JSON array
+- "Qué tareas necesito para lanzar el MVP" → JSON array
+- "Sugiere mejoras para el proyecto" → JSON array
+- "Descompón esto en pasos" → JSON array
+- "Genera un backlog" → JSON array
+- "Lista las tareas pendientes de diseño" → JSON array
+
+EJEMPLOS de consultas que requieren texto:
+- "Cómo puedo ser más productivo?" → texto
+- "Analiza mi progreso" → texto
+- "Qué prioridad debería tener X?" → texto
+- "Explica qué hace este proyecto" → texto
+
+No uses <think> tags. No uses markdown.`
       userPrompt = message
 
       // Inject history into the messages array for this call
@@ -399,6 +420,83 @@ No uses <think> tags.`
         break
       }
 
+      // Check if this is a task management agent action
+      if (isTaskAgentAction(action)) {
+        const taskAgentConfig = getTaskAgentConfig(action)!
+        if (!context.projectId || typeof context.projectId !== 'string') {
+          throw createError({ statusCode: 400, message: 'projectId is required' })
+        }
+
+        const taWsId = await getWorkspaceIdFromProject(supabase, context.projectId)
+        await requireWorkspaceMember(event, taWsId)
+        resolvedWorkspaceId = taWsId
+
+        // Gather detailed project data (tasks with full info)
+        const [{ data: tasksFull }, { data: columnsFull }, { data: members }] = await Promise.all([
+          supabase
+            .from('tasks')
+            .select('id, title, description, priority, column_id, tags, estimated_hours, assignees, due_date, created_at, updated_at')
+            .eq('project_id', context.projectId)
+            .order('position')
+            .limit(200),
+          supabase
+            .from('kanban_columns')
+            .select('id, title, position, wip_limit')
+            .eq('project_id', context.projectId)
+            .order('position'),
+          supabase
+            .from('workspace_members')
+            .select('user_id, role')
+            .eq('workspace_id', taWsId),
+        ])
+
+        const { data: proj } = await supabase
+          .from('projects')
+          .select('name, description')
+          .eq('id', context.projectId)
+          .maybeSingle()
+
+        const columnMap = Object.fromEntries((columnsFull || []).map((c: any) => [c.id, c.title]))
+        const projectContext = `Proyecto: "${proj?.name || ''}"
+Descripción: ${proj?.description || 'Sin descripción'}
+Columnas: ${JSON.stringify(columnsFull || [])}
+Miembros: ${(members || []).length} miembros
+Tareas (${(tasksFull || []).length} total):
+${JSON.stringify((tasksFull || []).map((t: any) => ({
+  ...t,
+  column_name: columnMap[t.column_id] || '?',
+})), null, 2)}`
+
+        // For task_generator: fetch library docs via Context7
+        let libraryDocs = ''
+        if (action === 'agent_task_generator') {
+          const libraries = ['vue', 'nuxt', 'tailwindcss', 'pinia', 'supabase']
+          const docResults = await Promise.allSettled(
+            libraries.map(lib => getLibraryDocumentation(lib))
+          )
+          const docs = docResults
+            .filter((r): r is PromiseFulfilledResult<string> => r.status === 'fulfilled' && !!r.value)
+            .map(r => r.value)
+          if (docs.length > 0) {
+            libraryDocs = docs.join('\n\n')
+          }
+        }
+
+        systemPrompt = buildTaskAgentSystemPrompt(taskAgentConfig, projectContext, libraryDocs || undefined)
+        userPrompt = context.userInput
+          ? `Instrucción del usuario: ${String(context.userInput).slice(0, 2000)}\n\nDatos del proyecto arriba.`
+          : 'Analiza el proyecto y sus tareas usando los datos proporcionados.'
+
+        // Store metadata for post-processing
+        ;(event.context as any)._taskAgentMeta = {
+          config: taskAgentConfig,
+          workspaceId: taWsId,
+          projectId: context.projectId,
+          columns: columnsFull,
+        }
+        break
+      }
+
       throw createError({ statusCode: 400, message: 'Unknown action' })
     }
   }
@@ -432,8 +530,16 @@ No uses <think> tags.`
     }
   }
 
-  // Call OpenRouter
+  // Call OpenRouter — try primary model, fallback to secondary on failure
+  const primaryModel = 'minimax/minimax-m2.5'
+  const fallbackModel = 'google/gemini-2.0-flash-001'
+  const maxTokens = action === 'document_architecture' ? 16384
+    : (event.context as any)._docAgentMeta?.config?.maxTokens
+      || (event.context as any)._taskAgentMeta?.config?.maxTokens
+      || 8192
+
   let response: any
+  let usedModel = primaryModel
   try {
     response = await $fetch<any>('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -444,16 +550,39 @@ No uses <think> tags.`
         'X-Title': 'FocusFlow',
       },
       body: {
-        model: 'minimax/minimax-m2.5',
+        model: primaryModel,
         messages,
         temperature: 0.7,
-        max_tokens: action === 'document_architecture' ? 16384
-          : (event.context as any)._docAgentMeta?.config?.maxTokens || 8192,
+        max_tokens: maxTokens,
       },
     })
   } catch (fetchError: any) {
-    console.error('OpenRouter API error:', fetchError.data || fetchError.message)
-    throw createError({ statusCode: 502, message: 'AI service unavailable' })
+    console.error(`[ai] ${primaryModel} failed for action=${action}:`, fetchError.data?.error || fetchError.message)
+
+    // Retry with fallback model
+    try {
+      usedModel = fallbackModel
+      console.log(`[ai] Retrying with fallback model ${fallbackModel} for action=${action}`)
+      response = await $fetch<any>('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openrouterApiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://focusflow.app',
+          'X-Title': 'FocusFlow',
+        },
+        body: {
+          model: fallbackModel,
+          messages,
+          temperature: 0.7,
+          max_tokens: maxTokens,
+        },
+      })
+    } catch (fallbackError: any) {
+      console.error(`[ai] Fallback ${fallbackModel} also failed:`, fallbackError.data?.error || fallbackError.message)
+      const detail = fallbackError.data?.error?.message || fetchError.data?.error?.message || 'Model unavailable'
+      throw createError({ statusCode: 502, message: `AI service unavailable: ${detail}` })
+    }
   }
 
   const content = response.choices?.[0]?.message?.content || ''
@@ -468,7 +597,7 @@ No uses <think> tags.`
       userId: user.id,
       workspaceId: resolvedWorkspaceId,
       action,
-      model: 'minimax/minimax-m2.5',
+      model: usedModel,
       usage: response.usage,
     }).catch(() => {})
   }
@@ -790,6 +919,145 @@ Responde SOLO con el JSON array, sin markdown, sin texto extra, sin <think> tags
           }
         } catch (postErr: any) {
           console.error(`[${action}] Post-processing error:`, postErr.message)
+          return { type: 'json', data: { ...parsed, tasksCreated: 0, postError: postErr.message } }
+        }
+      }
+    }
+
+    // Post-processing for task management agent actions
+    if (isTaskAgentAction(action) && parsed) {
+      const taMeta = (event.context as any)._taskAgentMeta
+      if (taMeta) {
+        try {
+          let createdTasks: any[] = []
+          const VALID_PRIORITIES = ['low', 'medium', 'high', 'critical']
+
+          // For sprint_planner and task_generator: create the new tasks
+          const newTasks = parsed.new_tasks || parsed.tasks || []
+          if (Array.isArray(newTasks) && newTasks.length > 0 && taMeta.columns?.length > 0) {
+            const firstColumn = taMeta.columns.length > 1 ? taMeta.columns[1] : taMeta.columns[0]
+
+            const { data: maxPosData } = await supabase
+              .from('tasks')
+              .select('position')
+              .eq('column_id', firstColumn.id)
+              .order('position', { ascending: false })
+              .limit(1)
+
+            let nextPosition = (maxPosData?.[0]?.position ?? -1) + 1
+
+            const taskRows = newTasks
+              .filter((t: any) => t.title && typeof t.title === 'string')
+              .slice(0, 12)
+              .map((t: any) => {
+                const row = {
+                  project_id: taMeta.projectId,
+                  column_id: firstColumn.id,
+                  title: String(t.title).slice(0, 500),
+                  description: t.description ? String(t.description).slice(0, 5000) : null,
+                  priority: VALID_PRIORITIES.includes(t.priority) ? t.priority : 'medium',
+                  assignees: [user.id],
+                  reporter_id: user.id,
+                  tags: Array.isArray(t.tags) ? t.tags.map((tag: any) => String(tag).slice(0, 50)) : [],
+                  estimated_hours: typeof t.estimated_hours === 'number' ? t.estimated_hours : null,
+                  position: nextPosition,
+                }
+                nextPosition++
+                return row
+              })
+
+            if (taskRows.length > 0) {
+              const { data: inserted, error: insertErr } = await supabase
+                .from('tasks')
+                .insert(taskRows)
+                .select()
+
+              if (insertErr) {
+                console.error(`[${action}] Task insert error:`, insertErr.message)
+              } else {
+                createdTasks = inserted || []
+              }
+            }
+          }
+
+          // For task_improver: apply improvements to existing tasks
+          if (action === 'agent_task_improver' && Array.isArray(parsed.improvements)) {
+            let improved = 0
+            for (const imp of parsed.improvements.slice(0, 20)) {
+              if (!imp.task_id) continue
+              const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
+              if (imp.improved_title) updates.title = String(imp.improved_title).slice(0, 500)
+              if (imp.improved_description) updates.description = String(imp.improved_description).slice(0, 5000)
+              if (VALID_PRIORITIES.includes(imp.suggested_priority)) updates.priority = imp.suggested_priority
+              if (typeof imp.suggested_estimated_hours === 'number') updates.estimated_hours = imp.suggested_estimated_hours
+              if (Array.isArray(imp.suggested_tags)) updates.tags = imp.suggested_tags.map((t: any) => String(t).slice(0, 50))
+
+              const { error } = await supabase
+                .from('tasks')
+                .update(updates)
+                .eq('id', imp.task_id)
+                .eq('project_id', taMeta.projectId)
+
+              if (!error) improved++
+            }
+            parsed._tasksImproved = improved
+
+            // Also create missing tasks if detected
+            if (Array.isArray(parsed.missing_tasks) && parsed.missing_tasks.length > 0 && taMeta.columns?.length > 0) {
+              const firstCol = taMeta.columns.length > 1 ? taMeta.columns[1] : taMeta.columns[0]
+              const { data: maxP } = await supabase
+                .from('tasks')
+                .select('position')
+                .eq('column_id', firstCol.id)
+                .order('position', { ascending: false })
+                .limit(1)
+
+              let pos = (maxP?.[0]?.position ?? -1) + 1
+              const missingRows = parsed.missing_tasks
+                .filter((t: any) => t.title)
+                .slice(0, 5)
+                .map((t: any) => ({
+                  project_id: taMeta.projectId,
+                  column_id: firstCol.id,
+                  title: String(t.title).slice(0, 500),
+                  description: t.description ? String(t.description).slice(0, 5000) : null,
+                  priority: VALID_PRIORITIES.includes(t.priority) ? t.priority : 'medium',
+                  assignees: [user.id],
+                  reporter_id: user.id,
+                  tags: Array.isArray(t.tags) ? t.tags.map((tag: any) => String(tag).slice(0, 50)) : [],
+                  estimated_hours: typeof t.estimated_hours === 'number' ? t.estimated_hours : null,
+                  position: pos++,
+                }))
+
+              if (missingRows.length > 0) {
+                const { data: ins } = await supabase.from('tasks').insert(missingRows).select()
+                createdTasks = [...createdTasks, ...(ins || [])]
+              }
+            }
+          }
+
+          // Store memory (fire-and-forget)
+          storeMemory({
+            supabase,
+            workspaceId: taMeta.workspaceId,
+            contentText: `${taMeta.config.name}: ${parsed.summary || parsed.sprint_name || parsed.feature_summary || JSON.stringify(parsed).slice(0, 500)}`,
+            agentType: taMeta.config.agentType,
+            contentType: 'task_agent',
+            projectId: taMeta.projectId,
+            metadata: { action },
+            createdBy: user.id,
+          }).catch(() => {})
+
+          return {
+            type: 'json',
+            data: {
+              ...parsed,
+              createdTasks,
+              tasksCreated: createdTasks.length,
+            },
+          }
+        } catch (postErr: any) {
+          console.error(`[${action}] Task agent post-processing error:`, postErr.message)
           return { type: 'json', data: { ...parsed, tasksCreated: 0, postError: postErr.message } }
         }
       }

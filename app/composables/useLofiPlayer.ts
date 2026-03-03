@@ -12,125 +12,103 @@ export interface LofiStation {
   color: string
   fallbackUrls: string[]
   tracks: LofiTrack[]
+  type?: 'stream' | 'youtube'  // default: 'stream'
+  youtubeId?: string            // YouTube video ID for type='youtube'
 }
 
-// Reliable 24/7 internet radio streams with fallbacks
+// Stream sources: YouTube embeds are most reliable for 24/7 streams.
+// Self-hosted audio from Supabase storage can be added as primary URLs.
+// Format: set type='youtube' + youtubeId for YouTube, or url for direct stream.
 const stations: LofiStation[] = [
   {
     id: 'lofi-hiphop',
     name: 'Lofi Hip Hop',
     emoji: '🎧',
-    url: 'https://stream.zeno.fm/0r0xa792kwzuv',
+    url: '',
     color: '#8B5CF6',
-    fallbackUrls: [
-      'https://stream.zeno.fm/yan2rq923fhvv',
-      'https://stream.zeno.fm/4lygnz923fhvv',
-    ],
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: 'jfKfPfyJRdk', // lofi girl - lofi hip hop radio
     tracks: [
-      { title: 'Midnight Coffee', artist: 'Lofi Dreamer', duration: '3:24' },
-      { title: 'Rainy Window', artist: 'Chillhop Music', duration: '2:58' },
-      { title: 'Study Session', artist: 'Beats by Nola', duration: '3:42' },
-      { title: 'Paper Planes', artist: 'Kupla', duration: '2:15' },
-      { title: 'Autumn Leaves', artist: 'Mellow Vibes', duration: '4:01' },
-      { title: 'City Lights', artist: 'Lofi Dreamer', duration: '3:33' },
-      { title: 'Morning Brew', artist: 'Sleepy Fish', duration: '2:47' },
-      { title: 'Sunset Drive', artist: 'Philanthrope', duration: '3:18' },
+      { title: 'Lofi Hip Hop Radio', artist: 'Lofi Girl', duration: 'LIVE' },
     ],
   },
   {
     id: 'chillhop',
     name: 'Chill & Focus',
     emoji: '☕',
-    url: 'https://stream.zeno.fm/yan2rq923fhvv',
+    url: '',
     color: '#F59E0B',
-    fallbackUrls: [
-      'https://stream.zeno.fm/0r0xa792kwzuv',
-      'https://stream.zeno.fm/f3wvbbqmdg8uv',
-    ],
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: '5yx6BWlEVcY', // chillhop raccoon
     tracks: [
-      { title: 'Warm Glow', artist: 'Aso', duration: '3:12' },
-      { title: 'Focus Mode', artist: 'Idealism', duration: '2:44' },
-      { title: 'Vanilla Latte', artist: 'Jazzinuf', duration: '3:56' },
-      { title: 'Quiet Hours', artist: 'Leavv', duration: '2:31' },
-      { title: 'Bookstore', artist: 'Wun Two', duration: '3:08' },
-      { title: 'Daydream', artist: 'In Love With a Ghost', duration: '2:55' },
-      { title: 'Golden Hour', artist: 'Aso', duration: '3:40' },
+      { title: 'Chillhop Radio', artist: 'Chillhop Music', duration: 'LIVE' },
     ],
   },
   {
     id: 'ambient',
     name: 'Ambient Deep',
     emoji: '🌊',
-    url: 'https://stream.zeno.fm/f3wvbbqmdg8uv',
+    url: 'https://live.musopen.org:8085/streamvbr0',
     color: '#3B82F6',
     fallbackUrls: [
-      'https://stream.zeno.fm/kvnlxbtmcg8uv',
-      'https://stream.zeno.fm/4lygnz923fhvv',
+      'https://uk2.internet-radio.com:8024/stream',
     ],
     tracks: [
-      { title: 'Ocean Drift', artist: 'Ambient World', duration: '5:12' },
-      { title: 'Cosmic Waves', artist: 'Stars of the Lid', duration: '7:23' },
-      { title: 'Deep Space', artist: 'Brian Eno', duration: '6:44' },
-      { title: 'Underwater', artist: 'Hammock', duration: '4:58' },
-      { title: 'Cloud Atlas', artist: 'Tycho', duration: '5:31' },
-      { title: 'Aurora', artist: 'Ambient World', duration: '6:02' },
+      { title: 'Classical & Ambient', artist: 'Musopen Radio', duration: 'LIVE' },
     ],
   },
   {
     id: 'jazz-study',
     name: 'Jazz Study',
     emoji: '🎷',
-    url: 'https://stream.zeno.fm/4lygnz923fhvv',
+    url: '',
     color: '#10B981',
-    fallbackUrls: [
-      'https://stream.zeno.fm/0r0xa792kwzuv',
-      'https://stream.zeno.fm/yan2rq923fhvv',
-    ],
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: 'Dx5qFachd3A', // coffee shop jazz
     tracks: [
-      { title: 'Blue Note Session', artist: 'Jazz Vibes', duration: '4:15' },
-      { title: 'Smooth Sax', artist: 'Late Night Jazz', duration: '3:42' },
-      { title: 'Cafe Paris', artist: 'Bossa Nova Trio', duration: '3:58' },
-      { title: 'Piano Bar', artist: 'Jazz Collective', duration: '4:30' },
-      { title: 'Swing Low', artist: 'Vintage Jazz', duration: '3:22' },
-      { title: 'Midnight Blues', artist: 'Jazz Vibes', duration: '5:01' },
-      { title: 'Gentle Keys', artist: 'Piano Lounge', duration: '3:45' },
+      { title: 'Coffee Shop Jazz', artist: 'Jazz Radio', duration: 'LIVE' },
     ],
   },
   {
     id: 'nature',
     name: 'Naturaleza',
     emoji: '🌿',
-    url: 'https://stream.zeno.fm/kvnlxbtmcg8uv',
+    url: '',
     color: '#059669',
-    fallbackUrls: [
-      'https://stream.zeno.fm/f3wvbbqmdg8uv',
-      'https://stream.zeno.fm/2x3mpsq4yzzuv',
-    ],
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: 'eKFTSSKCzWA', // rain sounds
     tracks: [
-      { title: 'Rain Forest', artist: 'Nature Sounds', duration: '8:00' },
-      { title: 'Creek & Birds', artist: 'Calm Nature', duration: '6:30' },
-      { title: 'Thunder Calm', artist: 'Storm Sounds', duration: '7:15' },
-      { title: 'Wind Meadow', artist: 'Nature Sounds', duration: '5:45' },
-      { title: 'Ocean Shore', artist: 'Calm Nature', duration: '9:00' },
-      { title: 'Night Cricket', artist: 'Nocturnal', duration: '6:20' },
+      { title: 'Rain & Thunder', artist: 'Nature Sounds', duration: 'LIVE' },
     ],
   },
   {
     id: 'white-noise',
     name: 'White Noise',
     emoji: '🔇',
-    url: 'https://stream.zeno.fm/2x3mpsq4yzzuv',
+    url: '',
     color: '#6B7280',
-    fallbackUrls: [
-      'https://stream.zeno.fm/kvnlxbtmcg8uv',
-      'https://stream.zeno.fm/f3wvbbqmdg8uv',
-    ],
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: 'nMfPqeZjc2c', // white noise
     tracks: [
-      { title: 'Pure White', artist: 'Noise Generator', duration: '10:00' },
-      { title: 'Pink Noise', artist: 'Sleep Aid', duration: '10:00' },
-      { title: 'Brown Noise', artist: 'Deep Focus', duration: '10:00' },
-      { title: 'Fan Humming', artist: 'Ambient Machine', duration: '8:00' },
-      { title: 'Static Calm', artist: 'Noise Generator', duration: '10:00' },
+      { title: 'White Noise', artist: 'Deep Focus', duration: 'LIVE' },
+    ],
+  },
+  {
+    id: 'afrobeat',
+    name: 'Slow Afrobeat',
+    emoji: '🌍',
+    url: '',
+    color: '#E67E22',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: '_0TycJED0V0',
+    tracks: [
+      { title: 'Slow & Emotional Afrobeat', artist: 'Afrobeat Mix', duration: 'LIVE' },
     ],
   },
 ]
@@ -171,6 +149,100 @@ const currentQuote = ref(motivationalQuotes[0]!)
 
 let audio: HTMLAudioElement | null = null
 let fallbackIndex = 0
+
+// YouTube IFrame Player support
+let ytPlayer: any = null
+let ytReady = false
+let ytContainer: HTMLDivElement | null = null
+
+function ensureYouTubeAPI(): Promise<void> {
+  if (typeof window === 'undefined') return Promise.resolve()
+  if ((window as any).YT && (window as any).YT.Player) return Promise.resolve()
+
+  return new Promise((resolve) => {
+    if (document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+      // Script already loading, wait for callback
+      const prev = (window as any).onYouTubeIframeAPIReady
+      ;(window as any).onYouTubeIframeAPIReady = () => {
+        if (prev) prev()
+        resolve()
+      }
+      return
+    }
+    (window as any).onYouTubeIframeAPIReady = () => resolve()
+    const tag = document.createElement('script')
+    tag.src = 'https://www.youtube.com/iframe_api'
+    document.head.appendChild(tag)
+  })
+}
+
+function createYTPlayer(videoId: string, vol: number): Promise<void> {
+  return new Promise((resolve) => {
+    // Create hidden container if needed
+    if (!ytContainer) {
+      ytContainer = document.createElement('div')
+      ytContainer.id = 'yt-lofi-player'
+      ytContainer.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;overflow:hidden;pointer-events:none;'
+      document.body.appendChild(ytContainer)
+
+      const inner = document.createElement('div')
+      inner.id = 'yt-lofi-inner'
+      ytContainer.appendChild(inner)
+    }
+
+    if (ytPlayer) {
+      try { ytPlayer.destroy() } catch {}
+      ytPlayer = null
+      // Recreate inner div
+      const el = ytContainer.querySelector('#yt-lofi-inner')
+      if (el) el.remove()
+      const inner = document.createElement('div')
+      inner.id = 'yt-lofi-inner'
+      ytContainer.appendChild(inner)
+    }
+
+    ytPlayer = new (window as any).YT.Player('yt-lofi-inner', {
+      videoId,
+      playerVars: { autoplay: 1, loop: 1, playlist: videoId },
+      events: {
+        onReady: (event: any) => {
+          event.target.setVolume(vol * 100)
+          event.target.playVideo()
+          ytReady = true
+          resolve()
+        },
+        onStateChange: (event: any) => {
+          const YT = (window as any).YT
+          if (event.data === YT.PlayerState.PLAYING) {
+            isLoading.value = false
+            isPlaying.value = true
+            hasError.value = false
+          } else if (event.data === YT.PlayerState.BUFFERING) {
+            isLoading.value = true
+          } else if (event.data === YT.PlayerState.ENDED) {
+            // Loop: restart
+            event.target.playVideo()
+          }
+        },
+        onError: () => {
+          isLoading.value = false
+          isPlaying.value = false
+          hasError.value = true
+          errorMessage.value = 'YouTube: no se pudo reproducir.'
+        },
+      },
+    })
+  })
+}
+
+function destroyYTPlayer() {
+  if (ytPlayer) {
+    try { ytPlayer.pauseVideo() } catch {}
+    try { ytPlayer.destroy() } catch {}
+    ytPlayer = null
+    ytReady = false
+  }
+}
 
 export function useLofiPlayer() {
   const currentStation = computed(() =>
@@ -311,13 +383,43 @@ export function useLofiPlayer() {
   }
 
   async function play() {
+    const station = currentStation.value
+
+    if (station.type === 'youtube' && station.youtubeId) {
+      // YouTube playback
+      isLoading.value = true
+      hasError.value = false
+      errorMessage.value = ''
+
+      // Pause regular audio if playing
+      if (audio) { audio.pause(); audio.src = '' }
+
+      try {
+        await ensureYouTubeAPI()
+        if (ytPlayer && ytReady) {
+          ytPlayer.playVideo()
+        } else {
+          await createYTPlayer(station.youtubeId, volume.value)
+        }
+        startSessionTimer()
+      } catch {
+        isLoading.value = false
+        hasError.value = true
+        errorMessage.value = 'YouTube: error al iniciar.'
+      }
+      saveState()
+      return
+    }
+
+    // Regular stream playback
+    destroyYTPlayer()
     initAudio()
     if (!audio) return
     isLoading.value = true
     hasError.value = false
     errorMessage.value = ''
     fallbackIndex = 0
-    audio.src = currentStation.value.url
+    audio.src = station.url
     audio.volume = volume.value
     try {
       await audio.play()
@@ -328,6 +430,15 @@ export function useLofiPlayer() {
   }
 
   function pause() {
+    // Pause YouTube if active
+    if (currentStation.value.type === 'youtube' && ytPlayer && ytReady) {
+      try { ytPlayer.pauseVideo() } catch {}
+      isPlaying.value = false
+      isLoading.value = false
+      stopSessionTimer()
+      return
+    }
+
     if (!audio) return
     audio.pause()
     isPlaying.value = false
@@ -342,10 +453,12 @@ export function useLofiPlayer() {
 
   function setStation(stationId: string) {
     const wasPlaying = isPlaying.value
-    if (audio) {
-      audio.pause()
-      isPlaying.value = false
-    }
+
+    // Stop current playback
+    if (audio) { audio.pause(); audio.src = '' }
+    destroyYTPlayer()
+    isPlaying.value = false
+
     currentStationId.value = stationId
     currentTrackIndex.value = 0
     hasError.value = false
@@ -359,6 +472,10 @@ export function useLofiPlayer() {
   function setVolume(v: number) {
     volume.value = Math.max(0, Math.min(1, v))
     if (audio) audio.volume = volume.value
+    // Also update YouTube volume
+    if (ytPlayer && ytReady) {
+      try { ytPlayer.setVolume(volume.value * 100) } catch {}
+    }
     saveState()
   }
 

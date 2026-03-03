@@ -68,16 +68,16 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // Batch fetch user emails for email sending
+  // Batch fetch user emails for email sending (parallel, not sequential)
   const userEmailMap = new Map<string, string>()
-  for (const userId of allUserIds) {
-    try {
-      const { data: profile } = await supabase.auth.admin.getUserById(userId)
-      if (profile?.user?.email) {
-        userEmailMap.set(userId, profile.user.email)
+  if (allUserIds.length > 0) {
+    const results = await Promise.allSettled(
+      allUserIds.map(userId => supabase.auth.admin.getUserById(userId).then(r => ({ userId, email: r.data?.user?.email })))
+    )
+    for (const r of results) {
+      if (r.status === 'fulfilled' && r.value.email) {
+        userEmailMap.set(r.value.userId, r.value.email)
       }
-    } catch {
-      // Skip users we can't look up
     }
   }
 

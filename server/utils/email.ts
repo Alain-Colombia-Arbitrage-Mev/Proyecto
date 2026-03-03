@@ -90,6 +90,58 @@ export function deadlineEmailHtml(taskTitle: string, dueDate: string, projectNam
 </html>`
 }
 
+export function taskAssignedEmailHtml(taskTitle: string, projectName: string, assignedByName: string): string {
+  const safeTitle = escapeHtml(taskTitle)
+  const safeProject = escapeHtml(projectName)
+  const safeName = escapeHtml(assignedByName)
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f6f6f6; padding: 32px; margin: 0;">
+  <div style="max-width: 480px; margin: 0 auto; background: white; border-radius: 12px; padding: 32px; border: 1px solid #e5e7eb;">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <div style="display: inline-block; width: 40px; height: 40px; background: #0ea5e9; border-radius: 8px; line-height: 40px; color: white; font-weight: bold; font-size: 18px;">F</div>
+    </div>
+    <h2 style="margin: 0 0 8px; font-size: 18px; color: #0D0D0D;">Tarea Asignada</h2>
+    <p style="margin: 0 0 16px; color: #7A7A7A; font-size: 14px;">Se te ha asignado una nueva tarea:</p>
+    <div style="background: #DBEAFE; border-left: 4px solid #0ea5e9; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">
+      <p style="margin: 0; font-weight: 600; color: #0D0D0D; font-size: 15px;">${safeTitle}</p>
+      <p style="margin: 4px 0 0; color: #1E40AF; font-size: 13px;">Proyecto: ${safeProject}</p>
+      <p style="margin: 4px 0 0; color: #1E40AF; font-size: 13px;">Asignada por: ${safeName}</p>
+    </div>
+    <p style="margin: 0; color: #7A7A7A; font-size: 12px; text-align: center;">&mdash; FocusFlow</p>
+  </div>
+</body>
+</html>`
+}
+
+export function workspaceInvitationEmailHtml(workspaceName: string, invitedByName: string, role: string): string {
+  const safeWorkspace = escapeHtml(workspaceName)
+  const safeName = escapeHtml(invitedByName)
+  const safeRole = escapeHtml(role)
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f6f6f6; padding: 32px; margin: 0;">
+  <div style="max-width: 480px; margin: 0 auto; background: white; border-radius: 12px; padding: 32px; border: 1px solid #e5e7eb;">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <div style="display: inline-block; width: 40px; height: 40px; background: #0ea5e9; border-radius: 8px; line-height: 40px; color: white; font-weight: bold; font-size: 18px;">F</div>
+    </div>
+    <h2 style="margin: 0 0 8px; font-size: 18px; color: #0D0D0D;">Invitaci&oacute;n a Workspace</h2>
+    <p style="margin: 0 0 16px; color: #7A7A7A; font-size: 14px;">Has sido invitado a un workspace:</p>
+    <div style="background: #D1FAE5; border-left: 4px solid #10B981; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">
+      <p style="margin: 0; font-weight: 600; color: #0D0D0D; font-size: 15px;">${safeWorkspace}</p>
+      <p style="margin: 4px 0 0; color: #065F46; font-size: 13px;">Rol: ${safeRole}</p>
+      <p style="margin: 4px 0 0; color: #065F46; font-size: 13px;">Invitado por: ${safeName}</p>
+    </div>
+    <p style="margin: 0; color: #7A7A7A; font-size: 12px; text-align: center;">&mdash; FocusFlow</p>
+  </div>
+</body>
+</html>`
+}
+
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, '&amp;')

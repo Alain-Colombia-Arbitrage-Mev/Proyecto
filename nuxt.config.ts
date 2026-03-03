@@ -43,6 +43,7 @@ export default defineNuxtConfig({
     amazonSmtpUser: '',
     amazonSmtpPassword: '',
     cronSecret: '',
+    context7Key: '',
     firebaseServiceAccountJson: '',
     public: {
       firebase: {

@@ -125,18 +125,24 @@ async function markRead(notif: Notification) {
 function notifIcon(type: string) {
   if (type === 'deadline_urgent') return 'i-heroicons-exclamation-triangle'
   if (type === 'deadline_approaching') return 'i-heroicons-clock'
+  if (type === 'task_assigned') return 'i-heroicons-clipboard-document-check'
+  if (type === 'workspace_invitation') return 'i-heroicons-user-plus'
   return 'i-heroicons-bell'
 }
 
 function notifIconBg(type: string) {
   if (type === 'deadline_urgent') return 'bg-red-50'
   if (type === 'deadline_approaching') return 'bg-amber-50'
+  if (type === 'task_assigned') return 'bg-blue-50'
+  if (type === 'workspace_invitation') return 'bg-green-50'
   return 'bg-gray-50'
 }
 
 function notifIconColor(type: string) {
   if (type === 'deadline_urgent') return 'text-red-500'
   if (type === 'deadline_approaching') return 'text-amber-500'
+  if (type === 'task_assigned') return 'text-blue-500'
+  if (type === 'workspace_invitation') return 'text-green-500'
   return 'text-gray-400'
 }
 

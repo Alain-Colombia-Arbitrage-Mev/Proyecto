@@ -41,7 +41,7 @@
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
               <p class="font-semibold text-sm text-gray-900 truncate">
-                {{ member.email || member.user_id.slice(0, 12) + '...' }}
+                {{ member.email || (member.user_id ? member.user_id.slice(0, 12) + '...' : 'Sin email') }}
               </p>
               <span v-if="member.isCurrentUser" class="text-[9px] font-bold text-focusflow-600 bg-focusflow-50 px-1.5 py-0.5 rounded-md uppercase">Tú</span>
             </div>
@@ -488,7 +488,8 @@ async function handleSaveProjects() {
   }
 }
 
-function getInitials(str: string) {
+function getInitials(str: string | null | undefined) {
+  if (!str) return '??'
   if (str.includes('@')) {
     const name = str.split('@')[0]!
     return name.slice(0, 2).toUpperCase()

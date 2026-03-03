@@ -20,9 +20,13 @@
         <UButton size="sm" variant="soft" color="success" icon="i-heroicons-bolt" @click="handleAntiProcrastination" :loading="aiLoading" class="font-medium hidden sm:inline-flex">
           Anti-Procrastinación
         </UButton>
+        <UButton size="sm" variant="outline" icon="i-heroicons-arrow-up-tray" @click="showImportModal = true" class="font-medium hidden sm:inline-flex">
+          Importar
+        </UButton>
         <!-- Icon-only on mobile -->
         <UButton size="sm" variant="soft" icon="i-heroicons-sparkles" @click="handleSuggestTasks" :loading="aiLoading" class="sm:hidden" />
         <UButton size="sm" variant="soft" color="success" icon="i-heroicons-bolt" @click="handleAntiProcrastination" :loading="aiLoading" class="sm:hidden" />
+        <UButton size="sm" variant="outline" icon="i-heroicons-arrow-up-tray" @click="showImportModal = true" class="sm:hidden" />
       </div>
     </div>
 
@@ -206,11 +210,35 @@
             v-for="task in filteredTasksByColumn(column.id)"
             :key="task.id"
             draggable="true"
-            class="bg-white rounded-xl p-2.5 sm:p-3.5 cursor-grab active:cursor-grabbing border border-gray-100 hover:border-focusflow-200 transition-all duration-200 shadow-card hover:shadow-card-hover active:scale-[0.98]"
+            class="group/card bg-white rounded-xl p-2.5 sm:p-3.5 cursor-grab active:cursor-grabbing border border-gray-100 hover:border-focusflow-200 transition-all duration-200 shadow-card hover:shadow-card-hover active:scale-[0.98] relative"
             :class="taskAgingClass(task)"
             @dragstart="onDragStart($event, task)"
             @click="openTaskDetail(task)"
           >
+            <!-- Pomodoro quick-start button -->
+            <button
+              class="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center transition-all z-10"
+              :class="pomodoro.activeTask.value?.id === task.id
+                ? 'bg-emerald-100 text-emerald-600 opacity-100'
+                : 'bg-gray-100 text-gray-400 hover:bg-focusflow-100 hover:text-focusflow-600 opacity-0 group-hover/card:opacity-100'"
+              :title="pomodoro.activeTask.value?.id === task.id ? `Pomodoro: ${pomodoro.display.value}` : 'Iniciar Pomodoro'"
+              @click.stop="pomodoro.startForTask({ id: task.id, title: task.title }, workspaceId)"
+            >
+              <UIcon name="i-heroicons-clock" class="w-3.5 h-3.5" />
+            </button>
+            <!-- Labels row -->
+            <div v-if="task.labels?.length" class="flex flex-wrap gap-1 mb-1.5">
+              <span
+                v-for="label in task.labels.slice(0, 3)"
+                :key="label.id"
+                class="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
+                :style="{ backgroundColor: label.color + '20', color: label.color }"
+              >
+                {{ label.name }}
+              </span>
+              <span v-if="task.labels.length > 3" class="text-[9px] text-gray-400 px-1 py-0.5">+{{ task.labels.length - 3 }}</span>
+            </div>
+
             <!-- Tags row -->
             <div v-if="task.tags?.length" class="flex flex-wrap gap-1 mb-2">
               <span
@@ -239,12 +267,23 @@
             </div>
 
             <!-- Description preview -->
-            <p v-if="task.description" class="text-[11px] text-gray-500 leading-relaxed mb-2 line-clamp-2">{{ task.description }}</p>
+            <p v-if="task.description" class="text-[11px] text-gray-500 leading-relaxed mb-2 line-clamp-2">{{ htmlToPlainText(task.description).slice(0, 100) }}</p>
 
-            <!-- Progress bar (based on estimated hours) -->
-            <div v-if="task.estimated_hours" class="mb-2.5">
-              <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <div class="h-full rounded-full transition-all duration-500" :style="{ width: taskProgress(task) + '%', backgroundColor: column.color || '#10B981' }" />
+            <!-- Time progress bar -->
+            <div v-if="getTaskProgress(task.due_date, task.created_at, task.estimated_hours)" class="mb-2.5">
+              <div class="flex items-center gap-2 mb-0.5">
+                <div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    class="h-full rounded-full transition-all duration-700 ease-out"
+                    :style="{
+                      width: getTaskProgress(task.due_date, task.created_at, task.estimated_hours)!.percent + '%',
+                      backgroundColor: getTaskProgress(task.due_date, task.created_at, task.estimated_hours)!.color,
+                    }"
+                  />
+                </div>
+                <span class="text-[9px] font-medium text-gray-400 whitespace-nowrap tabular-nums">
+                  {{ getTaskProgress(task.due_date, task.created_at, task.estimated_hours)!.label }}
+                </span>
               </div>
             </div>
 
@@ -398,16 +437,31 @@
               <span class="w-1.5 h-1.5 rounded-full shrink-0" :style="{ backgroundColor: column.color }" />
               {{ column.title }}
             </span>
-            <!-- Deadline -->
-            <span>
-              <span v-if="task.due_date && getDeadlineInfo(task.due_date)"
-                class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                :class="getDeadlineInfo(task.due_date)!.bgClass + ' ' + getDeadlineInfo(task.due_date)!.colorClass">
-                {{ getDeadlineInfo(task.due_date)!.label }}
+            <!-- Deadline + progress -->
+            <div class="flex flex-col gap-1">
+              <span>
+                <span v-if="task.due_date && getDeadlineInfo(task.due_date)"
+                  class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                  :class="getDeadlineInfo(task.due_date)!.bgClass + ' ' + getDeadlineInfo(task.due_date)!.colorClass">
+                  {{ getDeadlineInfo(task.due_date)!.label }}
+                </span>
+                <span v-else-if="task.due_date" class="font-medium text-gray-500">{{ formatDate(task.due_date) }}</span>
+                <span v-else-if="task.estimated_hours" class="text-[10px] font-medium text-gray-500">~{{ task.estimated_hours }}h</span>
+                <span v-else class="text-gray-300">—</span>
               </span>
-              <span v-else-if="task.due_date" class="font-medium text-gray-500">{{ formatDate(task.due_date) }}</span>
-              <span v-else class="text-gray-300">—</span>
-            </span>
+              <div v-if="getTaskProgress(task.due_date, task.created_at, task.estimated_hours)" class="flex items-center gap-1.5">
+                <div class="h-1 bg-gray-100 rounded-full overflow-hidden w-full max-w-20">
+                  <div
+                    class="h-full rounded-full transition-all duration-500"
+                    :style="{
+                      width: getTaskProgress(task.due_date, task.created_at, task.estimated_hours)!.percent + '%',
+                      backgroundColor: getTaskProgress(task.due_date, task.created_at, task.estimated_hours)!.color,
+                    }"
+                  />
+                </div>
+                <span class="text-[8px] text-gray-400 tabular-nums whitespace-nowrap">{{ getTaskProgress(task.due_date, task.created_at, task.estimated_hours)!.label }}</span>
+              </div>
+            </div>
             <!-- Priority -->
             <span>
               <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
@@ -419,14 +473,18 @@
                 {{ { critical: 'Crítica', high: 'Alta', medium: 'Media', low: 'Baja' }[task.priority] || task.priority }}
               </span>
             </span>
-            <!-- Tags (hidden mobile) -->
+            <!-- Labels + Tags (hidden mobile) -->
             <div class="gap-1 flex-wrap items-center hidden md:flex">
+              <span v-for="label in (task.labels || []).slice(0, 2)" :key="label.id"
+                class="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
+                :style="{ backgroundColor: label.color + '20', color: label.color }">
+                {{ label.name }}
+              </span>
               <span v-for="tag in (task.tags || []).slice(0, 2)" :key="tag"
                 class="text-[9px] font-semibold px-1.5 py-0.5 rounded-md"
                 :style="{ backgroundColor: tagColor(tag) + '18', color: tagColor(tag) }">
                 #{{ tag }}
               </span>
-              <span v-if="(task.tags || []).length > 2" class="text-[9px] text-gray-400">+{{ task.tags!.length - 2 }}</span>
             </div>
             <!-- Assignees (hidden mobile) -->
             <div class="hidden md:flex -space-x-1.5 items-center">
@@ -646,15 +704,28 @@
                 <div
                   v-for="(s, si) in msg.suggestions"
                   :key="si"
-                  class="flex items-start gap-2 bg-white rounded-lg p-2 cursor-pointer hover:ring-1 hover:ring-focusflow-300 transition-all border border-gray-100"
-                  @click="addSuggestedTask(s)"
+                  class="flex items-start gap-2 bg-white rounded-lg p-2 transition-all border border-gray-100"
+                  :class="addedSuggestions.has(s.title) ? 'opacity-50' : 'cursor-pointer hover:ring-1 hover:ring-focusflow-300'"
+                  @click="!addedSuggestions.has(s.title) && addSuggestedTask(s)"
                 >
-                  <UIcon name="i-heroicons-plus-circle" class="w-3.5 h-3.5 text-focusflow-700 mt-0.5 shrink-0" />
+                  <UIcon
+                    :name="addedSuggestions.has(s.title) ? 'i-heroicons-check-circle' : 'i-heroicons-plus-circle'"
+                    class="w-3.5 h-3.5 mt-0.5 shrink-0"
+                    :class="addedSuggestions.has(s.title) ? 'text-emerald-500' : 'text-focusflow-700'"
+                  />
                   <div>
                     <p class="font-medium text-gray-900">{{ s.title }}</p>
                     <p class="text-gray-500 mt-0.5">{{ s.description }}</p>
                   </div>
                 </div>
+                <button
+                  v-if="msg.suggestions?.some((s: any) => !addedSuggestions.has(s.title))"
+                  class="mt-1 text-[10px] font-semibold px-3 py-1.5 rounded-lg bg-focusflow-50 text-focusflow-700 hover:bg-focusflow-100 transition-colors cursor-pointer"
+                  :disabled="aiLoading"
+                  @click="addAllSuggestedTasks(msg.suggestions!)"
+                >
+                  Crear todas en el tablero
+                </button>
               </div>
 
               <!-- Daily plan -->
@@ -763,7 +834,17 @@
                 </button>
               </div>
 
-              <p v-else>{{ msg.text }}</p>
+              <div v-else>
+                <p>{{ msg.text }}</p>
+                <button
+                  v-if="msg.showRetryAsTasks"
+                  class="mt-1.5 text-[10px] font-semibold px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors cursor-pointer"
+                  :disabled="aiLoading"
+                  @click="retryAsTaskSuggestions(msg.text!)"
+                >
+                  Reintentar como tareas
+                </button>
+              </div>
             </div>
           </div>
 
@@ -795,58 +876,15 @@
     </transition>
 
     <!-- Add Task Modal -->
-    <UModal v-model:open="showAddTask">
-      <template #content>
-        <div class="p-6">
-          <h2 class="text-lg font-bold text-gray-900 mb-1">Nueva tarea</h2>
-          <p class="text-sm text-gray-500 mb-5">Agrega una tarea al tablero</p>
-
-          <form class="space-y-4" @submit.prevent="handleCreateTask">
-            <UFormField label="Título">
-              <UInput v-model="newTask.title" placeholder="¿Qué hay que hacer?" required class="w-full" size="lg" autofocus />
-            </UFormField>
-            <UFormField label="Descripción (opcional)">
-              <UTextarea v-model="newTask.description" placeholder="Detalles de la tarea..." class="w-full" :rows="2" />
-            </UFormField>
-            <div class="grid grid-cols-2 gap-4">
-              <UFormField label="Prioridad">
-                <USelectMenu v-model="newTask.priority" :items="priorityOptions" value-key="value" class="w-full" />
-              </UFormField>
-              <UFormField label="Fecha límite">
-                <UInput v-model="newTask.due_date" type="date" class="w-full" />
-              </UFormField>
-            </div>
-            <UFormField label="Asignados">
-              <div class="flex flex-wrap gap-1.5">
-                <button
-                  v-for="m in workspaceMembers"
-                  :key="m.user_id"
-                  type="button"
-                  class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border"
-                  :class="newTask.assignees.includes(m.user_id)
-                    ? 'bg-focusflow-50 text-focusflow-700 border-focusflow-200'
-                    : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200'"
-                  @click="toggleAssignee(newTask.assignees, m.user_id)"
-                >
-                  <div class="w-4 h-4 rounded-full bg-focusflow-100 text-focusflow-700 flex items-center justify-center text-[7px] font-bold">
-                    {{ getMemberInitials(m.user_id) }}
-                  </div>
-                  {{ m.email.split('@')[0] }}
-                </button>
-              </div>
-            </UFormField>
-            <UFormField label="Etiquetas (separadas por coma)">
-              <UInput v-model="newTask.tagsStr" placeholder="bug, frontend, urgente..." class="w-full" />
-            </UFormField>
-            <p v-if="taskError" class="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{{ taskError }}</p>
-            <div class="flex justify-end gap-3 pt-2">
-              <UButton variant="ghost" @click="showAddTask = false">Cancelar</UButton>
-              <UButton type="submit" color="primary" :loading="creatingTask" class="font-semibold">Crear tarea</UButton>
-            </div>
-          </form>
-        </div>
-      </template>
-    </UModal>
+    <TaskCreateModal
+      v-model:open="showAddTask"
+      :workspace-id="workspaceId"
+      :project-id="(route.params.id as string)"
+      :column-id="addToColumnId"
+      :workspace-members="workspaceMembers"
+      :columns="columns"
+      @created="loadTasks"
+    />
 
     <!-- Edit Column Modal -->
     <UModal v-model:open="showEditColumn">
@@ -883,92 +921,38 @@
       </template>
     </UModal>
 
-    <!-- Task Detail Modal -->
-    <UModal v-model:open="showTaskDetail">
-      <template #content>
-        <div v-if="selectedTask" class="p-6">
-          <div class="flex items-start justify-between mb-5">
-            <h2 class="text-lg font-bold text-gray-900 pr-4">{{ selectedTask.title }}</h2>
-            <div class="flex items-center gap-1">
-              <UButton variant="ghost" size="xs" icon="i-heroicons-sparkles" color="primary" @click="handleImproveTask" :loading="aiLoading" title="Mejorar con AI" />
-              <UButton variant="ghost" size="xs" icon="i-heroicons-trash" color="error" @click="handleDeleteTask" />
-            </div>
-          </div>
-          <div class="space-y-4">
-            <UFormField label="Título">
-              <UInput v-model="editTask.title" class="w-full" />
-            </UFormField>
-            <UFormField label="Descripción">
-              <UTextarea v-model="editTask.description" class="w-full" :rows="3" placeholder="Agrega una descripción..." />
-            </UFormField>
-            <div class="grid grid-cols-2 gap-4">
-              <UFormField label="Prioridad">
-                <USelectMenu v-model="editTask.priority" :items="priorityOptions" value-key="value" class="w-full" />
-              </UFormField>
-              <UFormField label="Columna">
-                <USelectMenu v-model="editTask.column_id" :items="columnOptions" value-key="value" class="w-full" />
-              </UFormField>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <UFormField label="Fecha límite">
-                <UInput v-model="editTask.due_date" type="date" class="w-full" />
-              </UFormField>
-              <UFormField label="Estimación (horas)">
-                <UInput v-model="editTask.estimated_hours" type="number" step="0.5" class="w-full" />
-              </UFormField>
-            </div>
-            <!-- Deadline + Estimated info -->
-            <div v-if="selectedTask?.due_date || selectedTask?.estimated_hours" class="flex items-center gap-3 flex-wrap">
-              <span v-if="selectedTask?.due_date && getDeadlineInfo(selectedTask.due_date)"
-                class="text-[11px] font-semibold px-2.5 py-1 rounded-lg"
-                :class="getDeadlineInfo(selectedTask.due_date)!.bgClass + ' ' + getDeadlineInfo(selectedTask.due_date)!.colorClass">
-                {{ getDeadlineInfo(selectedTask.due_date)!.label }}
-              </span>
-              <span v-if="selectedTask?.estimated_hours && getEstimatedLabel(selectedTask.estimated_hours)"
-                class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-gray-50 text-gray-600">
-                {{ getEstimatedLabel(selectedTask.estimated_hours) }}
-              </span>
-            </div>
-            <UFormField label="Asignados">
-              <div class="flex flex-wrap gap-1.5">
-                <button
-                  v-for="m in workspaceMembers"
-                  :key="m.user_id"
-                  type="button"
-                  class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border"
-                  :class="editTask.assignees.includes(m.user_id)
-                    ? 'bg-focusflow-50 text-focusflow-700 border-focusflow-200'
-                    : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200'"
-                  @click="toggleAssignee(editTask.assignees, m.user_id)"
-                >
-                  <div class="w-4 h-4 rounded-full bg-focusflow-100 text-focusflow-700 flex items-center justify-center text-[7px] font-bold">
-                    {{ getMemberInitials(m.user_id) }}
-                  </div>
-                  {{ m.email.split('@')[0] }}
-                </button>
-              </div>
-            </UFormField>
-            <UFormField label="Etiquetas">
-              <UInput v-model="editTask.tagsStr" placeholder="bug, frontend..." class="w-full" />
-            </UFormField>
-            <div class="flex justify-end gap-3 pt-2">
-              <UButton variant="ghost" @click="showTaskDetail = false">Cerrar</UButton>
-              <UButton color="primary" :loading="savingTask" class="font-semibold" @click="handleUpdateTask">Guardar</UButton>
-            </div>
-          </div>
-        </div>
-      </template>
-    </UModal>
+    <!-- Task Detail Slideover -->
+    <TaskDetailModal
+      v-model:open="showTaskDetail"
+      :task="selectedTask"
+      :workspace-id="workspaceId"
+      :project-id="(route.params.id as string)"
+      :workspace-members="workspaceMembers"
+      :columns="columns"
+      @updated="loadTasks"
+      @deleted="loadTasks"
+      @improve-with-a-i="handleImproveTask"
+    />
+
+    <TaskImportModal
+      v-model:open="showImportModal"
+      :workspace-id="workspaceId"
+      :project-id="(route.params.id as string)"
+      :columns="columns.map(c => ({ id: c.id, title: c.title }))"
+      @imported="loadProjectData"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Project, KanbanColumn, Task, MemoryAgent, TokenUsageStats } from '~/types'
+import type { Project, KanbanColumn, Task, Label, MemoryAgent, TokenUsageStats } from '~/types'
 import { format, differenceInDays } from 'date-fns'
+import { htmlToPlainText } from '~/utils/richtext'
 
 definePageMeta({ middleware: 'auth' })
 
-const { getDeadlineInfo, getEstimatedLabel } = useTaskDeadline()
+const { getDeadlineInfo, getEstimatedLabel, getTaskProgress } = useTaskDeadline()
+const pomodoro = usePomodoroTimer()
 
 const route = useRoute()
 const store = useWorkspaceStore()
@@ -981,17 +965,13 @@ const loading = ref(true)
 const workspaceId = computed(() => store.workspace?.id || '')
 
 const showAddTask = ref(false)
-const creatingTask = ref(false)
-const taskError = ref('')
 const addToColumnId = ref('')
-const newTask = reactive({ title: '', description: '', priority: 'medium', due_date: '', tagsStr: '', assignees: [] as string[] })
 
 const showTaskDetail = ref(false)
 const selectedTask = ref<Task | null>(null)
-const savingTask = ref(false)
-const editTask = reactive({ title: '', description: '', priority: '', column_id: '', due_date: '', estimated_hours: '', tagsStr: '', assignees: [] as string[] })
 
 const showAddColumn = ref(false)
+const showImportModal = ref(false)
 const addingColumn = ref(false)
 const newColumnTitle = ref('')
 const newColumnColor = ref('#6B7280')
@@ -1187,19 +1167,10 @@ interface AiMessage {
   improved?: any
   analysis?: any
   doc?: any
+  showRetryAsTasks?: boolean
 }
 const aiMessages = ref<AiMessage[]>([])
-
-const priorityOptions = [
-  { label: 'Baja', value: 'low' },
-  { label: 'Media', value: 'medium' },
-  { label: 'Alta', value: 'high' },
-  { label: 'Crítica', value: 'critical' },
-]
-
-const columnOptions = computed(() =>
-  columns.value.map(c => ({ label: c.title, value: c.id }))
-)
+const addedSuggestions = ref<Set<string>>(new Set())
 
 onMounted(async () => {
   try {
@@ -1355,93 +1326,15 @@ async function onDrop(_e: DragEvent, columnId: string) {
 }
 
 // --- Create Task ---
-function toggleAssignee(list: string[], userId: string) {
-  const idx = list.indexOf(userId)
-  if (idx !== -1) list.splice(idx, 1)
-  else list.push(userId)
-}
-
 function openAddTask(columnId: string) {
   addToColumnId.value = columnId
-  Object.assign(newTask, { title: '', description: '', priority: 'medium', due_date: '', tagsStr: '', assignees: [] })
-  taskError.value = ''
   showAddTask.value = true
-}
-
-async function handleCreateTask() {
-  if (!newTask.title.trim()) return
-  taskError.value = ''
-  creatingTask.value = true
-  try {
-    const tags = newTask.tagsStr ? newTask.tagsStr.split(',').map(t => t.trim()).filter(Boolean) : []
-    await $fetch(`/api/workspaces/${workspaceId.value}/tasks`, {
-      method: 'POST',
-      body: {
-        project_id: route.params.id,
-        column_id: addToColumnId.value,
-        title: newTask.title,
-        description: newTask.description || null,
-        priority: newTask.priority,
-        due_date: newTask.due_date || null,
-        tags,
-        assignees: newTask.assignees,
-      },
-    })
-    showAddTask.value = false
-    await loadTasks()
-  } catch (e: any) {
-    taskError.value = e.data?.message || 'Error al crear tarea'
-  } finally {
-    creatingTask.value = false
-  }
 }
 
 // --- Task Detail ---
 function openTaskDetail(task: Task) {
   selectedTask.value = task
-  Object.assign(editTask, {
-    title: task.title,
-    description: task.description || '',
-    priority: task.priority,
-    column_id: task.column_id || '',
-    due_date: task.due_date ? task.due_date.split('T')[0] : '',
-    estimated_hours: task.estimated_hours?.toString() || '',
-    tagsStr: (task.tags || []).join(', '),
-    assignees: [...(task.assignees || [])],
-  })
   showTaskDetail.value = true
-}
-
-async function handleUpdateTask() {
-  if (!selectedTask.value) return
-  savingTask.value = true
-  try {
-    const tags = editTask.tagsStr ? editTask.tagsStr.split(',').map(t => t.trim()).filter(Boolean) : []
-    await $fetch(`/api/workspaces/${workspaceId.value}/tasks/${selectedTask.value.id}`, {
-      method: 'PATCH',
-      body: {
-        title: editTask.title,
-        description: editTask.description || null,
-        priority: editTask.priority,
-        column_id: editTask.column_id || null,
-        due_date: editTask.due_date || null,
-        estimated_hours: editTask.estimated_hours ? parseFloat(editTask.estimated_hours) : null,
-        tags,
-        assignees: editTask.assignees,
-      },
-    })
-    showTaskDetail.value = false
-    await loadTasks()
-  } catch { /* */ } finally {
-    savingTask.value = false
-  }
-}
-
-async function handleDeleteTask() {
-  if (!selectedTask.value) return
-  await $fetch(`/api/workspaces/${workspaceId.value}/tasks/${selectedTask.value.id}`, { method: 'DELETE' })
-  showTaskDetail.value = false
-  await loadTasks()
 }
 
 // --- AI Functions ---
@@ -1450,7 +1343,7 @@ async function callAI(action: string, context: Record<string, any>) {
   try {
     const res = await $fetch<{ type: string; data: any }>('/api/ai/assist', {
       method: 'POST',
-      body: { action, context },
+      body: { action, context: { ...context, workspaceId: workspaceId.value } },
     })
     return res
   } catch (e: any) {
@@ -1515,6 +1408,7 @@ async function addSuggestedTask(suggestion: any) {
         tags: suggestion.tags || [],
       },
     })
+    addedSuggestions.value.add(suggestion.title)
     await loadTasks()
     const colName = columns.value.find(c => c.id === columnId)?.title || ''
     aiMessages.value.push({ role: 'assistant', text: `"${suggestion.title}" agregada a ${colName}`, type: 'text' })
@@ -1523,6 +1417,35 @@ async function addSuggestedTask(suggestion: any) {
     aiMessages.value.push({ role: 'assistant', text: `Error al agregar: ${e.message}`, type: 'text' })
     scrollChat()
   }
+}
+
+async function addAllSuggestedTasks(suggestions: any[]) {
+  const columnId = findColumn('todo')
+  if (!columnId) return
+  const pending = suggestions.filter(s => !addedSuggestions.value.has(s.title))
+  if (!pending.length) return
+  let added = 0
+  for (const s of pending) {
+    try {
+      await $fetch(`/api/workspaces/${workspaceId.value}/tasks`, {
+        method: 'POST',
+        body: {
+          project_id: route.params.id,
+          column_id: columnId,
+          title: s.title,
+          description: s.description || null,
+          priority: s.priority || 'medium',
+          tags: s.tags || [],
+        },
+      })
+      addedSuggestions.value.add(s.title)
+      added++
+    } catch { /* continue */ }
+  }
+  await loadTasks()
+  const colName = columns.value.find(c => c.id === columnId)?.title || ''
+  aiMessages.value.push({ role: 'assistant', text: `${added} tareas creadas en ${colName}`, type: 'text' })
+  scrollChat()
 }
 
 async function addDailyPlanTasks(focusTasks: string[]) {
@@ -1669,9 +1592,9 @@ async function handleImproveTask() {
   aiMessages.value.push({ role: 'user', text: `Mejora la tarea: "${selectedTask.value.title}"` })
   scrollChat()
   const res = await callAI('improve_task', {
-    taskTitle: editTask.title,
-    taskDescription: editTask.description,
-    priority: editTask.priority,
+    taskTitle: selectedTask.value.title,
+    taskDescription: selectedTask.value.description || '',
+    priority: selectedTask.value.priority,
   })
   if (res?.type === 'json' && res.data.title) {
     aiMessages.value.push({ role: 'assistant', type: 'improve', improved: res.data })
@@ -1682,12 +1605,25 @@ async function handleImproveTask() {
 }
 
 async function applyImprovedTask(improved: any) {
-  editTask.title = improved.title || editTask.title
-  editTask.description = improved.description || editTask.description
-  if (improved.priority_suggestion) editTask.priority = improved.priority_suggestion
-  if (improved.estimated_hours) editTask.estimated_hours = improved.estimated_hours.toString()
-  if (improved.tags?.length) editTask.tagsStr = improved.tags.join(', ')
-  aiMessages.value.push({ role: 'assistant', text: 'Cambios aplicados al formulario. Guarda para confirmar.', type: 'text' })
+  if (!selectedTask.value) return
+  // Apply improved data directly to the task via PATCH
+  try {
+    const updates: Record<string, unknown> = {}
+    if (improved.title) updates.title = improved.title
+    if (improved.description) updates.description = improved.description
+    if (improved.priority_suggestion) updates.priority = improved.priority_suggestion
+    if (improved.estimated_hours) updates.estimated_hours = improved.estimated_hours
+    if (improved.tags?.length) updates.tags = improved.tags
+
+    await $fetch(`/api/workspaces/${workspaceId.value}/tasks/${selectedTask.value.id}`, {
+      method: 'PATCH',
+      body: updates,
+    })
+    await loadTasks()
+    aiMessages.value.push({ role: 'assistant', text: 'Mejoras aplicadas a la tarea.', type: 'text' })
+  } catch {
+    aiMessages.value.push({ role: 'assistant', text: 'Error al aplicar mejoras.', type: 'text' })
+  }
   scrollChat()
 }
 
@@ -1710,6 +1646,37 @@ async function handleChat() {
     projectName: project.value.name,
     projectDescription: project.value.description || '',
     history,
+  })
+
+  const taskKeywords = ['crea', 'sugiere', 'genera', 'tareas', 'backlog', 'necesito', 'lista', 'pasos', 'descompón', 'descompon']
+
+  if (res?.type === 'json' && Array.isArray(res.data)) {
+    aiMessages.value.push({ role: 'assistant', type: 'suggestions', suggestions: res.data })
+  } else if (res) {
+    const wasTaskRequest = taskKeywords.some(k => message.toLowerCase().includes(k))
+    const responseText = typeof res.data === 'string' ? res.data : JSON.stringify(res.data)
+    aiMessages.value.push({
+      role: 'assistant',
+      text: responseText,
+      type: 'text',
+      showRetryAsTasks: wasTaskRequest && res.type === 'text',
+    })
+  }
+  scrollChat()
+}
+
+async function retryAsTaskSuggestions(originalText: string) {
+  if (!project.value) return
+  const retryMessage = `Genera exactamente 5 tareas en JSON array para: ${originalText}`
+  aiMessages.value.push({ role: 'user', text: retryMessage })
+  scrollChat()
+
+  const res = await callAI('chat', {
+    message: retryMessage,
+    projectId: project.value.id,
+    projectName: project.value.name,
+    projectDescription: project.value.description || '',
+    history: [],
   })
 
   if (res?.type === 'json' && Array.isArray(res.data)) {

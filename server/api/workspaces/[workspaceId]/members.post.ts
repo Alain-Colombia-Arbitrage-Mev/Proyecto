@@ -1,4 +1,6 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
+import { notifyUser } from '~~/server/utils/notifications'
+import { workspaceInvitationEmailHtml } from '~~/server/utils/email'
 
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
@@ -72,6 +74,28 @@ export default defineEventHandler(async (event) => {
     }))
     await supabase.from('project_members').insert(rows)
   }
+
+  // Notify the invited user (fire-and-forget)
+  const { data: ws } = await supabase.from('workspaces').select('name').eq('id', workspaceId).maybeSingle()
+  const workspaceName = ws?.name || 'Workspace'
+
+  let inviterName = 'Alguien'
+  try {
+    const { data: profile } = await supabase.auth.admin.getUserById(user.id)
+    inviterName = profile?.user?.user_metadata?.full_name || profile?.user?.email || 'Alguien'
+  } catch {}
+
+  notifyUser({
+    event,
+    userId: targetUser.id,
+    type: 'workspace_invitation',
+    title: `Invitación a ${workspaceName}`,
+    body: `${inviterName} te invitó a "${workspaceName}" como ${assignedRole}`,
+    entityType: 'workspace',
+    entityId: workspaceId,
+    emailSubject: `Invitación a workspace: ${workspaceName}`,
+    emailHtml: workspaceInvitationEmailHtml(workspaceName, inviterName, assignedRole),
+  }).catch(() => {})
 
   return { ...member, email: targetUser.email, project_ids: isAdminPlus ? null : projectIds }
 })
