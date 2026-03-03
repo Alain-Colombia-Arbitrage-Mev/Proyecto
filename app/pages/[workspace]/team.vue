@@ -6,9 +6,49 @@
         <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Equipo</h1>
         <p class="text-sm text-gray-500 mt-0.5">{{ members.length }} miembro{{ members.length !== 1 ? 's' : '' }} en el workspace</p>
       </div>
-      <UButton v-if="isAdmin" icon="i-heroicons-user-plus" color="primary" size="md" class="font-semibold" @click="openInviteModal">
-        Invitar
-      </UButton>
+      <div class="flex items-center gap-2">
+        <UButton icon="i-heroicons-video-camera" variant="soft" size="md" class="font-semibold" @click="showMeetingModal = true">
+          Programar reunión
+        </UButton>
+        <UButton v-if="isAdmin" icon="i-heroicons-user-plus" color="primary" size="md" class="font-semibold" @click="openInviteModal">
+          Invitar
+        </UButton>
+      </div>
+    </div>
+
+    <!-- Upcoming meetings -->
+    <div v-if="meetings.length > 0" class="mb-8 animate-fade-up">
+      <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">Próximas reuniones</h2>
+      <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          v-for="meeting in meetings"
+          :key="meeting.id"
+          class="bg-white rounded-2xl p-4 border border-gray-100 hover:border-blue-200 transition-all shadow-card"
+        >
+          <div class="flex items-start gap-3">
+            <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
+              <UIcon name="i-heroicons-video-camera" class="w-4 h-4 text-blue-600" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-sm text-gray-900 truncate">{{ meeting.title }}</p>
+              <p class="text-[11px] text-gray-500 mt-0.5">
+                {{ formatMeetingDate(meeting.scheduled_at) }} · {{ meeting.duration_minutes }} min
+              </p>
+              <div class="flex items-center gap-2 mt-2">
+                <a
+                  :href="meeting.meeting_url"
+                  target="_blank"
+                  class="text-[10px] font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-lg transition-colors inline-flex items-center gap-1"
+                >
+                  <UIcon name="i-heroicons-video-camera" class="w-3 h-3" />
+                  Unirse
+                </a>
+                <span class="text-[10px] text-gray-400">{{ (meeting.attendees || []).length }} participante(s)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Loading -->
@@ -266,13 +306,22 @@
         </div>
       </template>
     </UModal>
+
+    <!-- Meeting schedule modal -->
+    <MeetingScheduleModal
+      v-model:open="showMeetingModal"
+      :workspace-id="store.workspace?.id || ''"
+      :members="meetingMembers"
+      :projects="allProjects"
+      @created="onMeetingCreated"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import type { Project } from '~/types'
+import type { Project, Meeting } from '~/types'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -283,6 +332,8 @@ const user = useSupabaseUser()
 const members = ref<any[]>([])
 const loading = ref(true)
 const allProjects = ref<Project[]>([])
+const meetings = ref<Meeting[]>([])
+const showMeetingModal = ref(false)
 
 // Invite modal state
 const showInvite = ref(false)
@@ -322,7 +373,7 @@ onMounted(async () => {
   document.addEventListener('click', handleOutsideClick)
   try {
     if (!store.workspace) return
-    await Promise.all([loadMembers(), loadAllProjects()])
+    await Promise.all([loadMembers(), loadAllProjects(), loadMeetings()])
   } catch { } finally {
     loading.value = false
   }
@@ -341,6 +392,27 @@ async function loadAllProjects() {
   } catch {
     allProjects.value = []
   }
+}
+
+const meetingMembers = computed(() =>
+  members.value.map(m => ({ user_id: m.user_id, email: m.email || m.user_id, role: m.role })),
+)
+
+async function loadMeetings() {
+  if (!store.workspace?.id) return
+  try {
+    meetings.value = await $fetch<Meeting[]>(`/api/workspaces/${store.workspace.id}/meetings`)
+  } catch {
+    meetings.value = []
+  }
+}
+
+function onMeetingCreated(_meeting: Meeting) {
+  loadMeetings()
+}
+
+function formatMeetingDate(d: string) {
+  try { return format(new Date(d), "EEE d MMM, HH:mm", { locale: es }) } catch { return d }
 }
 
 async function loadMembers() {

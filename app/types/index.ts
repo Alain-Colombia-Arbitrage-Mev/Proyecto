@@ -244,6 +244,23 @@ export interface DocSession {
   createdAt: string
 }
 
+export interface Meeting {
+  id: string
+  workspace_id: string
+  project_id?: string
+  created_by: string
+  title: string
+  description?: string
+  meeting_url: string
+  platform: string
+  scheduled_at: string
+  duration_minutes: number
+  attendees: string[]
+  status: 'scheduled' | 'completed' | 'cancelled'
+  created_at: string
+  updated_at: string
+}
+
 export interface ActivityLog {
   id: string
   workspace_id: string

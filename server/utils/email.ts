@@ -142,6 +142,75 @@ export function workspaceInvitationEmailHtml(workspaceName: string, invitedByNam
 </html>`
 }
 
+export function meetingInvitationEmailHtml(opts: {
+  title: string
+  description?: string
+  scheduledAt: string
+  durationMinutes: number
+  meetingUrl: string
+  organizerName: string
+  projectName?: string
+}): string {
+  const safeTitle = escapeHtml(opts.title)
+  const safeOrganizer = escapeHtml(opts.organizerName)
+  const safeProject = opts.projectName ? escapeHtml(opts.projectName) : null
+  const safeDesc = opts.description ? escapeHtml(opts.description) : null
+
+  let formattedDate: string
+  try {
+    formattedDate = new Date(opts.scheduledAt).toLocaleString('es-ES', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  } catch {
+    formattedDate = opts.scheduledAt
+  }
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f6f6f6; padding: 32px; margin: 0;">
+  <div style="max-width: 520px; margin: 0 auto; background: white; border-radius: 12px; padding: 32px; border: 1px solid #e5e7eb;">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <div style="display: inline-block; width: 40px; height: 40px; background: #0ea5e9; border-radius: 8px; line-height: 40px; color: white; font-weight: bold; font-size: 18px;">F</div>
+    </div>
+    <h2 style="margin: 0 0 4px; font-size: 18px; color: #0D0D0D;">Reuni&oacute;n Programada</h2>
+    <p style="margin: 0 0 20px; color: #7A7A7A; font-size: 14px;">${safeOrganizer} te invit&oacute; a una reuni&oacute;n</p>
+
+    <div style="background: #EFF6FF; border-left: 4px solid #3B82F6; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+      <p style="margin: 0 0 4px; font-weight: 700; color: #0D0D0D; font-size: 16px;">${safeTitle}</p>
+      ${safeProject ? `<p style="margin: 0 0 4px; color: #1E40AF; font-size: 13px;">Proyecto: ${safeProject}</p>` : ''}
+      ${safeDesc ? `<p style="margin: 4px 0 8px; color: #374151; font-size: 13px;">${safeDesc}</p>` : ''}
+      <div style="border-top: 1px solid #BFDBFE; padding-top: 10px; margin-top: 8px;">
+        <p style="margin: 0 0 4px; color: #1E40AF; font-size: 13px;">
+          &#128197; ${formattedDate}
+        </p>
+        <p style="margin: 0 0 4px; color: #1E40AF; font-size: 13px;">
+          &#9200; ${opts.durationMinutes} minutos
+        </p>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 20px;">
+      <a href="${escapeHtml(opts.meetingUrl)}"
+         style="display: inline-block; background: #1a73e8; color: white; text-decoration: none; font-weight: 600; font-size: 14px; padding: 12px 28px; border-radius: 8px;">
+        Unirse a Google Meet
+      </a>
+    </div>
+
+    <p style="margin: 0; color: #7A7A7A; font-size: 11px; text-align: center;">
+      <a href="${escapeHtml(opts.meetingUrl)}" style="color: #3B82F6; text-decoration: none;">${escapeHtml(opts.meetingUrl)}</a>
+    </p>
+    <p style="margin: 12px 0 0; color: #7A7A7A; font-size: 12px; text-align: center;">&mdash; FocusFlow</p>
+  </div>
+</body>
+</html>`
+}
+
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, '&amp;')
