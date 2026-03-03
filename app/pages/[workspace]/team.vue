@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-8 animate-fade-up">
       <div>
-        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">{{ t.teamTitle }}</h1>
-        <p class="text-sm text-gray-500 mt-0.5">{{ members.length }} {{ members.length !== 1 ? t.membersCount : t.memberSingular }}</p>
+        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ t.teamTitle }}</h1>
+        <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ members.length }} {{ members.length !== 1 ? t.membersCount : t.memberSingular }}</p>
       </div>
       <div class="flex items-center gap-2">
         <UButton v-if="auth.isSuperadmin || auth.isOwner" icon="i-heroicons-shield-check" variant="outline" size="md" class="font-semibold hidden sm:inline-flex" @click="showPermEditor = true">
@@ -24,32 +24,32 @@
 
     <!-- Upcoming meetings -->
     <div v-if="meetings.length > 0" class="mb-8 animate-fade-up">
-      <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">{{ t.upcomingMeetings }}</h2>
+      <h2 class="text-sm font-bold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wider mb-3">{{ t.upcomingMeetings }}</h2>
       <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         <div
           v-for="meeting in meetings"
           :key="meeting.id"
-          class="bg-white rounded-2xl p-4 border border-gray-100 hover:border-blue-200 transition-all shadow-card"
+          class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-4 border border-gray-100 dark:border-white/10 hover:border-blue-200 dark:hover:border-blue-500/30 transition-all shadow-card"
         >
           <div class="flex items-start gap-3">
-            <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
-              <UIcon name="i-heroicons-video-camera" class="w-4 h-4 text-blue-600" />
+            <div class="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center shrink-0 mt-0.5">
+              <UIcon name="i-heroicons-video-camera" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
             </div>
             <div class="flex-1 min-w-0">
-              <p class="font-semibold text-sm text-gray-900 truncate">{{ meeting.title }}</p>
-              <p class="text-[11px] text-gray-500 mt-0.5">
+              <p class="font-semibold text-sm text-gray-900 dark:text-white truncate">{{ meeting.title }}</p>
+              <p class="text-[11px] text-gray-500 dark:text-[#99a0ae] mt-0.5">
                 {{ formatMeetingDate(meeting.scheduled_at) }} · {{ meeting.duration_minutes }} min
               </p>
               <div class="flex items-center gap-2 mt-2">
                 <a
                   :href="meeting.meeting_url"
                   target="_blank"
-                  class="text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg transition-colors inline-flex items-center gap-1.5"
+                  class="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 px-3 py-2 rounded-lg transition-colors inline-flex items-center gap-1.5"
                 >
                   <UIcon name="i-heroicons-video-camera" class="w-3.5 h-3.5" />
                   {{ t.join }}
                 </a>
-                <span class="text-[10px] text-gray-400">{{ (meeting.attendees || []).length }} {{ t.participants }}</span>
+                <span class="text-[10px] text-gray-400 dark:text-gray-500">{{ (meeting.attendees || []).length }} {{ t.participants }}</span>
               </div>
             </div>
           </div>
@@ -59,7 +59,7 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex justify-center py-16">
-      <div class="flex items-center gap-3 text-gray-400">
+      <div class="flex items-center gap-3 text-gray-400 dark:text-gray-500">
         <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 animate-spin" />
         <span class="text-sm">{{ t.loadingTeam }}</span>
       </div>
@@ -70,14 +70,14 @@
       <div
         v-for="member in members"
         :key="member.id"
-        class="bg-white rounded-2xl p-4 border border-gray-100 hover:border-focusflow-200 transition-all shadow-card group"
+        class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-4 border border-gray-100 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30 transition-all shadow-card group"
       >
         <div class="flex items-start sm:items-center gap-3 sm:gap-4 flex-wrap sm:flex-nowrap">
           <!-- Avatar -->
           <div
             class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0"
             :class="member.isCurrentUser
-              ? 'bg-focusflow-100 text-focusflow-700'
+              ? 'bg-focusflow-100 dark:bg-focusflow-500/10 text-focusflow-700 dark:text-focusflow-400'
               : roleAvatarClass(member.role)"
           >
             {{ getInitials(member.email || member.user_id) }}
@@ -86,19 +86,19 @@
           <!-- Info -->
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
-              <p class="font-semibold text-sm text-gray-900 truncate">
+              <p class="font-semibold text-sm text-gray-900 dark:text-white truncate">
                 {{ member.email || (member.user_id ? member.user_id.slice(0, 12) + '...' : t.noEmail) }}
               </p>
-              <span v-if="member.isCurrentUser" class="text-[10px] font-bold text-focusflow-600 bg-focusflow-50 px-1.5 py-0.5 rounded-md uppercase">{{ t.you }}</span>
+              <span v-if="member.isCurrentUser" class="text-[10px] font-bold text-focusflow-600 dark:text-focusflow-400 bg-focusflow-50 dark:bg-focusflow-500/10 px-1.5 py-0.5 rounded-md uppercase">{{ t.you }}</span>
             </div>
-            <p class="text-[11px] text-gray-400 mt-0.5">
+            <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
               {{ t.joined }} {{ formatJoinDate(member.joined_at) }}
             </p>
             <!-- Project access chips -->
             <div class="flex flex-wrap gap-1 mt-1.5">
               <span
                 v-if="member.has_all_projects"
-                class="text-[10px] font-semibold px-2 py-1 rounded-md bg-emerald-50 text-emerald-600"
+                class="text-[10px] font-semibold px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
               >
                 {{ t.allProjects }}
               </span>
@@ -106,13 +106,13 @@
                 <span
                   v-for="pid in member.project_ids"
                   :key="pid"
-                  class="text-[10px] font-medium px-2 py-1 rounded-md bg-gray-100 text-gray-600 inline-flex items-center gap-1"
+                  class="text-[10px] font-medium px-2 py-1 rounded-md bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 inline-flex items-center gap-1"
                 >
                   <span class="w-1.5 h-1.5 rounded-full shrink-0" :style="{ backgroundColor: projectColor(pid) }" />
                   {{ projectName(pid) }}
                   <button
                     v-if="isAdmin && !member.isCurrentUser"
-                    class="text-gray-400 hover:text-red-500 transition-colors cursor-pointer ml-0.5"
+                    class="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors cursor-pointer ml-0.5"
                     @click.stop="removeProjectFromMember(member, pid)"
                     :title="t.removeFromProject"
                   >
@@ -121,14 +121,14 @@
                 </span>
                 <span
                   v-if="member.project_ids.length === 0"
-                  class="text-[9px] font-medium px-2 py-0.5 rounded-md bg-red-50 text-red-500"
+                  class="text-[9px] font-medium px-2 py-0.5 rounded-md bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400"
                 >
                   {{ t.noProjectAccess }}
                 </span>
                 <!-- Quick add to project dropdown -->
                 <div v-if="isAdmin && !member.isCurrentUser" class="relative inline-block">
                   <button
-                    class="text-[9px] font-medium px-2 py-0.5 rounded-md bg-focusflow-50 text-focusflow-600 hover:bg-focusflow-100 transition-colors cursor-pointer inline-flex items-center gap-0.5"
+                    class="text-[9px] font-medium px-2 py-0.5 rounded-md bg-focusflow-50 dark:bg-focusflow-500/10 text-focusflow-600 dark:text-focusflow-400 hover:bg-focusflow-100 dark:hover:bg-focusflow-500/20 transition-colors cursor-pointer inline-flex items-center gap-0.5"
                     @click="toggleQuickAdd(member)"
                   >
                     <UIcon name="i-heroicons-plus" class="w-2.5 h-2.5" />
@@ -137,26 +137,26 @@
                   <!-- Quick add dropdown -->
                   <div
                     v-if="quickAddMemberId === member.id"
-                    class="absolute left-0 sm:left-0 right-0 sm:right-auto top-full mt-1 z-20 bg-white rounded-xl shadow-lg border border-gray-100 py-1 min-w-[180px]"
+                    class="absolute left-0 sm:left-0 right-0 sm:right-auto top-full mt-1 z-20 bg-white dark:bg-[#1b1b1b] rounded-xl shadow-lg border border-gray-100 dark:border-white/10 py-1 min-w-[180px]"
                   >
-                    <div class="px-2 py-1.5 border-b border-gray-50">
-                      <p class="text-[9px] font-bold uppercase tracking-widest text-gray-400">{{ t.addToProject }}</p>
+                    <div class="px-2 py-1.5 border-b border-gray-50 dark:border-white/10">
+                      <p class="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">{{ t.addToProject }}</p>
                     </div>
                     <div class="max-h-40 overflow-y-auto">
                       <button
                         v-for="project in availableProjectsFor(member)"
                         :key="project.id"
-                        class="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-gray-700 hover:bg-focusflow-50 transition-colors cursor-pointer"
+                        class="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-gray-700 dark:text-gray-300 hover:bg-focusflow-50 dark:hover:bg-focusflow-500/10 transition-colors cursor-pointer"
                         @click="addProjectToMember(member, project.id)"
                       >
                         <div class="w-2 h-2 rounded-full shrink-0" :style="{ backgroundColor: project.color }" />
                         {{ project.name }}
                       </button>
-                      <p v-if="availableProjectsFor(member).length === 0" class="text-[10px] text-gray-400 text-center py-2 px-3">
+                      <p v-if="availableProjectsFor(member).length === 0" class="text-[10px] text-gray-400 dark:text-gray-500 text-center py-2 px-3">
                         {{ t.alreadyHasAll }}
                       </p>
                     </div>
-                    <div class="px-2 pt-1 border-t border-gray-50 mt-1">
+                    <div class="px-2 pt-1 border-t border-gray-50 dark:border-white/10 mt-1">
                       <button
                         class="w-full text-[10px] font-medium text-focusflow-600 hover:text-focusflow-700 py-1 cursor-pointer"
                         @click="openEditProjectsModal(member)"
@@ -174,14 +174,14 @@
           <div class="flex items-center gap-2">
             <span
               v-if="member.role === 'owner'"
-              class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700"
+              class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400"
             >
               Owner
             </span>
             <template v-else-if="canChangeRole(member)">
               <select
                 :value="member.role"
-                class="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 cursor-pointer focus:ring-1 focus:ring-focusflow-300 outline-none"
+                class="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1b1b1b] text-gray-700 dark:text-gray-300 cursor-pointer focus:ring-1 focus:ring-focusflow-300 outline-none"
                 @change="handleRoleChange(member, ($event.target as HTMLSelectElement).value)"
               >
                 <option value="viewer">{{ t.viewer }}</option>
@@ -203,7 +203,7 @@
             <!-- Remove member button -->
             <button
               v-if="isAdmin && !member.isCurrentUser && member.role !== 'owner'"
-              class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer"
+              class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer"
               :title="t.removeFromTeam"
               @click="handleRemoveMember(member)"
             >
@@ -214,11 +214,11 @@
       </div>
 
       <div v-if="members.length === 0" class="text-center py-16">
-        <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-          <UIcon name="i-heroicons-user-group" class="w-8 h-8 text-gray-400" />
+        <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-white/10 flex items-center justify-center mx-auto mb-4">
+          <UIcon name="i-heroicons-user-group" class="w-8 h-8 text-gray-400 dark:text-gray-500" />
         </div>
-        <h3 class="text-lg font-semibold text-gray-900">{{ t.noMembers }}</h3>
-        <p class="text-sm text-gray-500 mt-1">{{ t.inviteTeam }}</p>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t.noMembers }}</h3>
+        <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-1">{{ t.inviteTeam }}</p>
       </div>
     </div>
 
@@ -226,8 +226,8 @@
     <UModal v-model:open="showInvite">
       <template #content>
         <div class="p-6">
-          <h2 class="text-lg font-bold text-gray-900 mb-1">{{ t.inviteMember }}</h2>
-          <p class="text-sm text-gray-500 mb-5">{{ t.inviteDesc }}</p>
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-1">{{ t.inviteMember }}</h2>
+          <p class="text-sm text-gray-500 dark:text-[#99a0ae] mb-5">{{ t.inviteDesc }}</p>
 
           <form class="space-y-4" @submit.prevent="handleInvite">
             <UFormField :label="t.userEmail">
@@ -240,11 +240,11 @@
 
             <!-- Project multi-select (disabled for admin+) -->
             <UFormField v-if="!isInviteAdminPlus" :label="t.projectAccess">
-              <div class="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
+              <div class="space-y-2 max-h-48 overflow-y-auto border border-gray-200 dark:border-white/10 rounded-lg p-3">
                 <label
                   v-for="project in allProjects"
                   :key="project.id"
-                  class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-1 py-0.5"
+                  class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 rounded px-1 py-0.5"
                 >
                   <input
                     type="checkbox"
@@ -252,12 +252,12 @@
                     v-model="inviteProjectIds"
                     class="rounded border-gray-300 text-focusflow-600 focus:ring-focusflow-500"
                   />
-                  <span class="text-sm text-gray-700">{{ project.name }}</span>
+                  <span class="text-sm text-gray-700 dark:text-gray-300">{{ project.name }}</span>
                 </label>
-                <p v-if="allProjects.length === 0" class="text-xs text-gray-400 text-center py-2">{{ t.noProjects }}</p>
+                <p v-if="allProjects.length === 0" class="text-xs text-gray-400 dark:text-gray-500 text-center py-2">{{ t.noProjects }}</p>
               </div>
             </UFormField>
-            <p v-else class="text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2">
+            <p v-else class="text-xs text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-white/5 rounded-lg px-3 py-2">
               {{ t.adminAutoAccess }}
             </p>
 
@@ -277,14 +277,14 @@
     <UModal v-model:open="showEditProjects">
       <template #content>
         <div class="p-6">
-          <h2 class="text-lg font-bold text-gray-900 mb-1">{{ t.projectAccess }}</h2>
-          <p class="text-sm text-gray-500 mb-5">{{ editingMember?.email || t.member }}</p>
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-1">{{ t.projectAccess }}</h2>
+          <p class="text-sm text-gray-500 dark:text-[#99a0ae] mb-5">{{ editingMember?.email || t.member }}</p>
 
-          <div class="space-y-2 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3">
+          <div class="space-y-2 max-h-64 overflow-y-auto border border-gray-200 dark:border-white/10 rounded-lg p-3">
             <label
               v-for="project in allProjects"
               :key="project.id"
-              class="flex items-center gap-3 cursor-pointer hover:bg-gray-50 rounded-lg px-2 py-1.5 transition-colors"
+              class="flex items-center gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg px-2 py-1.5 transition-colors"
             >
               <input
                 type="checkbox"
@@ -294,10 +294,10 @@
               />
               <div class="flex items-center gap-2 flex-1">
                 <div class="w-2 h-2 rounded-full shrink-0" :style="{ backgroundColor: project.color }"></div>
-                <span class="text-sm text-gray-700">{{ project.name }}</span>
+                <span class="text-sm text-gray-700 dark:text-gray-300">{{ project.name }}</span>
               </div>
             </label>
-            <p v-if="allProjects.length === 0" class="text-xs text-gray-400 text-center py-2">{{ t.noProjects }}</p>
+            <p v-if="allProjects.length === 0" class="text-xs text-gray-400 dark:text-gray-500 text-center py-2">{{ t.noProjects }}</p>
           </div>
 
           <div class="flex items-center justify-between pt-4">
@@ -612,20 +612,20 @@ function formatJoinDate(d: string) {
 
 function roleAvatarClass(role: string) {
   const map: Record<string, string> = {
-    owner: 'bg-amber-100 text-amber-700',
-    admin: 'bg-sky-100 text-sky-700',
-    member: 'bg-gray-100 text-gray-500',
-    viewer: 'bg-gray-50 text-gray-400',
+    owner: 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400',
+    admin: 'bg-sky-100 dark:bg-sky-500/20 text-sky-700 dark:text-sky-400',
+    member: 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400',
+    viewer: 'bg-gray-50 dark:bg-white/5 text-gray-400 dark:text-gray-500',
   }
   return map[role] || map.member
 }
 
 function roleClasses(role: string) {
   const map: Record<string, string> = {
-    owner: 'bg-amber-50 text-amber-700',
-    admin: 'bg-sky-50 text-sky-700',
-    member: 'bg-gray-100 text-gray-500',
-    viewer: 'bg-gray-50 text-gray-400',
+    owner: 'bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400',
+    admin: 'bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400',
+    member: 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400',
+    viewer: 'bg-gray-50 dark:bg-white/5 text-gray-400 dark:text-gray-500',
   }
   return map[role] || map.member
 }

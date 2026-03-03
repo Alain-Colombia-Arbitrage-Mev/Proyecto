@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-2">
-    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ t.labels }}</h4>
+    <h4 class="text-xs font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide">{{ t.labels }}</h4>
 
     <!-- Current labels -->
     <div class="flex flex-wrap gap-1.5">
@@ -11,7 +11,7 @@
         class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium transition-all cursor-pointer border"
         :class="isSelected(label.id)
           ? 'border-transparent ring-1 ring-offset-1'
-          : 'border-gray-200 opacity-60 hover:opacity-100'"
+          : 'border-gray-200 dark:border-white/10 opacity-60 hover:opacity-100'"
         :style="{
           backgroundColor: isSelected(label.id) ? label.color + '20' : 'transparent',
           color: label.color,
@@ -28,7 +28,7 @@
     <div v-if="showCreate" class="flex items-center gap-2 mt-2">
       <input
         v-model="newLabelName"
-        class="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-1 focus:ring-focusflow-300"
+        class="flex-1 text-xs border border-gray-200 dark:border-white/10 rounded-lg px-2 py-1.5 outline-none focus:ring-1 focus:ring-focusflow-300 bg-white dark:bg-white/10 text-gray-900 dark:text-gray-100"
         :placeholder="t.labelName"
         @keydown.enter.prevent="createLabel"
       />
@@ -38,13 +38,13 @@
           :key="c"
           type="button"
           class="w-5 h-5 rounded-full border-2 cursor-pointer transition-all"
-          :class="newLabelColor === c ? 'border-gray-900 scale-110' : 'border-transparent hover:scale-105'"
+          :class="newLabelColor === c ? 'border-gray-900 dark:border-gray-100 scale-110' : 'border-transparent hover:scale-105'"
           :style="{ backgroundColor: c }"
           @click="newLabelColor = c"
         />
       </div>
       <UButton size="xs" variant="soft" @click="createLabel" :disabled="!newLabelName.trim()">OK</UButton>
-      <button type="button" class="text-gray-400 hover:text-gray-600 cursor-pointer" @click="showCreate = false">
+      <button type="button" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer" @click="showCreate = false">
         <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
       </button>
     </div>
@@ -54,13 +54,13 @@
 
     <!-- Predefined suggestions -->
     <div v-if="allLabels.length === 0 && !showCreate" class="mt-1">
-      <p class="text-[10px] text-gray-400 mb-1.5">{{ t.suggestionsLabel }}</p>
+      <p class="text-[10px] text-gray-400 dark:text-gray-500 mb-1.5">{{ t.suggestionsLabel }}</p>
       <div class="flex flex-wrap gap-1">
         <button
           v-for="s in suggestions"
           :key="s.name"
           type="button"
-          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium cursor-pointer border border-gray-200 hover:bg-gray-50 transition-colors"
+          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium cursor-pointer border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
           :style="{ color: s.color }"
           @click="createSuggested(s)"
         >

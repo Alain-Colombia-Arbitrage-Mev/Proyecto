@@ -1,6 +1,9 @@
 export default defineNuxtConfig({
   future: { compatibilityVersion: 4 },
   modules: ['@nuxt/ui', '@pinia/nuxt', '@nuxtjs/supabase'],
+  components: [
+    { path: '~/components', pathPrefix: false },
+  ],
   css: ['~/assets/css/main.css'],
   app: {
     head: {
@@ -16,7 +19,7 @@ export default defineNuxtConfig({
         },
         {
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Space+Mono:wght@400;700&display=swap',
+          href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Space+Mono:wght@400;700&display=swap',
         },
       ],
     },
@@ -57,6 +60,6 @@ export default defineNuxtConfig({
       },
     },
   },
-  colorMode: { preference: 'light', fallback: 'light' },
+  colorMode: { preference: 'system', fallback: 'light', classSuffix: '' },
   devtools: { enabled: true },
 })

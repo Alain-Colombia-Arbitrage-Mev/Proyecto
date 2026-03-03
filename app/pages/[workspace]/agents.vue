@@ -18,7 +18,7 @@
 
     <!-- Project selector -->
     <div class="mb-8 max-w-xs">
-      <label class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1.5 block">{{ t.project }}</label>
+      <label class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1.5 block">{{ t.project }}</label>
       <USelectMenu
         v-model="selectedProjectId"
         :items="projectOptions"
@@ -29,17 +29,17 @@
     </div>
 
     <div v-if="!canUseAI" class="text-center py-20">
-      <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-        <UIcon name="i-heroicons-lock-closed" class="w-8 h-8 text-gray-300" />
+      <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-white/10 flex items-center justify-center mx-auto mb-4">
+        <UIcon name="i-heroicons-lock-closed" class="w-8 h-8 text-gray-300 dark:text-gray-600" />
       </div>
-      <p class="text-sm text-gray-400">{{ t.noAIPermission }}</p>
+      <p class="text-sm text-gray-400 dark:text-gray-500">{{ t.noAIPermission }}</p>
     </div>
 
     <div v-else-if="!selectedProjectId" class="text-center py-20">
-      <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center mx-auto mb-4 ring-1 ring-indigo-100">
+      <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 flex items-center justify-center mx-auto mb-4 ring-1 ring-indigo-100 dark:ring-indigo-500/20">
         <UIcon name="i-heroicons-cpu-chip" class="w-8 h-8 text-indigo-300" />
       </div>
-      <p class="text-sm text-gray-400">{{ t.selectProjectFirst }}</p>
+      <p class="text-sm text-gray-400 dark:text-gray-500">{{ t.selectProjectFirst }}</p>
     </div>
 
     <template v-else>
@@ -49,16 +49,16 @@
         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-sm">
           <UIcon name="i-heroicons-queue-list" class="w-4 h-4 text-white" />
         </div>
-        <h2 class="text-lg font-bold text-gray-900">{{ t.taskManagement }}</h2>
-        <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-600 ring-1 ring-indigo-100">Agents</span>
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ t.taskManagement }}</h2>
+        <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 text-indigo-600 dark:text-indigo-400 ring-1 ring-indigo-100 dark:ring-indigo-500/20">Agents</span>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         <div
           v-for="agent in taskAgents"
           :key="agent.action"
-          class="group relative bg-white/80 backdrop-blur-sm border border-gray-100/80 rounded-2xl p-5 hover:shadow-lg hover:shadow-gray-200/50 hover:border-gray-200/80 hover:-translate-y-0.5 transition-all duration-300"
+          class="group relative bg-white/80 dark:bg-[#1b1b1b]/80 backdrop-blur-sm border border-gray-100/80 dark:border-white/10 rounded-2xl p-5 hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-black/30 hover:border-gray-200/80 dark:hover:border-white/15 hover:-translate-y-0.5 transition-all duration-300"
         >
-          <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-gray-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-gray-50/50 dark:from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div class="relative">
             <div class="flex items-center gap-3 mb-3">
               <div
@@ -68,10 +68,10 @@
                 <UIcon :name="agent.icon" class="w-5 h-5" :style="{ color: agent.color }" />
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-bold text-gray-900">{{ agent.name }}</p>
+                <p class="text-sm font-bold text-gray-900 dark:text-white">{{ agent.name }}</p>
               </div>
             </div>
-            <p class="text-xs text-gray-500 mb-3.5 leading-relaxed">{{ agent.description }}</p>
+            <p class="text-xs text-gray-500 dark:text-[#99a0ae] mb-3.5 leading-relaxed">{{ agent.description }}</p>
             <div class="flex gap-1.5 flex-wrap mb-3.5">
               <span
                 v-for="tag in agent.tags"
@@ -89,7 +89,7 @@
                 v-model="taskAgentInput"
                 type="text"
                 :placeholder="lang.language.value === 'en' ? 'e.g. payment module, OAuth auth...' : 'Ej: módulo de pagos, auth con OAuth...'"
-                class="w-full text-sm border border-gray-200/80 rounded-xl px-3.5 py-2.5 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 transition-all placeholder:text-gray-300"
+                class="w-full text-sm border border-gray-200/80 dark:border-white/10 rounded-xl px-3.5 py-2.5 bg-gray-50/50 dark:bg-white/5 focus:bg-white dark:focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 transition-all placeholder:text-gray-300 dark:placeholder:text-gray-600"
               />
             </div>
 
@@ -110,79 +110,79 @@
             </button>
 
             <!-- Result -->
-            <div v-if="agentResults[agent.action]" class="mt-4 bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl p-4 space-y-2.5 ring-1 ring-gray-100">
+            <div v-if="agentResults[agent.action]" class="mt-4 bg-gradient-to-br from-gray-50 to-slate-50 dark:from-white/5 dark:to-white/3 rounded-xl p-4 space-y-2.5 ring-1 ring-gray-100 dark:ring-white/10">
               <div class="flex items-start gap-2">
                 <UIcon name="i-heroicons-check-badge" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
-                <p class="text-xs font-bold text-gray-900">
+                <p class="text-xs font-bold text-gray-900 dark:text-white">
                   {{ agentResults[agent.action].sprint_name || agentResults[agent.action].feature_summary || agentResults[agent.action].summary || (lang.language.value === 'en' ? 'Result' : 'Resultado') }}
                 </p>
               </div>
 
               <div class="flex items-center gap-2 flex-wrap">
-                <span v-if="agentResults[agent.action].tasksCreated > 0" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
+                <span v-if="agentResults[agent.action].tasksCreated > 0" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-100 dark:ring-emerald-500/30">
                   {{ agentResults[agent.action].tasksCreated }} {{ t.tasksCreated }}
                 </span>
-                <span v-if="agentResults[agent.action]._tasksImproved > 0" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 ring-1 ring-teal-100">
+                <span v-if="agentResults[agent.action]._tasksImproved > 0" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-400 ring-1 ring-teal-100 dark:ring-teal-500/30">
                   {{ agentResults[agent.action]._tasksImproved }} {{ t.tasksImproved }}
                 </span>
                 <span v-if="agentResults[agent.action].health_score" class="text-[10px] font-semibold px-2.5 py-1 rounded-full ring-1"
-                  :class="agentResults[agent.action].health_score > 60 ? 'bg-emerald-50 text-emerald-700 ring-emerald-100' : agentResults[agent.action].health_score > 30 ? 'bg-amber-50 text-amber-700 ring-amber-100' : 'bg-red-50 text-red-700 ring-red-100'">
+                  :class="agentResults[agent.action].health_score > 60 ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 ring-emerald-100 dark:ring-emerald-500/30' : agentResults[agent.action].health_score > 30 ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 ring-amber-100 dark:ring-amber-500/30' : 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 ring-red-100 dark:ring-red-500/30'">
                   {{ t.health }} {{ agentResults[agent.action].health_score }}/100
                 </span>
-                <span v-if="agentResults[agent.action].velocity_estimate" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100">
+                <span v-if="agentResults[agent.action].velocity_estimate" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 ring-1 ring-indigo-100 dark:ring-indigo-500/20">
                   {{ agentResults[agent.action].velocity_estimate }}{{ t.estimatedHours }}
                 </span>
               </div>
 
               <!-- Bottlenecks -->
-              <div v-if="agentResults[agent.action].bottlenecks?.length" class="space-y-1.5 mt-3 pt-3 border-t border-gray-100">
-                <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+              <div v-if="agentResults[agent.action].bottlenecks?.length" class="space-y-1.5 mt-3 pt-3 border-t border-gray-100 dark:border-white/10">
+                <p class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
                   <UIcon name="i-heroicons-exclamation-triangle" class="w-3.5 h-3.5 text-amber-400" />
                   {{ t.bottlenecks }}
                 </p>
-                <div v-for="(b, bi) in agentResults[agent.action].bottlenecks.slice(0, 3)" :key="bi" class="flex items-start gap-2 text-[10px] text-gray-600 bg-white/70 rounded-lg p-2">
+                <div v-for="(b, bi) in agentResults[agent.action].bottlenecks.slice(0, 3)" :key="bi" class="flex items-start gap-2 text-[10px] text-gray-600 dark:text-gray-400 bg-white/70 dark:bg-white/5 rounded-lg p-2">
                   <span
                     class="w-1.5 h-1.5 rounded-full mt-1 shrink-0"
-                    :class="b.severity === 'high' ? 'bg-red-500' : b.severity === 'medium' ? 'bg-amber-400' : 'bg-gray-300'"
+                    :class="b.severity === 'high' ? 'bg-red-500' : b.severity === 'medium' ? 'bg-amber-400' : 'bg-gray-300 dark:bg-gray-600'"
                   ></span>
-                  <span><span class="font-semibold" :class="b.severity === 'high' ? 'text-red-600' : b.severity === 'medium' ? 'text-amber-600' : 'text-gray-500'">{{ b.area }}:</span> {{ b.description }}</span>
+                  <span><span class="font-semibold" :class="b.severity === 'high' ? 'text-red-600 dark:text-red-400' : b.severity === 'medium' ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500 dark:text-gray-400'">{{ b.area }}:</span> {{ b.description }}</span>
                 </div>
               </div>
 
               <!-- Recommendations -->
-              <div v-if="agentResults[agent.action].recommendations?.length" class="space-y-1.5 mt-3 pt-3 border-t border-gray-100">
-                <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+              <div v-if="agentResults[agent.action].recommendations?.length" class="space-y-1.5 mt-3 pt-3 border-t border-gray-100 dark:border-white/10">
+                <p class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
                   <UIcon name="i-heroicons-light-bulb" class="w-3.5 h-3.5 text-indigo-400" />
                   {{ t.recommendations }}
                 </p>
-                <div v-for="(r, ri) in (agentResults[agent.action].recommendations || []).slice(0, 3)" :key="ri" class="flex items-start gap-2 text-[10px] text-gray-600 bg-white/70 rounded-lg p-2">
-                  <UIcon name="i-heroicons-arrow-right-circle" class="w-3 h-3 text-indigo-300 mt-0.5 shrink-0" />
+                <div v-for="(r, ri) in (agentResults[agent.action].recommendations || []).slice(0, 3)" :key="ri" class="flex items-start gap-2 text-[10px] text-gray-600 dark:text-gray-400 bg-white/70 dark:bg-white/5 rounded-lg p-2">
+                  <UIcon name="i-heroicons-arrow-right-circle" class="w-3 h-3 text-indigo-300 dark:text-indigo-400 mt-0.5 shrink-0" />
                   <span>{{ typeof r === 'string' ? r : r.description }}</span>
                 </div>
               </div>
 
               <!-- Created tasks -->
-              <div v-if="agentResults[agent.action].createdTasks?.length" class="mt-3 pt-3 border-t border-gray-100">
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <div v-if="agentResults[agent.action].createdTasks?.length" class="mt-3 pt-3 border-t border-gray-100 dark:border-white/10">
+                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                   <UIcon name="i-heroicons-clipboard-document-check" class="w-3.5 h-3.5 text-emerald-400" />
                   {{ t.tasksCreated }}
                 </p>
                 <div v-for="(task, ti) in agentResults[agent.action].createdTasks.slice(0, 4)" :key="ti" class="flex items-center gap-1.5 text-[10px] py-1">
                   <span
                     class="px-1.5 py-0.5 rounded text-[9px] font-bold ring-1"
-                    :class="task.priority === 'high' || task.priority === 'critical' ? 'bg-red-50 text-red-700 ring-red-100' : 'bg-gray-50 text-gray-600 ring-gray-100'"
+                    :class="task.priority === 'high' || task.priority === 'critical' ? 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 ring-red-100 dark:ring-red-500/30' : 'bg-gray-50 dark:bg-white/10 text-gray-600 dark:text-gray-400 ring-gray-100 dark:ring-white/20'"
                   >{{ task.priority }}</span>
-                  <span class="text-gray-700 truncate">{{ task.title }}</span>
+                  <span class="text-gray-700 dark:text-gray-300 truncate">{{ task.title }}</span>
                 </div>
-                <p v-if="agentResults[agent.action].createdTasks.length > 4" class="text-[10px] text-gray-400 mt-1">
+                <p v-if="agentResults[agent.action].createdTasks.length > 4" class="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
                   +{{ agentResults[agent.action].createdTasks.length - 4 }} {{ t.more }}
                 </p>
               </div>
             </div>
 
-            <div v-if="agentErrors[agent.action]" class="mt-3 bg-red-50 rounded-xl p-3 ring-1 ring-red-100 flex items-start gap-2">
-              <UIcon name="i-heroicons-x-circle" class="w-3.5 h-3.5 text-red-400 mt-0.5 shrink-0" />
-              <p class="text-[10px] text-red-600">{{ agentErrors[agent.action] }}</p>
+            <div v-if="agentErrors[agent.action]" class="mt-3 bg-red-50 dark:bg-red-500/10 rounded-xl p-3 ring-1 ring-red-100 dark:ring-red-500/30 flex items-start gap-2">
+              <UIcon name="i-heroicons-x-circle" class="w-3.5 h-3.5 text-red-400 dark:text-red-400 mt-0.5 shrink-0" />
+              <p class="text-[10px] text-red-600 dark:text-red-400">{{ agentErrors[agent.action] }}</p>
             </div>
           </div>
         </div>
@@ -192,10 +192,10 @@
     <!-- Section Divider -->
     <div v-if="canUseAI && canUseDocAgents" class="relative my-10">
       <div class="absolute inset-0 flex items-center">
-        <div class="w-full border-t border-gray-200/60"></div>
+        <div class="w-full border-t border-gray-200/60 dark:border-white/10"></div>
       </div>
       <div class="relative flex justify-center">
-        <div class="bg-white px-4 flex items-center gap-2">
+        <div class="bg-white dark:bg-[#111] px-4 flex items-center gap-2">
           <div class="w-1.5 h-1.5 rounded-full bg-indigo-300"></div>
           <div class="w-1.5 h-1.5 rounded-full bg-purple-300"></div>
           <div class="w-1.5 h-1.5 rounded-full bg-blue-300"></div>
@@ -209,16 +209,16 @@
         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-sm">
           <UIcon name="i-heroicons-document-text" class="w-4 h-4 text-white" />
         </div>
-        <h2 class="text-lg font-bold text-gray-900">{{ t.documentation }}</h2>
-        <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-50 to-cyan-50 text-blue-600 ring-1 ring-blue-100">Agents</span>
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ t.documentation }}</h2>
+        <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-500/10 dark:to-cyan-500/10 text-blue-600 dark:text-blue-400 ring-1 ring-blue-100 dark:ring-blue-500/20">Agents</span>
       </div>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
       <div
         v-for="agent in agents"
         :key="agent.action"
-        class="group relative bg-white/80 backdrop-blur-sm border border-gray-100/80 rounded-2xl p-5 hover:shadow-lg hover:shadow-gray-200/50 hover:border-gray-200/80 hover:-translate-y-0.5 transition-all duration-300"
+        class="group relative bg-white/80 dark:bg-[#1b1b1b]/80 backdrop-blur-sm border border-gray-100/80 dark:border-white/10 rounded-2xl p-5 hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-black/30 hover:border-gray-200/80 dark:hover:border-white/15 hover:-translate-y-0.5 transition-all duration-300"
       >
-        <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-gray-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-gray-50/50 dark:from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         <div class="relative">
           <!-- Agent header -->
           <div class="flex items-center gap-3 mb-3">
@@ -229,13 +229,13 @@
               <UIcon :name="agent.icon" class="w-5 h-5" :style="{ color: agent.color }" />
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-bold text-gray-900">{{ agent.name }}</p>
-              <p class="text-[10px] text-gray-400 font-mono">{{ agent.folder }}</p>
+              <p class="text-sm font-bold text-gray-900 dark:text-white">{{ agent.name }}</p>
+              <p class="text-[10px] text-gray-400 dark:text-gray-500 font-mono">{{ agent.folder }}</p>
             </div>
           </div>
 
           <!-- Description -->
-          <p class="text-xs text-gray-500 mb-3.5 leading-relaxed">{{ agent.description }}</p>
+          <p class="text-xs text-gray-500 dark:text-[#99a0ae] mb-3.5 leading-relaxed">{{ agent.description }}</p>
 
           <!-- Tags -->
           <div class="flex gap-1.5 flex-wrap mb-4">
@@ -267,60 +267,60 @@
           </button>
 
           <!-- Result -->
-          <div v-if="agentResults[agent.action]" class="mt-4 bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl p-4 space-y-2.5 ring-1 ring-gray-100">
+          <div v-if="agentResults[agent.action]" class="mt-4 bg-gradient-to-br from-gray-50 to-slate-50 dark:from-white/5 dark:to-white/3 rounded-xl p-4 space-y-2.5 ring-1 ring-gray-100 dark:ring-white/10">
             <div class="flex items-start gap-2">
               <UIcon name="i-heroicons-check-badge" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
-              <p class="text-xs font-bold text-gray-900">{{ agentResults[agent.action].title }}</p>
+              <p class="text-xs font-bold text-gray-900 dark:text-white">{{ agentResults[agent.action].title }}</p>
             </div>
-            <p class="text-[10px] text-gray-500 italic pl-6">{{ agentResults[agent.action].summary }}</p>
+            <p class="text-[10px] text-gray-500 dark:text-[#99a0ae] italic pl-6">{{ agentResults[agent.action].summary }}</p>
 
             <div class="flex items-center gap-2 flex-wrap">
-              <span v-if="agentResults[agent.action].tasksCreated > 0" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
+              <span v-if="agentResults[agent.action].tasksCreated > 0" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-100 dark:ring-emerald-500/30">
                 {{ agentResults[agent.action].tasksCreated }} {{ t.tasks }}
               </span>
-              <span v-if="agentResults[agent.action].savedFile" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 ring-1 ring-blue-100">
+              <span v-if="agentResults[agent.action].savedFile" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 ring-1 ring-blue-100 dark:ring-blue-500/20">
                 {{ t.savedMd }}
               </span>
-              <span v-if="agentResults[agent.action].sessionId" class="text-[10px] font-mono px-2.5 py-1 rounded-full bg-gray-100 text-gray-500 ring-1 ring-gray-200">
+              <span v-if="agentResults[agent.action].sessionId" class="text-[10px] font-mono px-2.5 py-1 rounded-full bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 ring-1 ring-gray-200 dark:ring-white/20">
                 {{ agentResults[agent.action].sessionId.slice(0, 8) }}
               </span>
             </div>
 
             <!-- Sections preview -->
-            <div v-if="agentResults[agent.action].sections?.length" class="space-y-1.5 mt-3 pt-3 border-t border-gray-100">
-              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+            <div v-if="agentResults[agent.action].sections?.length" class="space-y-1.5 mt-3 pt-3 border-t border-gray-100 dark:border-white/10">
+              <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
                 <UIcon name="i-heroicons-list-bullet" class="w-3.5 h-3.5 text-blue-400" />
                 {{ t.sections }}
               </p>
-              <div v-for="(section, si) in agentResults[agent.action].sections.slice(0, 4)" :key="si" class="flex items-center gap-2 text-[10px] text-gray-600 bg-white/70 rounded-lg p-2">
-                <span class="w-5 h-5 rounded-md bg-blue-50 text-blue-500 flex items-center justify-center text-[9px] font-bold shrink-0">{{ Number(si) + 1 }}</span>
+              <div v-for="(section, si) in agentResults[agent.action].sections.slice(0, 4)" :key="si" class="flex items-center gap-2 text-[10px] text-gray-600 dark:text-gray-400 bg-white/70 dark:bg-white/5 rounded-lg p-2">
+                <span class="w-5 h-5 rounded-md bg-blue-50 dark:bg-blue-500/10 text-blue-500 dark:text-blue-400 flex items-center justify-center text-[9px] font-bold shrink-0">{{ Number(si) + 1 }}</span>
                 {{ section.heading }}
               </div>
-              <p v-if="(agentResults[agent.action].sections as any[]).length > 4" class="text-[10px] text-gray-400 pl-7">
+              <p v-if="(agentResults[agent.action].sections as any[]).length > 4" class="text-[10px] text-gray-400 dark:text-gray-500 pl-7">
                 +{{ (agentResults[agent.action].sections as any[]).length - 4 }} {{ t.more }}
               </p>
             </div>
 
             <!-- Created tasks -->
-            <div v-if="agentResults[agent.action].createdTasks?.length" class="mt-3 pt-3 border-t border-gray-100">
-              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+            <div v-if="agentResults[agent.action].createdTasks?.length" class="mt-3 pt-3 border-t border-gray-100 dark:border-white/10">
+              <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                 <UIcon name="i-heroicons-clipboard-document-check" class="w-3.5 h-3.5 text-emerald-400" />
                 {{ t.tasksCreated }}
               </p>
               <div v-for="(task, ti) in agentResults[agent.action].createdTasks.slice(0, 3)" :key="ti" class="flex items-center gap-1.5 text-[10px] py-1">
                 <span
                   class="px-1.5 py-0.5 rounded text-[9px] font-bold ring-1"
-                  :class="task.priority === 'high' || task.priority === 'critical' ? 'bg-red-50 text-red-700 ring-red-100' : 'bg-gray-50 text-gray-600 ring-gray-100'"
+                  :class="task.priority === 'high' || task.priority === 'critical' ? 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 ring-red-100 dark:ring-red-500/30' : 'bg-gray-50 dark:bg-white/10 text-gray-600 dark:text-gray-400 ring-gray-100 dark:ring-white/20'"
                 >{{ task.priority }}</span>
-                <span class="text-gray-700 truncate">{{ task.title }}</span>
+                <span class="text-gray-700 dark:text-gray-300 truncate">{{ task.title }}</span>
               </div>
             </div>
           </div>
 
           <!-- Error -->
-          <div v-if="agentErrors[agent.action]" class="mt-3 bg-red-50 rounded-xl p-3 ring-1 ring-red-100 flex items-start gap-2">
-            <UIcon name="i-heroicons-x-circle" class="w-3.5 h-3.5 text-red-400 mt-0.5 shrink-0" />
-            <p class="text-[10px] text-red-600">{{ agentErrors[agent.action] }}</p>
+          <div v-if="agentErrors[agent.action]" class="mt-3 bg-red-50 dark:bg-red-500/10 rounded-xl p-3 ring-1 ring-red-100 dark:ring-red-500/30 flex items-start gap-2">
+            <UIcon name="i-heroicons-x-circle" class="w-3.5 h-3.5 text-red-400 dark:text-red-400 mt-0.5 shrink-0" />
+            <p class="text-[10px] text-red-600 dark:text-red-400">{{ agentErrors[agent.action] }}</p>
           </div>
         </div>
       </div>

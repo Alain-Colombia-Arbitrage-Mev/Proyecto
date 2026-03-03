@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="text-2xl font-bold text-gray-900 tracking-tight mb-8 animate-fade-up">{{ t.settingsTitle }}</h1>
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight mb-8 animate-fade-up">{{ t.settingsTitle }}</h1>
 
     <div v-if="loading" class="flex justify-center py-16">
       <div class="flex items-center gap-3 text-gray-400">
@@ -11,10 +11,10 @@
 
     <div v-else class="space-y-6 max-w-2xl animate-fade-up delay-100">
       <!-- Workspace settings -->
-      <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-card">
-        <div class="px-6 py-4 border-b border-gray-100">
-          <h2 class="font-bold text-gray-900">Workspace</h2>
-          <p class="text-xs text-gray-500 mt-0.5">{{ t.workspaceConfig }}</p>
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-100 dark:border-white/10 overflow-hidden shadow-card">
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-white/10">
+          <h2 class="font-bold text-gray-900 dark:text-white">Workspace</h2>
+          <p class="text-xs text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ t.workspaceConfig }}</p>
         </div>
         <div class="p-6 space-y-4">
           <UFormField :label="t.name">
@@ -28,40 +28,40 @@
               {{ t.saveChanges }}
             </UButton>
           </div>
-          <p v-if="wsSaved" class="text-sm text-emerald-700">{{ t.savedSuccess }}</p>
+          <p v-if="wsSaved" class="text-sm text-emerald-700 dark:text-emerald-400">{{ t.savedSuccess }}</p>
         </div>
       </div>
 
       <!-- Profile -->
-      <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-card">
-        <div class="px-6 py-4 border-b border-gray-100">
-          <h2 class="font-bold text-gray-900">{{ t.yourProfile }}</h2>
-          <p class="text-xs text-gray-500 mt-0.5">{{ t.accountInfo }}</p>
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-100 dark:border-white/10 overflow-hidden shadow-card">
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-white/10">
+          <h2 class="font-bold text-gray-900 dark:text-white">{{ t.yourProfile }}</h2>
+          <p class="text-xs text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ t.accountInfo }}</p>
         </div>
         <div class="p-6 space-y-4">
           <div class="flex items-center gap-4">
-            <div class="w-14 h-14 rounded-full bg-focusflow-100 text-focusflow-800 flex items-center justify-center font-bold text-xl">
+            <div class="w-14 h-14 rounded-full bg-focusflow-100 dark:bg-focusflow-500/20 text-focusflow-800 dark:text-focusflow-300 flex items-center justify-center font-bold text-xl">
               {{ userInitials }}
             </div>
             <div>
-              <p class="font-semibold text-gray-900">{{ currentUser?.email }}</p>
-              <p class="text-xs text-gray-500">{{ memberRole }}</p>
+              <p class="font-semibold text-gray-900 dark:text-white">{{ currentUser?.email }}</p>
+              <p class="text-xs text-gray-500 dark:text-[#99a0ae]">{{ memberRole }}</p>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Danger zone -->
-      <div class="bg-white rounded-2xl border border-red-200 overflow-hidden shadow-card">
-        <div class="px-6 py-4 border-b border-red-100">
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-red-200 dark:border-red-500/30 overflow-hidden shadow-card">
+        <div class="px-6 py-4 border-b border-red-100 dark:border-red-500/20">
           <h2 class="font-bold text-red-600">{{ t.dangerZone }}</h2>
-          <p class="text-xs text-gray-500 mt-0.5">{{ t.irreversibleActions }}</p>
+          <p class="text-xs text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ t.irreversibleActions }}</p>
         </div>
         <div class="p-6 space-y-4">
           <div class="flex items-center justify-between">
             <div>
-              <p class="font-medium text-sm text-gray-900">{{ t.logout }}</p>
-              <p class="text-xs text-gray-500">{{ t.logoutDesc }}</p>
+              <p class="font-medium text-sm text-gray-900 dark:text-white">{{ t.logout }}</p>
+              <p class="text-xs text-gray-500 dark:text-[#99a0ae]">{{ t.logoutDesc }}</p>
             </div>
             <UButton variant="outline" color="error" size="sm" @click="handleLogout">
               {{ t.logout }}

@@ -1,14 +1,14 @@
 <template>
-  <div class="min-h-screen bg-white">
+  <div class="min-h-screen bg-white dark:bg-[#111] transition-colors">
     <!-- Desktop Sidebar -->
     <aside
-      class="hidden md:flex fixed inset-y-0 left-0 z-30 flex-col bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 transition-all duration-300 ease-out"
+      class="hidden md:flex fixed inset-y-0 left-0 z-30 flex-col bg-gradient-to-b from-[#0d0d0d] via-[#111] to-[#0a0a0a] transition-all duration-300 ease-out"
       :class="collapsed ? 'w-[68px]' : 'w-[252px]'"
     >
       <!-- Logo + workspace -->
       <div class="h-14 flex items-center gap-2.5 shrink-0 border-b border-white/[0.06]" :class="collapsed ? 'px-4 justify-center' : 'px-4'">
-        <div class="w-8 h-8 rounded-lg bg-focusflow-500 flex items-center justify-center shrink-0 shadow-lg shadow-focusflow-500/20">
-          <span class="text-white font-bold text-sm" style="font-family: 'Space Mono', monospace;">F</span>
+        <div class="w-8 h-8 rounded-lg bg-[#75fc96] flex items-center justify-center shrink-0 shadow-lg shadow-[#75fc96]/20">
+          <span class="text-[#17191c] font-bold text-sm" style="font-family: 'Space Mono', monospace;">F</span>
         </div>
         <div v-if="!collapsed" class="min-w-0">
           <p class="font-semibold text-[13px] text-white/90 truncate leading-tight">{{ store.workspace?.name || 'FocusFlow' }}</p>
@@ -24,7 +24,7 @@
           :to="item.to"
           class="group flex items-center gap-2.5 rounded-lg text-[13px] font-medium text-white/50 hover:bg-white/[0.08] hover:text-white/90 transition-all duration-150"
           :class="collapsed ? 'px-0 py-2 justify-center' : 'px-2.5 py-2'"
-          active-class="!bg-focusflow-500/20 !text-focusflow-300 font-semibold"
+          active-class="!bg-[#75fc96]/10 !text-[#75fc96] font-semibold"
         >
           <UIcon :name="item.icon" class="w-[18px] h-[18px] shrink-0" />
           <span v-if="!collapsed">{{ item.label }}</span>
@@ -38,7 +38,7 @@
         <div v-if="!collapsed" class="flex items-center justify-between px-2.5 pb-2">
           <span class="text-[10px] font-bold uppercase tracking-widest text-white/30">{{ t.projects }}</span>
           <button
-            class="w-5 h-5 flex items-center justify-center rounded text-white/30 hover:text-focusflow-400 hover:bg-white/[0.08] transition-all"
+            class="w-5 h-5 flex items-center justify-center rounded text-white/30 hover:text-[#75fc96] hover:bg-white/[0.08] transition-all"
             @click="$emit('create-project')"
             :title="t.newProject"
           >
@@ -54,7 +54,7 @@
             class="group flex items-center gap-2.5 rounded-lg text-[13px] text-white/50 hover:bg-white/[0.08] hover:text-white/90 transition-all duration-150"
             :class="[
               collapsed ? 'px-0 py-2 justify-center' : 'px-2.5 py-1.5',
-              isActiveProject(project.id) ? '!bg-focusflow-500/20 !text-focusflow-300 font-semibold' : '',
+              isActiveProject(project.id) ? '!bg-[#75fc96]/10 !text-[#75fc96] font-semibold' : '',
             ]"
           >
             <div class="w-2 h-2 rounded-full shrink-0" :style="{ backgroundColor: project.color }" />
@@ -71,10 +71,14 @@
       <div class="border-t border-white/[0.06]">
         <div v-if="!collapsed" class="px-3 pt-2 flex items-center justify-between">
           <NotificationBell />
-          <LanguageToggle />
+          <div class="flex items-center gap-1">
+            <DarkModeToggle sidebar-style />
+            <LanguageToggle />
+          </div>
         </div>
         <div v-else class="flex flex-col items-center gap-2 pt-2">
           <NotificationBell />
+          <DarkModeToggle sidebar-style />
         </div>
         <div class="flex items-center gap-2 p-2" :class="collapsed ? 'justify-center' : ''">
           <NuxtLink
@@ -82,12 +86,12 @@
             class="flex items-center gap-2.5 flex-1 rounded-lg hover:bg-white/[0.08] transition-all duration-150"
             :class="collapsed ? 'p-1.5 justify-center' : 'px-2.5 py-2'"
           >
-            <div class="w-7 h-7 rounded-full bg-focusflow-500/20 text-focusflow-300 flex items-center justify-center text-[10px] font-bold shrink-0">
+            <div class="w-7 h-7 rounded-full bg-[#75fc96]/15 text-[#75fc96] flex items-center justify-center text-[10px] font-bold shrink-0">
               {{ auth.userInitials }}
             </div>
             <div v-if="!collapsed" class="min-w-0">
               <p class="text-xs font-medium text-white/70 truncate">{{ auth.userEmail }}</p>
-              <p v-if="auth.isSuperadmin" class="text-[9px] font-bold text-focusflow-400 uppercase tracking-wider">Superadmin</p>
+              <p v-if="auth.isSuperadmin" class="text-[9px] font-bold text-[#75fc96] uppercase tracking-wider">Superadmin</p>
               <p v-else-if="auth.isOwner" class="text-[9px] font-bold text-amber-400 uppercase tracking-wider">Owner</p>
               <p v-else-if="auth.isAdmin" class="text-[9px] font-bold text-sky-400 uppercase tracking-wider">Admin</p>
             </div>
@@ -111,12 +115,12 @@
     </aside>
 
     <!-- Mobile Header -->
-    <header class="md:hidden fixed top-0 inset-x-0 z-30 h-14 flex items-center justify-between px-4 bg-white/95 backdrop-blur-sm border-b border-gray-100">
+    <header class="md:hidden fixed top-0 inset-x-0 z-30 h-14 flex items-center justify-between px-4 bg-white/95 dark:bg-[#111]/95 backdrop-blur-sm border-b border-gray-100 dark:border-white/10">
       <div class="flex items-center gap-2.5">
         <div class="w-7 h-7 rounded-lg bg-focusflow-600 flex items-center justify-center">
           <span class="text-white font-bold text-xs" style="font-family: 'Space Mono', monospace;">F</span>
         </div>
-        <span class="font-semibold text-sm text-gray-900 truncate">{{ store.workspace?.name || 'FocusFlow' }}</span>
+        <span class="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">{{ store.workspace?.name || 'FocusFlow' }}</span>
       </div>
       <NotificationBell />
     </header>
@@ -138,13 +142,13 @@
     <Transition name="slide-up">
       <div
         v-if="pomodoro.activeTask.value && pomodoro.running.value"
-        class="fixed bottom-24 md:bottom-6 right-4 md:right-20 z-40 flex items-center gap-2 bg-white/95 backdrop-blur-sm border border-emerald-200 rounded-full pl-3 pr-1.5 py-1.5 shadow-lg"
+        class="fixed bottom-24 md:bottom-6 right-4 md:right-20 z-40 flex items-center gap-2 bg-white/95 dark:bg-[#1b1b1b]/95 backdrop-blur-sm border border-emerald-200 dark:border-[#75fc96]/20 rounded-full pl-3 pr-1.5 py-1.5 shadow-lg"
       >
         <span class="text-sm">&#x23F1;</span>
-        <span class="text-[11px] font-medium text-gray-700 max-w-[120px] truncate">{{ pomodoro.activeTask.value.title }}</span>
-        <span class="text-[12px] font-bold text-emerald-600 tabular-nums">{{ pomodoro.display.value }}</span>
+        <span class="text-[11px] font-medium text-gray-700 dark:text-gray-300 max-w-[120px] truncate">{{ pomodoro.activeTask.value.title }}</span>
+        <span class="text-[12px] font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">{{ pomodoro.display.value }}</span>
         <button
-          class="w-6 h-6 rounded-full bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-500 flex items-center justify-center transition-colors"
+          class="w-6 h-6 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-gray-500 dark:text-[#99a0ae] hover:text-red-500 flex items-center justify-center transition-colors"
           @click="pomodoro.togglePomodoro()"
           :title="t.pause"
         >
@@ -157,7 +161,7 @@
     <LofiPlayer />
 
     <!-- Mobile Bottom Nav -->
-    <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-sm border-t border-gray-100">
+    <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 dark:bg-[#111]/95 backdrop-blur-sm border-t border-gray-100 dark:border-white/10">
       <div class="flex items-stretch justify-around h-14 px-1">
         <NuxtLink
           v-for="item in mobileNav"

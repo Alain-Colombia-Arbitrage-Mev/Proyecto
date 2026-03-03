@@ -1,9 +1,9 @@
 <template>
   <UModal v-model:open="isOpen" class="sm:max-w-4xl w-full">
     <template #content>
-      <div v-if="task" class="flex flex-col max-h-[85vh]">
+      <div v-if="task" class="flex flex-col max-h-[85vh] bg-white dark:bg-[#1b1b1b]">
         <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/10">
           <div class="flex items-center gap-2 min-w-0 flex-1">
             <span
               class="w-2 h-2 rounded-full shrink-0"
@@ -14,13 +14,13 @@
                 'bg-gray-300': task.priority === 'low',
               }"
             />
-            <h2 v-if="!editingTitle" class="text-lg font-bold text-gray-900 truncate cursor-pointer hover:text-focusflow-700" @click="editingTitle = true">
+            <h2 v-if="!editingTitle" class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate cursor-pointer hover:text-focusflow-700 dark:hover:text-focusflow-300" @click="editingTitle = true">
               {{ language === 'en' ? (editForm.title_en || editForm.title || task.title) : (editForm.title || task.title) }}
             </h2>
             <input
               v-else
               v-model="editForm.title"
-              class="text-lg font-bold text-gray-900 w-full outline-none border-b-2 border-focusflow-400 bg-transparent"
+              class="text-lg font-bold text-gray-900 dark:text-gray-100 w-full outline-none border-b-2 border-focusflow-400 bg-transparent"
               @blur="editingTitle = false"
               @keydown.enter="editingTitle = false"
               autofocus
@@ -29,7 +29,7 @@
           <div class="flex items-center gap-1 ml-2">
             <button
               v-if="pomodoro.activeTask.value?.id === task.id"
-              class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold bg-emerald-50 text-emerald-600 tabular-nums"
+              class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 tabular-nums"
               @click="pomodoro.togglePomodoro()"
               title="Pomodoro en progreso"
             >
@@ -55,20 +55,20 @@
         <div class="flex-1 overflow-y-auto">
           <div class="flex flex-col md:flex-row">
             <!-- Left panel (~65%) -->
-            <div class="flex-1 px-6 py-5 space-y-6 md:border-r border-gray-100 min-w-0">
+            <div class="flex-1 px-6 py-5 space-y-6 md:border-r border-gray-100 dark:border-white/10 min-w-0">
               <!-- Description -->
               <div>
                 <div class="flex items-center justify-between mb-2">
-                  <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ lang.labels.value.description }}</h4>
-                  <div class="flex items-center bg-gray-100 rounded-md p-0.5">
+                  <h4 class="text-xs font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide">{{ lang.labels.value.description }}</h4>
+                  <div class="flex items-center bg-gray-100 dark:bg-white/10 rounded-md p-0.5">
                     <button
                       class="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer flex items-center gap-0.5"
-                      :class="descLang === 'es' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'"
+                      :class="descLang === 'es' ? 'bg-white dark:bg-white/15 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-400 dark:text-[#99a0ae]'"
                       @click="descLang = 'es'"
                     ><span class="text-xs">🇪🇸</span>ES</button>
                     <button
                       class="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer flex items-center gap-0.5"
-                      :class="descLang === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'"
+                      :class="descLang === 'en' ? 'bg-white dark:bg-white/15 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-400 dark:text-[#99a0ae]'"
                       @click="descLang = 'en'"
                     ><span class="text-xs">🇺🇸</span>EN</button>
                   </div>
@@ -98,16 +98,16 @@
             </div>
 
             <!-- Right panel / sidebar (~35%) -->
-            <div class="w-full md:w-72 lg:w-80 bg-gray-50/50 px-5 py-5 space-y-5 shrink-0">
+            <div class="w-full md:w-72 lg:w-80 bg-gray-50/50 dark:bg-white/5 px-5 py-5 space-y-5 shrink-0">
               <!-- Status / Column -->
               <div>
-                <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">{{ lang.labels.value.column }}</label>
+                <label class="text-[11px] font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide block mb-1.5">{{ lang.labels.value.column }}</label>
                 <USelectMenu v-model="editForm.column_id" :items="columnOptions" value-key="value" class="w-full" size="sm" />
               </div>
 
               <!-- Priority -->
               <div>
-                <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">{{ lang.labels.value.priority }}</label>
+                <label class="text-[11px] font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide block mb-1.5">{{ lang.labels.value.priority }}</label>
                 <USelectMenu v-model="editForm.priority" :items="priorityOptions" value-key="value" class="w-full" size="sm" />
               </div>
 
@@ -121,7 +121,7 @@
 
               <!-- Assignees -->
               <div>
-                <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">{{ lang.labels.value.assigned }}</label>
+                <label class="text-[11px] font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide block mb-1.5">{{ lang.labels.value.assigned }}</label>
                 <div class="flex flex-wrap gap-1.5">
                   <button
                     v-for="m in workspaceMembers"
@@ -129,11 +129,11 @@
                     type="button"
                     class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border"
                     :class="editForm.assignees.includes(m.user_id)
-                      ? 'bg-focusflow-50 text-focusflow-700 border-focusflow-200'
-                      : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200'"
+                      ? 'bg-focusflow-50 dark:bg-focusflow-950 text-focusflow-700 dark:text-focusflow-300 border-focusflow-200'
+                      : 'bg-white dark:bg-white/5 text-gray-500 dark:text-[#99a0ae] border-gray-100 dark:border-white/10 hover:border-gray-200 dark:hover:border-white/20'"
                     @click="toggleAssignee(m.user_id)"
                   >
-                    <div class="w-4 h-4 rounded-full bg-focusflow-100 text-focusflow-700 flex items-center justify-center text-[7px] font-bold">
+                    <div class="w-4 h-4 rounded-full bg-focusflow-100 dark:bg-focusflow-950 text-focusflow-700 dark:text-focusflow-300 flex items-center justify-center text-[7px] font-bold">
                       {{ getInitials(m.email) }}
                     </div>
                     {{ m.email.split('@')[0] }}
@@ -143,19 +143,19 @@
 
               <!-- Due date -->
               <div>
-                <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">{{ lang.labels.value.dueDate }}</label>
+                <label class="text-[11px] font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide block mb-1.5">{{ lang.labels.value.dueDate }}</label>
                 <UInput v-model="editForm.due_date" type="date" class="w-full" size="sm" />
               </div>
 
               <!-- Estimated hours -->
               <div>
-                <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">{{ lang.labels.value.estimation }}</label>
+                <label class="text-[11px] font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide block mb-1.5">{{ lang.labels.value.estimation }}</label>
                 <UInput v-model="editForm.estimated_hours" type="number" step="0.5" :placeholder="lang.labels.value.noEstimate" class="w-full" size="sm" />
               </div>
 
               <!-- Tags -->
               <div>
-                <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">{{ lang.labels.value.tags }}</label>
+                <label class="text-[11px] font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide block mb-1.5">{{ lang.labels.value.tags }}</label>
                 <UInput v-model="editForm.tagsStr" placeholder="bug, frontend..." class="w-full" size="sm" />
               </div>
             </div>
@@ -163,7 +163,7 @@
         </div>
 
         <!-- Footer -->
-        <div class="flex items-center justify-end gap-3 px-6 py-3 border-t border-gray-100">
+        <div class="flex items-center justify-end gap-3 px-6 py-3 border-t border-gray-100 dark:border-white/10">
           <UButton variant="ghost" @click="isOpen = false">{{ lang.labels.value.close }}</UButton>
           <UButton color="primary" :loading="saving" class="font-semibold" @click="handleSave">{{ lang.labels.value.save }}</UButton>
         </div>
@@ -253,13 +253,6 @@ watch(() => props.task, (t) => {
   descLang.value = 'es'
 }, { immediate: true })
 
-// Auto-suggest estimated hours when deadline is set and no estimate exists
-watch(() => editForm.due_date, (newDate) => {
-  if (!newDate || editForm.estimated_hours) return
-  const daysUntilDue = Math.max(1, Math.ceil((new Date(newDate).getTime() - Date.now()) / 86400000))
-  const suggested = Math.min(daysUntilDue * 2, 40)
-  editForm.estimated_hours = String(Math.round(suggested * 2) / 2)
-})
 
 function toggleAssignee(userId: string) {
   const idx = editForm.assignees.indexOf(userId)
@@ -309,8 +302,8 @@ async function handleDelete() {
   if (!confirm(lang.labels.value.deleteConfirm)) return
   try {
     await $fetch(`/api/workspaces/${props.workspaceId}/tasks/${props.task.id}`, { method: 'DELETE' })
-    isOpen.value = false
-    emit('deleted')
   } catch { /* */ }
+  isOpen.value = false
+  emit('deleted')
 }
 </script>

@@ -56,6 +56,17 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     return result
   }
 
+  async function deleteProject(projectId: string) {
+    if (!workspace.value) throw new Error('No workspace loaded')
+    await $fetch(`/api/workspaces/${workspace.value.id}/projects/${projectId}`, {
+      method: 'DELETE',
+    })
+    projects.value = projects.value.filter(p => p.id !== projectId)
+    if (currentProjectId.value === projectId) {
+      currentProjectId.value = null
+    }
+  }
+
   function setCurrentProject(projectId: string | null) {
     currentProjectId.value = projectId
   }
@@ -78,6 +89,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     loadWorkspace,
     loadProjects,
     createProject,
+    deleteProject,
     setCurrentProject,
     clear,
   }

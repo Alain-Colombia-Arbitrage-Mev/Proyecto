@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="flex items-center justify-between mb-6 animate-fade-up">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">{{ t.filesTitle }}</h1>
-        <p class="text-sm text-gray-500 mt-0.5">{{ t.filesDesc }}</p>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ t.filesTitle }}</h1>
+        <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ t.filesDesc }}</p>
       </div>
       <div class="flex items-center gap-2">
         <UButton size="sm" variant="soft" icon="i-heroicons-arrow-up-tray" @click="triggerUpload" :loading="uploading" class="font-medium">
@@ -16,15 +16,15 @@
     <!-- Breadcrumb -->
     <div class="flex items-center gap-1.5 mb-4 text-sm animate-fade-up">
       <button
-        class="text-gray-500 hover:text-focusflow-700 font-medium transition-colors cursor-pointer"
+        class="text-gray-500 dark:text-[#99a0ae] hover:text-focusflow-700 dark:hover:text-focusflow-400 font-medium transition-colors cursor-pointer"
         @click="navigateTo('/')"
       >
         <UIcon name="i-heroicons-home" class="w-4 h-4" />
       </button>
       <template v-for="(part, i) in breadcrumbs" :key="i">
-        <UIcon name="i-heroicons-chevron-right" class="w-3 h-3 text-gray-300" />
+        <UIcon name="i-heroicons-chevron-right" class="w-3 h-3 text-gray-300 dark:text-gray-600" />
         <button
-          class="text-gray-500 hover:text-focusflow-700 font-medium transition-colors cursor-pointer"
+          class="text-gray-500 dark:text-[#99a0ae] hover:text-focusflow-700 dark:hover:text-focusflow-400 font-medium transition-colors cursor-pointer"
           @click="navigateTo(breadcrumbPath(i))"
         >
           {{ part }}
@@ -34,7 +34,7 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex justify-center py-16">
-      <div class="flex items-center gap-3 text-gray-400">
+      <div class="flex items-center gap-3 text-gray-400 dark:text-gray-500">
         <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 animate-spin" />
         <span class="text-sm">{{ t.loadingFiles }}</span>
       </div>
@@ -42,11 +42,11 @@
 
     <!-- Empty state -->
     <div v-else-if="files.length === 0 && subfolders.length === 0" class="text-center py-20 animate-fade-up">
-      <div class="w-20 h-20 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-5">
-        <UIcon name="i-heroicons-folder-open" class="w-10 h-10 text-gray-300" />
+      <div class="w-20 h-20 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center mx-auto mb-5">
+        <UIcon name="i-heroicons-folder-open" class="w-10 h-10 text-gray-300 dark:text-gray-600" />
       </div>
-      <h2 class="text-xl font-bold text-gray-900">{{ t.noFiles }}</h2>
-      <p class="text-sm text-gray-500 mt-2 mb-8 max-w-xs mx-auto">{{ t.noFilesDesc }}</p>
+      <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ t.noFiles }}</h2>
+      <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-2 mb-8 max-w-xs mx-auto">{{ t.noFilesDesc }}</p>
       <UButton icon="i-heroicons-arrow-up-tray" color="primary" size="lg" class="font-semibold" @click="triggerUpload">{{ t.uploadFile }}</UButton>
     </div>
 
@@ -54,30 +54,30 @@
     <div v-else class="animate-fade-up delay-100">
       <!-- Subfolders -->
       <div v-if="subfolders.length > 0" class="mb-4">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 px-1">{{ t.folders }}</p>
+        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 px-1">{{ t.folders }}</p>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
           <button
             v-for="folder in subfolders"
             :key="folder"
-            class="flex items-center gap-3 bg-white rounded-xl p-3.5 border border-gray-100 hover:border-focusflow-200 transition-all cursor-pointer group shadow-card hover:shadow-card-hover"
+            class="flex items-center gap-3 bg-white dark:bg-[#1b1b1b] rounded-xl p-3.5 border border-gray-100 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30 transition-all cursor-pointer group shadow-card hover:shadow-card-hover"
             @click="navigateTo(currentFolder === '/' ? `/${folder}` : `${currentFolder}/${folder}`)"
           >
-            <div class="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
+            <div class="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
               <UIcon name="i-heroicons-folder" class="w-5 h-5 text-amber-500" />
             </div>
-            <span class="text-sm font-medium text-gray-900 truncate group-hover:text-focusflow-700 transition-colors">{{ folder }}</span>
+            <span class="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-focusflow-700 dark:group-hover:text-focusflow-400 transition-colors">{{ folder }}</span>
           </button>
         </div>
       </div>
 
       <!-- Files -->
       <div v-if="files.length > 0">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 px-1">{{ t.filesTitle }}</p>
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-card overflow-hidden divide-y divide-gray-50">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 px-1">{{ t.filesTitle }}</p>
+        <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-100 dark:border-white/10 shadow-card overflow-hidden divide-y divide-gray-50 dark:divide-white/5">
           <div
             v-for="file in files"
             :key="file.id"
-            class="flex items-center gap-4 px-4 py-3 hover:bg-gray-50/50 transition-colors group"
+            class="flex items-center gap-4 px-4 py-3 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors group"
           >
             <!-- Icon -->
             <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" :class="fileIconBg(file.mime_type)">
@@ -86,25 +86,25 @@
 
             <!-- Info -->
             <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium text-gray-900 truncate">{{ file.file_name }}</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ file.file_name }}</p>
               <div class="flex items-center gap-3 mt-0.5">
-                <span class="text-[10px] text-gray-400 font-medium">{{ formatFileSize(file.file_size) }}</span>
-                <span class="text-[10px] text-gray-400 font-medium">{{ formatDate(file.created_at) }}</span>
-                <span v-if="file.source === 'ai_generated'" class="text-[10px] font-semibold text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">AI</span>
+                <span class="text-[10px] text-gray-400 dark:text-gray-500 font-medium">{{ formatFileSize(file.file_size) }}</span>
+                <span class="text-[10px] text-gray-400 dark:text-gray-500 font-medium">{{ formatDate(file.created_at) }}</span>
+                <span v-if="file.source === 'ai_generated'" class="text-[10px] font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 px-1.5 py-0.5 rounded">AI</span>
               </div>
             </div>
 
             <!-- Actions -->
             <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
-                class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-focusflow-700 hover:bg-focusflow-50 transition-all cursor-pointer"
+                class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-focusflow-700 dark:hover:text-focusflow-400 hover:bg-focusflow-50 dark:hover:bg-focusflow-500/10 transition-all cursor-pointer"
                 @click="downloadFile(file)"
                 :title="t.download"
               >
                 <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
               </button>
               <button
-                class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer"
+                class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all cursor-pointer"
                 @click="deleteFile(file)"
                 :title="t.delete"
               >
@@ -253,11 +253,11 @@ function fileIcon(mime: string) {
 }
 
 function fileIconBg(mime: string) {
-  if (mime.startsWith('image/')) return 'bg-pink-50'
-  if (mime === 'application/pdf') return 'bg-red-50'
-  if (mime === 'text/markdown' || mime === 'text/plain') return 'bg-sky-50'
-  if (mime === 'application/json') return 'bg-amber-50'
-  return 'bg-gray-50'
+  if (mime.startsWith('image/')) return 'bg-pink-50 dark:bg-pink-500/10'
+  if (mime === 'application/pdf') return 'bg-red-50 dark:bg-red-500/10'
+  if (mime === 'text/markdown' || mime === 'text/plain') return 'bg-sky-50 dark:bg-sky-500/10'
+  if (mime === 'application/json') return 'bg-amber-50 dark:bg-amber-500/10'
+  return 'bg-gray-50 dark:bg-white/5'
 }
 
 function fileIconColor(mime: string) {

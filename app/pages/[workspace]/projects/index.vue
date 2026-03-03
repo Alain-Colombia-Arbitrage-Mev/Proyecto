@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="flex items-center justify-between mb-6 animate-fade-up">
       <div>
-        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">{{ t.projects }}</h1>
-        <p class="text-sm text-gray-500 mt-0.5">{{ store.projects.length }} {{ store.projects.length !== 1 ? t.projects.toLowerCase() : t.project.toLowerCase() }}</p>
+        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">{{ t.projects }}</h1>
+        <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ store.projects.length }} {{ store.projects.length !== 1 ? t.projects.toLowerCase() : t.project.toLowerCase() }}</p>
       </div>
       <UButton icon="i-heroicons-plus" color="primary" size="md" class="font-semibold hidden sm:inline-flex" @click="showCreate = true">
         {{ t.newProject }}
@@ -15,40 +15,40 @@
     <!-- Stat Cards Row -->
     <div v-if="store.projects.length > 0" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 animate-fade-up">
       <!-- Proyectos Totales -->
-      <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all">
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-md transition-all">
         <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">{{ t.totalProjects }}</p>
         <div class="flex items-end justify-between">
-          <span class="text-3xl sm:text-4xl font-bold text-gray-900 tabular-nums">{{ store.projects.length }}</span>
+          <span class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 tabular-nums">{{ store.projects.length }}</span>
           <div class="flex items-end gap-0.5 h-10 w-20">
             <div v-for="i in 7" :key="'p'+i" class="flex-1 rounded-sm bg-emerald-200" :style="{ height: `${barHeights.projects[i - 1]}%` }" />
           </div>
         </div>
       </div>
       <!-- Tareas Totales -->
-      <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all">
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-md transition-all">
         <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">{{ t.totalTasks }}</p>
         <div class="flex items-end justify-between">
-          <span class="text-3xl sm:text-4xl font-bold text-gray-900 tabular-nums">{{ totalTasks }}</span>
+          <span class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 tabular-nums">{{ totalTasks }}</span>
           <div class="flex items-end gap-0.5 h-10 w-20">
             <div v-for="i in 7" :key="'t'+i" class="flex-1 rounded-sm bg-emerald-300" :style="{ height: `${barHeights.tasks[i - 1]}%` }" />
           </div>
         </div>
       </div>
       <!-- Vencen Hoy -->
-      <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all">
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-md transition-all">
         <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">{{ t.dueToday }}</p>
         <div class="flex items-end justify-between">
-          <span class="text-3xl sm:text-4xl font-bold text-gray-900 tabular-nums">{{ dueTodayCount }}</span>
+          <span class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 tabular-nums">{{ dueTodayCount }}</span>
           <div class="flex items-end gap-0.5 h-10 w-20">
             <div v-for="i in 7" :key="'d'+i" class="flex-1 rounded-sm bg-emerald-200" :style="{ height: `${barHeights.dueToday[i - 1]}%` }" />
           </div>
         </div>
       </div>
       <!-- Completadas -->
-      <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all">
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-md transition-all">
         <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">{{ t.completed }}</p>
         <div class="flex items-end justify-between">
-          <span class="text-3xl sm:text-4xl font-bold text-gray-900 tabular-nums">{{ completedTaskCount }}</span>
+          <span class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 tabular-nums">{{ completedTaskCount }}</span>
           <div class="flex items-end gap-0.5 h-10 w-20">
             <div v-for="i in 7" :key="'c'+i" class="flex-1 rounded-sm bg-emerald-300" :style="{ height: `${barHeights.completed[i - 1]}%` }" />
           </div>
@@ -58,7 +58,7 @@
 
     <!-- Filter Bar -->
     <div v-if="store.projects.length > 0" class="flex flex-wrap items-center justify-between gap-2 mb-6 animate-fade-up">
-      <p class="text-sm font-semibold text-gray-700">{{ t.sprintBoard }}</p>
+      <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ t.sprintBoard }}</p>
       <div class="flex items-center gap-2">
         <UButton variant="outline" size="md" icon="i-heroicons-funnel" class="text-gray-600">
           {{ t.filters }}
@@ -79,11 +79,11 @@
 
     <!-- No workspace -->
     <div v-else-if="!store.workspace" class="text-center py-20 animate-fade-up">
-      <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-5">
+      <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-white/10 flex items-center justify-center mx-auto mb-5">
         <UIcon name="i-heroicons-building-office" class="w-8 h-8 text-gray-400" />
       </div>
-      <h2 class="text-lg font-bold text-gray-900">{{ t.workspaceNotFound }}</h2>
-      <p class="text-sm text-gray-500 mt-2 mb-6">{{ t.createWorkspaceFirst }}</p>
+      <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ t.workspaceNotFound }}</h2>
+      <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-2 mb-6">{{ t.createWorkspaceFirst }}</p>
       <UButton color="primary" size="lg" class="font-semibold" @click="router.push('/onboarding')">{{ t.createWorkspace }}</UButton>
     </div>
 
@@ -92,44 +92,70 @@
       <div class="w-20 h-20 rounded-2xl bg-focusflow-50 flex items-center justify-center mx-auto mb-5">
         <UIcon name="i-heroicons-folder-plus" class="w-10 h-10 text-focusflow-500" />
       </div>
-      <h2 class="text-xl font-bold text-gray-900">{{ t.noProjects }}</h2>
-      <p class="text-sm text-gray-500 mt-2 mb-8 max-w-xs mx-auto">{{ t.noProjectsDesc }}</p>
+      <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ t.noProjects }}</h2>
+      <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-2 mb-8 max-w-xs mx-auto">{{ t.noProjectsDesc }}</p>
       <UButton icon="i-heroicons-plus" color="primary" size="lg" class="font-semibold" @click="showCreate = true">{{ t.createFirstProject }}</UButton>
     </div>
 
     <!-- Project grid -->
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-up delay-100">
-      <NuxtLink
-        v-for="project in store.projects"
-        :key="project.id"
-        :to="`/${store.slug}/projects/${project.id}/kanban`"
-      >
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 hover:border-focusflow-300 transition-all duration-200 cursor-pointer group h-full shadow-sm hover:shadow-md">
-          <div class="flex items-start gap-3">
-            <div class="w-4 h-4 rounded-full mt-0.5 shrink-0" :style="{ backgroundColor: project.color }" />
-            <div class="min-w-0 flex-1">
-              <h3 class="font-bold text-gray-900 truncate group-hover:text-focusflow-600 transition-colors">{{ project.name }}</h3>
-              <p v-if="project.description" class="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed">{{ project.description }}</p>
-              <div class="flex items-center gap-2 mt-3 flex-wrap">
-                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider" :class="statusClasses(project.status)">
-                  {{ statusLabel(project.status) }}
-                </span>
-                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider" :class="priorityClasses(project.priority)">
-                  {{ priorityLabel(project.priority) }}
-                </span>
+      <div v-for="project in store.projects" :key="project.id" class="relative group/card">
+        <NuxtLink :to="`/${store.slug}/projects/${project.id}/kanban`">
+          <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-5 border border-gray-100 dark:border-white/10 hover:border-focusflow-300 transition-all duration-200 cursor-pointer group h-full shadow-sm hover:shadow-md">
+            <div class="flex items-start gap-3">
+              <div class="w-4 h-4 rounded-full mt-0.5 shrink-0" :style="{ backgroundColor: project.color }" />
+              <div class="min-w-0 flex-1">
+                <h3 class="font-bold text-gray-900 dark:text-gray-100 truncate group-hover:text-focusflow-600 transition-colors">{{ project.name }}</h3>
+                <p v-if="project.description" class="text-sm text-gray-500 dark:text-[#99a0ae] mt-1.5 line-clamp-2 leading-relaxed">{{ project.description }}</p>
+                <div class="flex items-center gap-2 mt-3 flex-wrap">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider" :class="statusClasses(project.status)">
+                    {{ statusLabel(project.status) }}
+                  </span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider" :class="priorityClasses(project.priority)">
+                    {{ priorityLabel(project.priority) }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </NuxtLink>
+        </NuxtLink>
+        <button
+          v-if="canDeleteProjects"
+          class="absolute top-3 right-3 w-7 h-7 rounded-lg bg-white/90 dark:bg-[#1b1b1b]/90 border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-400 hover:text-red-500 hover:border-red-300 opacity-0 group-hover/card:opacity-100 transition-all z-10"
+          @click.prevent="confirmDeleteProject(project)"
+          :title="t.delete"
+        >
+          <UIcon name="i-heroicons-trash" class="w-3.5 h-3.5" />
+        </button>
+      </div>
     </div>
+
+    <!-- Delete confirmation modal -->
+    <UModal v-model:open="showDeleteConfirm">
+      <template #content>
+        <div class="p-6 text-center">
+          <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
+            <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 text-red-600" />
+          </div>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">{{ t.deleteConfirmProject }}</h3>
+          <p class="text-sm text-gray-500 dark:text-[#99a0ae] mb-6">
+            <strong>{{ projectToDelete?.name }}</strong><br/>
+            {{ t.deleteProjectWarning }}
+          </p>
+          <div class="flex justify-center gap-3">
+            <UButton variant="ghost" @click="showDeleteConfirm = false">{{ t.cancel }}</UButton>
+            <UButton color="error" :loading="deleting" @click="handleDeleteProject">{{ t.delete }}</UButton>
+          </div>
+        </div>
+      </template>
+    </UModal>
 
     <!-- Create project modal -->
     <UModal v-model:open="showCreate">
       <template #content>
-        <div class="p-6">
-          <h2 class="text-lg font-bold text-gray-900 mb-1">{{ t.newProject }}</h2>
-          <p class="text-sm text-gray-500 mb-6">{{ t.configureProject }}</p>
+        <div class="p-6 dark:bg-[#1b1b1b]">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">{{ t.newProject }}</h2>
+          <p class="text-sm text-gray-500 dark:text-[#99a0ae] mb-6">{{ t.configureProject }}</p>
 
           <form class="space-y-5" @submit.prevent="handleCreateProject">
             <UFormField :label="t.projectName">
@@ -149,12 +175,12 @@
                   type="button"
                   class="w-full text-left px-3 py-2.5 rounded-xl border transition-all cursor-pointer"
                   :class="newProject.template === tpl.value
-                    ? 'border-focusflow-400 bg-focusflow-50/60 shadow-sm'
-                    : 'border-gray-100 hover:border-focusflow-200 hover:bg-gray-50'"
+                    ? 'border-focusflow-400 bg-focusflow-50/60 dark:bg-focusflow-950/30 shadow-sm'
+                    : 'border-gray-100 dark:border-white/10 hover:border-focusflow-200 hover:bg-gray-50 dark:hover:bg-white/5'"
                   @click="newProject.template = tpl.value"
                 >
                   <div class="flex items-center justify-between mb-1.5">
-                    <span class="text-xs font-bold text-gray-900">{{ tpl.label }}</span>
+                    <span class="text-xs font-bold text-gray-900 dark:text-gray-100">{{ tpl.label }}</span>
                     <span class="text-[9px] font-semibold text-gray-400">{{ tpl.cols }} {{ t.columns }}</span>
                   </div>
                   <div class="flex gap-1 flex-wrap">
@@ -187,11 +213,38 @@ const router = useRouter()
 const store = useWorkspaceStore()
 const lang = useLanguage()
 const t = lang.labels
+const auth = useAuthStore()
+
+const canDeleteProjects = computed(() => auth.isAdmin)
 
 const showCreate = ref(false)
 const creating = ref(false)
 const createError = ref('')
 const newProject = reactive({ name: '', description: '', priority: 'medium', template: 'simple' })
+
+// Delete project
+const showDeleteConfirm = ref(false)
+const projectToDelete = ref<any>(null)
+const deleting = ref(false)
+
+function confirmDeleteProject(project: any) {
+  projectToDelete.value = project
+  showDeleteConfirm.value = true
+}
+
+async function handleDeleteProject() {
+  if (!projectToDelete.value) return
+  deleting.value = true
+  try {
+    await store.deleteProject(projectToDelete.value.id)
+    showDeleteConfirm.value = false
+    projectToDelete.value = null
+  } catch (e: any) {
+    console.error('Error deleting project:', e)
+  } finally {
+    deleting.value = false
+  }
+}
 
 // Task stats
 const totalTasks = ref(0)

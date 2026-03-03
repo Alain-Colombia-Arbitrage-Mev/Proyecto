@@ -368,6 +368,28 @@ export function useLanguage() {
       back: en ? 'Back' : 'Atrás',
       kanbanType: en ? 'Kanban board type' : 'Tipo de tablero Kanban',
       errorCreatingWorkspace: en ? 'Error creating workspace' : 'Error al crear el workspace',
+
+      // ── Dark mode ──
+      darkMode: en ? 'Dark mode' : 'Modo oscuro',
+      lightMode: en ? 'Light mode' : 'Modo claro',
+
+      // ── Project deletion ──
+      deleteProject: en ? 'Delete project' : 'Eliminar proyecto',
+      deleteConfirmProject: en ? 'Delete this project?' : '¿Eliminar este proyecto?',
+      deleteProjectWarning: en ? 'All tasks, columns, and data in this project will be permanently deleted.' : 'Todas las tareas, columnas y datos de este proyecto se eliminarán permanentemente.',
+
+      // ── Procrastination Quiz ──
+      quizTitle: en ? 'Productivity Assessment' : 'Evaluación de Productividad',
+      quizDescription: en ? 'Answer a few questions to understand your work patterns and get personalized tips to stay focused.' : 'Responde algunas preguntas para entender tus patrones de trabajo y obtener tips personalizados para mantener el enfoque.',
+      quizStart: en ? 'Start assessment' : 'Iniciar evaluación',
+      quizSkip: en ? 'Skip for now' : 'Saltar por ahora',
+      quizFinish: en ? 'See results' : 'Ver resultados',
+      quizGoToDashboard: en ? 'Go to dashboard' : 'Ir al dashboard',
+      quizRetake: en ? 'Retake assessment' : 'Repetir evaluación',
+      quizScore: en ? 'Productivity Score' : 'Puntuación de Productividad',
+      quizLowRisk: en ? 'Low Risk' : 'Riesgo Bajo',
+      quizModerateRisk: en ? 'Moderate Risk' : 'Riesgo Moderado',
+      quizHighRisk: en ? 'High Risk' : 'Riesgo Alto',
     }
   })
 

@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-3">
     <div class="flex items-center justify-between">
-      <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ t.attachments }}</h4>
+      <h4 class="text-xs font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide">{{ t.attachments }}</h4>
       <button v-if="!readonly" type="button" class="text-xs text-focusflow-600 hover:text-focusflow-700 font-medium cursor-pointer" @click="triggerUpload">
         {{ t.addAttachment }}
       </button>
@@ -11,37 +11,37 @@
     <div
       v-if="!readonly"
       class="border-2 border-dashed rounded-lg p-4 text-center transition-colors"
-      :class="isDragging ? 'border-focusflow-400 bg-focusflow-50' : 'border-gray-200 hover:border-gray-300'"
+      :class="isDragging ? 'border-focusflow-400 bg-focusflow-50 dark:bg-focusflow-950' : 'border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20'"
       @dragover.prevent="isDragging = true"
       @dragleave="isDragging = false"
       @drop.prevent="handleDrop"
     >
-      <UIcon name="i-heroicons-cloud-arrow-up" class="w-6 h-6 text-gray-400 mx-auto mb-1" />
-      <p class="text-[11px] text-gray-400">{{ t.dragFilesHere }} <button type="button" class="text-focusflow-600 underline cursor-pointer" @click="triggerUpload">{{ t.selectFiles }}</button></p>
+      <UIcon name="i-heroicons-cloud-arrow-up" class="w-6 h-6 text-gray-400 dark:text-gray-500 mx-auto mb-1" />
+      <p class="text-[11px] text-gray-400 dark:text-gray-500">{{ t.dragFilesHere }} <button type="button" class="text-focusflow-600 dark:text-focusflow-400 underline cursor-pointer" @click="triggerUpload">{{ t.selectFiles }}</button></p>
     </div>
 
     <input ref="fileInput" type="file" multiple class="hidden" @change="handleFileSelect" />
 
     <!-- Uploading indicator -->
-    <div v-if="uploading" class="flex items-center gap-2 text-xs text-gray-500">
+    <div v-if="uploading" class="flex items-center gap-2 text-xs text-gray-500 dark:text-[#99a0ae]">
       <UIcon name="i-heroicons-arrow-path" class="w-3.5 h-3.5 animate-spin" />
       {{ t.uploading }}
     </div>
 
     <!-- Attachment grid -->
     <div v-if="attachments.length" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-      <div v-for="att in attachments" :key="att.id" class="group relative bg-gray-50 rounded-lg border border-gray-100 overflow-hidden">
+      <div v-for="att in attachments" :key="att.id" class="group relative bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-100 dark:border-white/10 overflow-hidden">
         <!-- Image thumbnail -->
         <a v-if="isImage(att.mime_type)" :href="att.url" target="_blank" class="block">
           <img :src="att.url" :alt="att.file_name" class="w-full h-20 object-cover" />
         </a>
         <!-- File icon -->
         <div v-else class="flex items-center justify-center h-20">
-          <UIcon name="i-heroicons-document" class="w-8 h-8 text-gray-300" />
+          <UIcon name="i-heroicons-document" class="w-8 h-8 text-gray-300 dark:text-gray-600" />
         </div>
         <!-- File name + delete -->
         <div class="px-2 py-1.5 flex items-center justify-between">
-          <span class="text-[10px] text-gray-600 truncate flex-1">{{ att.file_name }}</span>
+          <span class="text-[10px] text-gray-600 dark:text-[#99a0ae] truncate flex-1">{{ att.file_name }}</span>
           <button v-if="!readonly" type="button" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 cursor-pointer ml-1" @click="handleDelete(att)">
             <UIcon name="i-heroicons-x-mark" class="w-3.5 h-3.5" />
           </button>

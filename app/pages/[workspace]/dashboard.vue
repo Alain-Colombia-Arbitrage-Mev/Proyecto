@@ -1,12 +1,12 @@
 <template>
-  <div class="min-h-screen bg-[#f6f6f6]">
+  <div class="min-h-screen bg-[#f6f6f6] dark:bg-[#111] transition-colors">
     <div class="p-4 sm:p-6 space-y-3 animate-fade-up">
 
       <!-- ═══════ WELCOME ═══════ -->
       <div class="mb-1 flex items-start justify-between gap-4">
         <div>
-          <p class="text-base sm:text-[22px] text-[#7A7A7A]" style="letter-spacing: -0.44px;">{{ motivationalQuote }}</p>
-          <h1 class="text-[28px] md:text-[42px] font-bold text-[#0D0D0D] leading-[1.2]" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">
+          <p class="text-base sm:text-[22px] text-[#7A7A7A] dark:text-[#99a0ae]" style="letter-spacing: -0.44px;">{{ motivationalQuote }}</p>
+          <h1 class="text-[28px] md:text-[42px] font-bold text-[#0D0D0D] dark:text-gray-100 leading-[1.2]" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">
             {{ greeting }}, {{ userName }} <span>&#x1F44B;</span>
           </h1>
         </div>
@@ -22,84 +22,111 @@
           <!-- 3 Stat Cards -->
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <!-- Tareas Totales -->
-            <div class="bg-white rounded-[15px] border border-gray-100 p-4 min-h-[120px] sm:h-[143px] relative overflow-hidden">
+            <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-100 dark:border-white/10 p-4 min-h-[120px] sm:h-[143px] relative overflow-hidden">
               <div class="flex items-center justify-between mb-1">
-                <span class="text-[12px] text-[#7A7A7A]">{{ t.totalTasks }}</span>
+                <span class="text-[12px] text-[#7A7A7A] dark:text-[#99a0ae]">{{ t.totalTasks }}</span>
                 <UIcon name="i-heroicons-arrow-up-right" class="w-4 h-4 text-gray-400" />
               </div>
               <div class="flex items-end justify-between mt-auto">
-                <span class="text-[32px] sm:text-[42px] font-bold text-[#0D0D0D] leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">{{ taskCount }}</span>
+                <span class="text-[32px] sm:text-[42px] font-bold text-[#0D0D0D] dark:text-gray-100 leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">{{ taskCount }}</span>
                 <div class="flex items-end gap-[3px] h-[50px]">
                   <div v-for="i in 7" :key="'t-'+i" class="w-[8px] rounded-sm"
-                    :class="i % 2 === 0 ? 'bg-[#10B981]' : 'bg-[#E8E8E8]'"
+                    :class="i % 2 === 0 ? 'bg-[#10B981]' : 'bg-[#E8E8E8] dark:bg-white/15'"
                     :style="{ height: `${statBarHeights.total[i - 1]}%` }" />
                 </div>
               </div>
             </div>
 
             <!-- En Progreso -->
-            <div class="bg-white rounded-[15px] border border-gray-100 p-4 min-h-[120px] sm:h-[143px] relative overflow-hidden">
+            <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-100 dark:border-white/10 p-4 min-h-[120px] sm:h-[143px] relative overflow-hidden">
               <div class="flex items-center justify-between mb-1">
-                <span class="text-[12px] text-[#7A7A7A]">{{ t.inProgress }}</span>
+                <span class="text-[12px] text-[#7A7A7A] dark:text-[#99a0ae]">{{ t.inProgress }}</span>
                 <UIcon name="i-heroicons-arrow-up-right" class="w-4 h-4 text-gray-400" />
               </div>
               <div class="flex items-end justify-between mt-auto">
-                <span class="text-[32px] sm:text-[42px] font-bold text-[#0D0D0D] leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">{{ inProgressTasks }}</span>
+                <span class="text-[32px] sm:text-[42px] font-bold text-[#0D0D0D] dark:text-gray-100 leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">{{ inProgressTasks }}</span>
                 <div class="flex items-end gap-[3px] h-[50px]">
                   <div v-for="i in 7" :key="'p-'+i" class="w-[8px] rounded-sm"
-                    :class="i % 3 === 0 ? 'bg-[#10B981]' : 'bg-[#E8E8E8]'"
+                    :class="i % 3 === 0 ? 'bg-[#10B981]' : 'bg-[#E8E8E8] dark:bg-white/15'"
                     :style="{ height: `${statBarHeights.progress[i - 1]}%` }" />
                 </div>
               </div>
             </div>
 
             <!-- Completadas -->
-            <div class="bg-white rounded-[15px] border border-gray-100 p-4 min-h-[120px] sm:h-[143px] relative overflow-hidden">
+            <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-100 dark:border-white/10 p-4 min-h-[120px] sm:h-[143px] relative overflow-hidden">
               <div class="flex items-center justify-between mb-1">
-                <span class="text-[12px] text-[#7A7A7A]">{{ t.completed }}</span>
+                <span class="text-[12px] text-[#7A7A7A] dark:text-[#99a0ae]">{{ t.completed }}</span>
                 <UIcon name="i-heroicons-arrow-up-right" class="w-4 h-4 text-gray-400" />
               </div>
               <div class="flex items-end justify-between mt-auto">
-                <span class="text-[32px] sm:text-[42px] font-bold text-[#0D0D0D] leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">{{ completedTasks }}</span>
+                <span class="text-[32px] sm:text-[42px] font-bold text-[#0D0D0D] dark:text-gray-100 leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">{{ completedTasks }}</span>
                 <div class="flex items-end gap-[3px] h-[50px]">
                   <div v-for="i in 7" :key="'c-'+i" class="w-[8px] rounded-sm"
-                    :class="i <= 4 ? 'bg-[#10B981]' : 'bg-[#E8E8E8]'"
+                    :class="i <= 4 ? 'bg-[#10B981]' : 'bg-[#E8E8E8] dark:bg-white/15'"
                     :style="{ height: `${statBarHeights.completed[i - 1]}%` }" />
                 </div>
               </div>
             </div>
           </div>
 
+          <!-- Assessment Score Card -->
+          <div v-if="assessmentScore !== null" class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-100 dark:border-white/10 p-4 flex items-center gap-4">
+            <div class="relative w-14 h-14 shrink-0">
+              <svg class="w-full h-full -rotate-90" viewBox="0 0 56 56">
+                <circle cx="28" cy="28" r="22" fill="none" stroke-width="5" class="stroke-gray-100 dark:stroke-white/10" />
+                <circle cx="28" cy="28" r="22" fill="none" stroke-width="5" stroke-linecap="round"
+                  :stroke="assessmentScore <= 30 ? '#10b981' : assessmentScore <= 60 ? '#f59e0b' : '#ef4444'"
+                  :stroke-dasharray="`${(assessmentScore / 100) * 138} 138`" />
+              </svg>
+              <span class="absolute inset-0 flex items-center justify-center text-sm font-bold"
+                :class="assessmentScore <= 30 ? 'text-emerald-600 dark:text-emerald-400' : assessmentScore <= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'"
+                style="font-family: 'Space Grotesk', sans-serif;">{{ assessmentScore }}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[12px] font-semibold text-gray-500 dark:text-[#99a0ae]">{{ t.procrastinationRisk }}</p>
+              <p class="text-sm font-bold text-gray-900 dark:text-gray-100"
+                :class="assessmentScore <= 30 ? 'text-emerald-600 dark:text-emerald-400' : assessmentScore <= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'">
+                {{ assessmentScore <= 30 ? t.quizLowRisk : assessmentScore <= 60 ? t.quizModerateRisk : t.quizHighRisk }}
+              </p>
+              <p v-if="assessmentAnalysis" class="text-[11px] text-gray-400 dark:text-gray-500 truncate mt-0.5">{{ assessmentAnalysis }}</p>
+            </div>
+            <button
+              class="text-[11px] font-semibold text-focusflow-600 dark:text-focusflow-400 hover:underline shrink-0"
+              @click="retakeQuiz"
+            >{{ t.quizRetake }}</button>
+          </div>
+
           <!-- Project Overview + Token Usage / Pomodoro -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 
             <!-- Resumen de Proyectos (bar chart) -->
-            <div class="bg-white rounded-[15px] border border-gray-100 p-4 min-h-[301px]">
+            <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-100 dark:border-white/10 p-4 min-h-[301px]">
               <div class="flex items-center justify-between mb-4">
-                <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">{{ t.projectSummary }}</h3>
-                <span class="text-[12px] text-[#7A7A7A] bg-[#f6f6f6] rounded-full px-3 py-1">{{ t.thisMonth }}</span>
+                <h3 class="text-[16px] font-semibold text-[#0D0D0D] dark:text-gray-100" style="letter-spacing: -0.32px;">{{ t.projectSummary }}</h3>
+                <span class="text-[12px] text-[#7A7A7A] dark:text-[#99a0ae] bg-[#f6f6f6] dark:bg-gray-700 rounded-full px-3 py-1">{{ t.thisMonth }}</span>
               </div>
               <!-- Y axis labels + bars -->
               <div class="flex gap-2 mt-4">
-                <div class="flex flex-col justify-between text-[12px] text-[#00000099] h-[180px] pr-1">
+                <div class="flex flex-col justify-between text-[12px] text-[#00000099] dark:text-[#99a0ae] h-[180px] pr-1">
                   <span>600</span><span>500</span><span>400</span><span>300</span><span>200</span><span>100</span><span>0</span>
                 </div>
                 <div class="flex-1">
                   <!-- Grid lines -->
-                  <div class="relative h-[180px] border-b border-gray-100">
-                    <div v-for="i in 6" :key="'gl-'+i" class="absolute w-full border-t border-gray-50"
+                  <div class="relative h-[180px] border-b border-gray-100 dark:border-white/10">
+                    <div v-for="i in 6" :key="'gl-'+i" class="absolute w-full border-t border-gray-50 dark:border-white/5"
                       :style="{ top: `${(i - 1) * (100/6)}%` }" />
                     <!-- Bars -->
                     <div class="absolute bottom-0 left-0 right-0 flex items-end justify-around h-full px-2">
                       <div v-for="(bar, idx) in projectBars" :key="idx" class="flex flex-col items-center gap-1" style="width: 40px;">
                         <div class="w-[28px] rounded-t-md transition-all duration-500"
-                          :class="idx % 2 === 0 ? 'bg-[#0D0D0D]' : 'bg-[#10B981]'"
+                          :class="idx % 2 === 0 ? 'bg-[#0D0D0D] dark:bg-white/80' : 'bg-[#10B981]'"
                           :style="{ height: `${bar.height}%` }" />
                       </div>
                     </div>
                   </div>
                   <!-- X axis -->
-                  <div class="flex justify-around mt-2 text-[14px] text-[#00000099] font-medium" style="letter-spacing: -0.28px;">
+                  <div class="flex justify-around mt-2 text-[14px] text-[#00000099] dark:text-[#99a0ae] font-medium" style="letter-spacing: -0.28px;">
                     <span>{{ lang.language.value === 'en' ? 'Jan' : 'Ene' }}</span><span>Feb</span><span>Mar</span><span>{{ lang.language.value === 'en' ? 'Apr' : 'Abr' }}</span><span>{{ lang.language.value === 'en' ? 'May' : 'May' }}</span>
                   </div>
                 </div>
@@ -109,30 +136,30 @@
             <!-- Right sub-column: Token Usage + Pomodoro -->
             <div class="space-y-3">
               <!-- Uso de Tokens AI -->
-              <div v-if="canViewUsageStats" class="bg-white rounded-[15px] border border-gray-100 p-4 min-h-[164px]">
+              <div v-if="canViewUsageStats" class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-100 dark:border-white/10 p-4 min-h-[164px]">
                 <div class="flex items-center justify-between mb-2">
-                  <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">{{ t.tokenUsage }}</h3>
-                  <button @click="loadTokenUsage" class="text-[12px] text-[#7A7A7A] bg-[#f6f6f6] rounded-full px-3 py-1 hover:bg-gray-200 transition-colors cursor-pointer">
+                  <h3 class="text-[16px] font-semibold text-[#0D0D0D] dark:text-gray-100" style="letter-spacing: -0.32px;">{{ t.tokenUsage }}</h3>
+                  <button @click="loadTokenUsage" class="text-[12px] text-[#7A7A7A] dark:text-[#99a0ae] bg-[#f6f6f6] dark:bg-gray-700 rounded-full px-3 py-1 hover:bg-gray-200 transition-colors cursor-pointer">
                     {{ tokenLoading ? '...' : t.update }}
                   </button>
                 </div>
                 <template v-if="tokenStats">
                   <div class="flex items-start justify-between">
                     <div>
-                      <p class="text-[12px] text-[#666d80]">{{ lang.language.value === 'en' ? 'Tokens Used' : 'Tokens Usados' }}</p>
+                      <p class="text-[12px] text-[#666d80] dark:text-[#99a0ae]">{{ lang.language.value === 'en' ? 'Tokens Used' : 'Tokens Usados' }}</p>
                       <div class="flex items-center gap-2">
-                        <span class="text-[32px] font-bold text-[#0D0D0D] tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -1.92px;">{{ formatTokens(tokenStats.totalTokens) }}</span>
-                        <span class="bg-[#ECFDF5] text-[#10B981] text-[11px] font-medium px-2 py-1 rounded-full">{{ tokenStats.percentUsed }}%</span>
+                        <span class="text-[32px] font-bold text-[#0D0D0D] dark:text-gray-100 tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -1.92px;">{{ formatTokens(tokenStats.totalTokens) }}</span>
+                        <span class="bg-[#ECFDF5] dark:bg-emerald-500/10 text-[#10B981] dark:text-emerald-400 text-[11px] font-medium px-2 py-1 rounded-full">{{ tokenStats.percentUsed }}%</span>
                       </div>
                       <!-- Token ring -->
                       <div class="flex items-center gap-3 mt-2">
                         <svg class="w-[50px] h-[50px]" viewBox="0 0 50 50">
-                          <circle cx="25" cy="25" r="20" fill="none" stroke="#E8E8E8" stroke-width="4" />
+                          <circle cx="25" cy="25" r="20" fill="none" stroke-width="4" class="stroke-[#E8E8E8] dark:stroke-white/10" />
                           <circle cx="25" cy="25" r="20" fill="none" stroke="#10B981" stroke-width="4"
                             :stroke-dasharray="125.66" :stroke-dashoffset="125.66 * (1 - (tokenStats.percentUsed / 100))"
                             stroke-linecap="round" transform="rotate(-90 25 25)" class="transition-all duration-700" />
                         </svg>
-                        <div class="text-[11px] text-[#666d80] space-y-0.5">
+                        <div class="text-[11px] text-[#666d80] dark:text-[#99a0ae] space-y-0.5">
                           <p>{{ formatTokens(tokenStats.totalTokens) }} / {{ formatTokens(tokenStats.limit) }}</p>
                         </div>
                       </div>
@@ -140,34 +167,34 @@
                     <!-- Breakdown -->
                     <div class="space-y-1.5 text-right">
                       <div v-for="(tokens, actionName) in topActions" :key="actionName" class="flex items-center gap-2">
-                        <span class="text-[11px] text-[#7A7A7A] truncate max-w-[80px]">{{ actionName }}</span>
-                        <span class="text-[11px] font-semibold text-[#0D0D0D] tabular-nums">{{ formatTokens(tokens) }}</span>
+                        <span class="text-[11px] text-[#7A7A7A] dark:text-[#99a0ae] truncate max-w-[80px]">{{ actionName }}</span>
+                        <span class="text-[11px] font-semibold text-[#0D0D0D] dark:text-gray-100 tabular-nums">{{ formatTokens(tokens) }}</span>
                       </div>
                     </div>
                   </div>
                 </template>
                 <template v-else>
                   <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-full bg-gray-100 animate-pulse" />
+                    <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-white/10 animate-pulse" />
                     <div class="space-y-2 flex-1">
-                      <div class="h-4 bg-gray-100 rounded animate-pulse w-1/3" />
-                      <div class="h-3 bg-gray-100 rounded animate-pulse w-2/3" />
+                      <div class="h-4 bg-gray-100 dark:bg-white/10 rounded animate-pulse w-1/3" />
+                      <div class="h-3 bg-gray-100 dark:bg-white/10 rounded animate-pulse w-2/3" />
                     </div>
                   </div>
                 </template>
               </div>
 
               <!-- Pomodoro Timer (inline layout matching design) -->
-              <div class="bg-white rounded-[15px] border border-gray-100 p-4 min-h-[127px]">
+              <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-100 dark:border-white/10 p-4 min-h-[127px]">
                 <!-- Top row: Timer + Ring -->
                 <div class="flex items-start gap-4">
                   <!-- Left: title + time + label -->
                   <div class="flex-1 min-w-0">
-                    <p class="text-[14px] font-semibold text-[#0D0D0D]">{{ t.pomodoroTimer }}</p>
-                    <p class="text-[36px] sm:text-[48px] font-bold text-[#0D0D0D] leading-none tabular-nums mt-1" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2px;">
+                    <p class="text-[14px] font-semibold text-[#0D0D0D] dark:text-gray-100">{{ t.pomodoroTimer }}</p>
+                    <p class="text-[36px] sm:text-[48px] font-bold text-[#0D0D0D] dark:text-gray-100 leading-none tabular-nums mt-1" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2px;">
                       {{ pomodoroDisplay }}
                     </p>
-                    <p class="text-[12px] text-[#7A7A7A] mt-1">
+                    <p class="text-[12px] text-[#7A7A7A] dark:text-[#99a0ae] mt-1">
                       {{ pomodoroPhase === 'work' ? t.focusSession : t.breakTime }}
                     </p>
                     <p v-if="pomodoro.activeTask.value" class="text-[11px] text-emerald-600 font-medium mt-0.5 truncate">
@@ -178,7 +205,7 @@
                   <!-- Center: Ring -->
                   <div class="relative shrink-0">
                     <svg class="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" viewBox="0 0 80 80">
-                      <circle cx="40" cy="40" r="34" fill="none" stroke="#E8E8E8" stroke-width="6" />
+                      <circle cx="40" cy="40" r="34" fill="none" stroke-width="6" class="stroke-[#E8E8E8] dark:stroke-white/10" />
                       <circle cx="40" cy="40" r="34" fill="none" stroke="#10B981" stroke-width="6"
                         :stroke-dasharray="213.63" :stroke-dashoffset="pomodoroRingOffset"
                         stroke-linecap="round" transform="rotate(-90 40 40)"
@@ -190,29 +217,29 @@
                   </div>
                 </div>
                 <!-- Bottom row: Stats + Controls (always visible) -->
-                <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
+                <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-50 dark:border-white/5">
                   <div class="flex items-center gap-4">
                     <div>
-                      <p class="text-[11px] text-[#7A7A7A]">{{ lang.language.value === 'en' ? 'Sessions today' : 'Sesiones hoy' }}</p>
-                      <p class="text-[14px] font-bold text-[#0D0D0D] tabular-nums">{{ pomodoroSessions }}</p>
+                      <p class="text-[11px] text-[#7A7A7A] dark:text-[#99a0ae]">{{ lang.language.value === 'en' ? 'Sessions today' : 'Sesiones hoy' }}</p>
+                      <p class="text-[14px] font-bold text-[#0D0D0D] dark:text-gray-100 tabular-nums">{{ pomodoroSessions }}</p>
                     </div>
                     <div>
-                      <p class="text-[11px] text-[#7A7A7A]">{{ lang.language.value === 'en' ? 'Streak' : 'Racha' }}</p>
-                      <p class="text-[14px] font-bold text-[#0D0D0D]">{{ streak }} {{ lang.language.value === 'en' ? 'days' : 'dias' }}</p>
+                      <p class="text-[11px] text-[#7A7A7A] dark:text-[#99a0ae]">{{ lang.language.value === 'en' ? 'Streak' : 'Racha' }}</p>
+                      <p class="text-[14px] font-bold text-[#0D0D0D] dark:text-gray-100">{{ streak }} {{ lang.language.value === 'en' ? 'days' : 'dias' }}</p>
                     </div>
                   </div>
                   <div class="flex items-center gap-2">
                     <button
                       @click="togglePomodoro"
                       class="px-4 py-1.5 rounded-lg text-[12px] font-semibold transition-all cursor-pointer"
-                      :class="pomodoroRunning ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-[#10B981] text-white hover:bg-emerald-600'"
+                      :class="pomodoroRunning ? 'bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400 hover:bg-red-200' : 'bg-[#10B981] text-white hover:bg-emerald-600'"
                     >
                       {{ pomodoroRunning ? t.pause : t.start }}
                     </button>
                     <button
                       v-if="pushNotif.permission.value !== 'granted'"
                       @click="pushNotif.requestPermission()"
-                      class="px-3 py-1 rounded-lg text-[10px] font-medium text-amber-600 bg-amber-50 hover:bg-amber-100 transition-all cursor-pointer"
+                      class="px-3 py-1 rounded-lg text-[10px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 hover:bg-amber-100 transition-all cursor-pointer"
                     >
                       {{ t.enableNotifications }}
                     </button>
@@ -226,14 +253,14 @@
           <div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-3">
 
             <!-- Lista de Tareas (table) -->
-            <div class="bg-white rounded-[15px] border border-gray-100 overflow-hidden min-h-[269px]">
+            <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-100 dark:border-white/10 overflow-hidden min-h-[269px]">
               <div class="flex items-center justify-between p-4 pb-2">
                 <div class="flex items-center gap-3">
-                  <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">{{ t.board }}</h3>
+                  <h3 class="text-[16px] font-semibold text-[#0D0D0D] dark:text-gray-100" style="letter-spacing: -0.32px;">{{ t.board }}</h3>
                   <!-- Project dropdown selector -->
                   <select
                     v-model="filterProjectId"
-                    class="text-[12px] font-medium text-[#0D0D0D] bg-[#f6f6f6] rounded-full px-3 py-1 border-0 outline-none cursor-pointer hover:bg-gray-200 transition-colors appearance-none pr-6"
+                    class="text-[12px] font-medium text-[#0D0D0D] dark:text-gray-100 bg-[#f6f6f6] dark:bg-gray-700 rounded-full px-3 py-1 border-0 outline-none cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors appearance-none pr-6"
                     style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%237A7A7A%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 8px center; background-size: 14px;"
                   >
                     <option value="">{{ lang.language.value === 'en' ? 'All tasks' : 'Todas las tareas' }}</option>
@@ -242,7 +269,7 @@
                   <!-- Filtros button -->
                   <button
                     class="text-[12px] font-medium px-3 py-1 rounded-full transition-all cursor-pointer"
-                    :class="showFilters ? 'bg-[#0D0D0D] text-white' : 'text-[#7A7A7A] bg-[#f6f6f6] hover:bg-gray-200'"
+                    :class="showFilters ? 'bg-[#0D0D0D] dark:bg-white text-white dark:text-[#0D0D0D]' : 'text-[#7A7A7A] dark:text-[#99a0ae] bg-[#f6f6f6] dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10'"
                     @click="showFilters = !showFilters"
                   >
                     <span class="flex items-center gap-1">
@@ -259,7 +286,7 @@
               <div v-if="showFilters" class="px-4 pb-2 flex items-center gap-2">
                 <select
                   v-model="filterPriority"
-                  class="text-[11px] font-medium text-[#7A7A7A] bg-[#f6f6f6] rounded-full px-2.5 py-1 border-0 outline-none cursor-pointer"
+                  class="text-[11px] font-medium text-[#7A7A7A] dark:text-[#99a0ae] bg-[#f6f6f6] dark:bg-gray-700 rounded-full px-2.5 py-1 border-0 outline-none cursor-pointer"
                 >
                   <option value="">{{ t.priority }}</option>
                   <option value="urgent">{{ t.priorityCritical }}</option>
@@ -269,7 +296,7 @@
                 </select>
                 <select
                   v-model="filterStatus"
-                  class="text-[11px] font-medium text-[#7A7A7A] bg-[#f6f6f6] rounded-full px-2.5 py-1 border-0 outline-none cursor-pointer"
+                  class="text-[11px] font-medium text-[#7A7A7A] dark:text-[#99a0ae] bg-[#f6f6f6] dark:bg-gray-700 rounded-full px-2.5 py-1 border-0 outline-none cursor-pointer"
                 >
                   <option value="">{{ t.status }}</option>
                   <option value="done">{{ t.done }}</option>
@@ -284,7 +311,7 @@
                 </button>
               </div>
               <!-- Table header -->
-              <div class="grid grid-cols-[2fr_1fr_1fr] md:grid-cols-[1.5fr_1fr_0.8fr_0.8fr_0.8fr_0.8fr] px-4 py-2 text-[12px] font-medium text-[#7A7A7A] border-b border-gray-50">
+              <div class="grid grid-cols-[2fr_1fr_1fr] md:grid-cols-[1.5fr_1fr_0.8fr_0.8fr_0.8fr_0.8fr] px-4 py-2 text-[12px] font-medium text-[#7A7A7A] dark:text-[#99a0ae] border-b border-gray-50 dark:border-white/5">
                 <span>{{ t.name }}</span>
                 <span class="hidden md:block">{{ t.project }}</span>
                 <span>{{ t.date }}</span>
@@ -295,27 +322,27 @@
               <!-- Table rows -->
               <div v-if="filteredTasks.length > 0">
                 <div v-for="task in filteredTasks" :key="task.id"
-                  class="grid grid-cols-[2fr_1fr_1fr] md:grid-cols-[1.5fr_1fr_0.8fr_0.8fr_0.8fr_0.8fr] px-4 py-2.5 text-[12px] border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
+                  class="grid grid-cols-[2fr_1fr_1fr] md:grid-cols-[1.5fr_1fr_0.8fr_0.8fr_0.8fr_0.8fr] px-4 py-2.5 text-[12px] border-b border-gray-50 dark:border-white/5 last:border-0 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
                   <div class="flex items-center gap-2 min-w-0">
-                    <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                      <span class="text-[10px] font-bold text-emerald-700">{{ task.title?.charAt(0)?.toUpperCase() }}</span>
+                    <div class="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center shrink-0">
+                      <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-400">{{ task.title?.charAt(0)?.toUpperCase() }}</span>
                     </div>
-                    <span class="text-[#0D0D0D] font-medium truncate">{{ task.title }}</span>
+                    <span class="text-[#0D0D0D] dark:text-gray-100 font-medium truncate">{{ task.title }}</span>
                   </div>
-                  <span class="text-[#7A7A7A] truncate hidden md:block">{{ task.projectName || '—' }}</span>
-                  <span class="text-[#7A7A7A]">{{ task.dateShort }}</span>
+                  <span class="text-[#7A7A7A] dark:text-[#99a0ae] truncate hidden md:block">{{ task.projectName || '—' }}</span>
+                  <span class="text-[#7A7A7A] dark:text-[#99a0ae]">{{ task.dateShort }}</span>
                   <span class="hidden md:block">
                     <span class="text-[10px] font-medium px-2 py-0.5 rounded-full"
-                      :class="task.isCompleted ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'">
+                      :class="task.isCompleted ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400'">
                       {{ task.isCompleted ? t.done : t.inProgress }}
                     </span>
                   </span>
                   <span>
                     <span class="text-[10px] font-medium px-2 py-0.5 rounded-full"
                       :class="{
-                        'bg-red-50 text-red-600': task.priority === 'high' || task.priority === 'urgent',
-                        'bg-amber-50 text-amber-600': task.priority === 'medium',
-                        'bg-blue-50 text-blue-600': task.priority === 'low',
+                        'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400': task.priority === 'high' || task.priority === 'urgent',
+                        'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400': task.priority === 'medium',
+                        'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400': task.priority === 'low',
                       }">
                       {{ task.priority === 'high' || task.priority === 'urgent' ? t.priorityHigh : task.priority === 'medium' ? t.priorityMedium : t.priorityLow }}
                     </span>
@@ -330,42 +357,42 @@
                   </span>
                 </div>
               </div>
-              <div v-else class="flex flex-col items-center justify-center py-10 text-[#7A7A7A]">
+              <div v-else class="flex flex-col items-center justify-center py-10 text-[#7A7A7A] dark:text-[#99a0ae]">
                 <UIcon name="i-heroicons-clipboard-document-list" class="w-8 h-8 text-gray-300 mb-2" />
                 <p class="text-[12px]">{{ recentTasks.length > 0 ? (lang.language.value === 'en' ? 'No results with these filters' : 'Sin resultados con estos filtros') : (lang.language.value === 'en' ? 'No recent tasks' : 'No hay tareas recientes') }}</p>
               </div>
             </div>
 
             <!-- Ranking de Proyectos -->
-            <div class="bg-white rounded-[15px] border border-gray-100 p-4 min-h-[269px]">
+            <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-100 dark:border-white/10 p-4 min-h-[269px]">
               <div class="flex items-center justify-between mb-3">
-                <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">{{ t.projectRanking }}</h3>
+                <h3 class="text-[16px] font-semibold text-[#0D0D0D] dark:text-gray-100" style="letter-spacing: -0.32px;">{{ t.projectRanking }}</h3>
               </div>
               <div class="space-y-2">
                 <NuxtLink
                   v-for="(project, idx) in rankedProjects"
                   :key="project.id"
                   :to="`/${store.slug}/projects/${project.id}/kanban`"
-                  class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-all group cursor-pointer"
+                  class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-all group cursor-pointer"
                 >
                   <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
                     :style="{ backgroundColor: project.color + '20' }">
                     <UIcon name="i-heroicons-folder" class="w-4 h-4" :style="{ color: project.color }" />
                   </div>
                   <div class="min-w-0 flex-1">
-                    <p class="text-[13px] font-medium text-[#0D0D0D] truncate group-hover:text-[#10B981] transition-colors">{{ project.name }}</p>
-                    <p class="text-[10px] text-[#7A7A7A]">{{ project.taskCount || 0 }} {{ t.tasks }}</p>
+                    <p class="text-[13px] font-medium text-[#0D0D0D] dark:text-gray-100 truncate group-hover:text-[#10B981] transition-colors">{{ project.name }}</p>
+                    <p class="text-[10px] text-[#7A7A7A] dark:text-[#99a0ae]">{{ project.taskCount || 0 }} {{ t.tasks }}</p>
                   </div>
                   <div class="flex items-center gap-1">
-                    <div class="w-[50px] h-[5px] bg-gray-100 rounded-full overflow-hidden">
+                    <div class="w-[50px] h-[5px] bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
                       <div class="h-full bg-[#10B981] rounded-full transition-all duration-500"
                         :style="{ width: `${project.progress || 0}%` }" />
                     </div>
-                    <span class="text-[10px] font-medium text-[#7A7A7A] tabular-nums w-6 text-right">{{ project.progress || 0 }}%</span>
+                    <span class="text-[10px] font-medium text-[#7A7A7A] dark:text-[#99a0ae] tabular-nums w-6 text-right">{{ project.progress || 0 }}%</span>
                   </div>
                 </NuxtLink>
                 <div v-if="rankedProjects.length === 0" class="text-center py-6">
-                  <p class="text-[12px] text-[#7A7A7A]">{{ t.noProjects }}</p>
+                  <p class="text-[12px] text-[#7A7A7A] dark:text-[#99a0ae]">{{ t.noProjects }}</p>
                   <button @click="showCreate = true" class="mt-2 text-[12px] font-semibold text-[#10B981] hover:text-emerald-700 cursor-pointer">
                     + {{ t.createProject }}
                   </button>
@@ -379,10 +406,10 @@
         <div class="w-full lg:w-[396px] lg:shrink-0 space-y-3 overflow-visible">
 
           <!-- Coach Anti-Procrastinación -->
-          <div class="bg-white rounded-[15px] border border-gray-100 overflow-hidden">
+          <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-100 dark:border-white/10 overflow-hidden">
             <div class="flex items-center justify-between p-4 pb-2">
-              <h3 class="text-[16px] font-semibold text-[#0D0D0D]">{{ t.antiProcrastination }}</h3>
-              <span class="text-[12px] text-[#7A7A7A] bg-[#f6f6f6] rounded-full px-3 py-1 cursor-pointer hover:bg-gray-200 transition-colors"
+              <h3 class="text-[16px] font-semibold text-[#0D0D0D] dark:text-gray-100">{{ t.antiProcrastination }}</h3>
+              <span class="text-[12px] text-[#7A7A7A] dark:text-[#99a0ae] bg-[#f6f6f6] dark:bg-gray-700 rounded-full px-3 py-1 cursor-pointer hover:bg-gray-200 transition-colors"
                 @click="loadCoachAdvice">
                 {{ coachLoading ? (lang.language.value === 'en' ? 'Analyzing...' : 'Analizando...') : t.update }}
               </span>
@@ -391,47 +418,47 @@
             <div class="p-4 pt-2">
               <!-- Loading state -->
               <div v-if="coachLoading" class="space-y-3">
-                <div class="h-4 bg-gray-100 rounded animate-pulse w-3/4" />
-                <div class="h-4 bg-gray-100 rounded animate-pulse w-full" />
-                <div class="h-4 bg-gray-100 rounded animate-pulse w-2/3" />
+                <div class="h-4 bg-gray-100 dark:bg-white/10 rounded animate-pulse w-3/4" />
+                <div class="h-4 bg-gray-100 dark:bg-white/10 rounded animate-pulse w-full" />
+                <div class="h-4 bg-gray-100 dark:bg-white/10 rounded animate-pulse w-2/3" />
               </div>
 
               <!-- Coach content -->
               <div v-else-if="coachData" class="space-y-3">
                 <div class="flex items-center gap-3 p-3 rounded-xl"
-                  :class="coachData.score > 60 ? 'bg-red-50' : coachData.score > 30 ? 'bg-amber-50' : 'bg-emerald-50'">
+                  :class="coachData.score > 60 ? 'bg-red-50 dark:bg-red-500/10' : coachData.score > 30 ? 'bg-amber-50 dark:bg-amber-500/10' : 'bg-emerald-50 dark:bg-emerald-500/10'">
                   <div class="text-2xl font-bold tabular-nums"
-                    :class="coachData.score > 60 ? 'text-red-600' : coachData.score > 30 ? 'text-amber-600' : 'text-emerald-600'">
+                    :class="coachData.score > 60 ? 'text-red-600 dark:text-red-400' : coachData.score > 30 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'">
                     {{ coachData.score }}
                   </div>
                   <div>
-                    <p class="text-[12px] font-semibold text-[#0D0D0D]">{{ lang.language.value === 'en' ? 'Procrastination risk' : 'Riesgo de procrastinación' }}</p>
-                    <p class="text-[11px] text-[#7A7A7A]">{{ coachData.analysis }}</p>
+                    <p class="text-[12px] font-semibold text-[#0D0D0D] dark:text-gray-100">{{ lang.language.value === 'en' ? 'Procrastination risk' : 'Riesgo de procrastinación' }}</p>
+                    <p class="text-[11px] text-[#7A7A7A] dark:text-[#99a0ae]">{{ coachData.analysis }}</p>
                   </div>
                 </div>
                 <div v-if="coachData.quick_wins?.length">
-                  <p class="text-[10px] font-bold uppercase tracking-widest text-[#7A7A7A] mb-2">{{ t.quickWins }}</p>
+                  <p class="text-[10px] font-bold uppercase tracking-widest text-[#7A7A7A] dark:text-[#99a0ae] mb-2">{{ t.quickWins }}</p>
                   <div class="space-y-1.5">
-                    <div v-for="(win, i) in coachData.quick_wins.slice(0, 3)" :key="i" class="flex items-start gap-2 text-[12px] text-[#0D0D0D]">
+                    <div v-for="(win, i) in coachData.quick_wins.slice(0, 3)" :key="i" class="flex items-start gap-2 text-[12px] text-[#0D0D0D] dark:text-gray-100">
                       <UIcon name="i-heroicons-check-circle" class="w-4 h-4 text-[#10B981] shrink-0 mt-0.5" />
                       <span>{{ win }}</span>
                     </div>
                   </div>
                 </div>
-                <div v-if="coachData.motivation" class="p-3 bg-emerald-50 rounded-xl">
-                  <p class="text-[12px] text-emerald-800 font-medium italic">"{{ coachData.motivation }}"</p>
+                <div v-if="coachData.motivation" class="p-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl">
+                  <p class="text-[12px] text-emerald-800 dark:text-emerald-300 font-medium italic">"{{ coachData.motivation }}"</p>
                 </div>
               </div>
 
               <!-- Empty / AI Chat bubble style -->
               <div v-else class="space-y-3">
                 <div class="flex items-start gap-3">
-                  <div class="w-10 h-10 rounded-full bg-[#0D0D0D] flex items-center justify-center shrink-0">
+                  <div class="w-10 h-10 rounded-full bg-[#0D0D0D] dark:bg-white/10 flex items-center justify-center shrink-0">
                     <UIcon name="i-heroicons-sparkles" class="w-5 h-5 text-white" />
                   </div>
-                  <div class="bg-[#f6f6f6] rounded-2xl rounded-tl-sm p-3 flex-1">
-                    <p class="text-[13px] text-[#0D0D0D] font-medium">{{ lang.language.value === 'en' ? `Good morning, ${userName}.` : `Buenos dias, ${userName}.` }}</p>
-                    <p class="text-[12px] text-[#7A7A7A] mt-1">{{ lang.language.value === 'en' ? "What's blocking you today?" : '¿Qué te está bloqueando hoy?' }}</p>
+                  <div class="bg-[#f6f6f6] dark:bg-white/5 rounded-2xl rounded-tl-sm p-3 flex-1">
+                    <p class="text-[13px] text-[#0D0D0D] dark:text-gray-100 font-medium">{{ lang.language.value === 'en' ? `Good morning, ${userName}.` : `Buenos dias, ${userName}.` }}</p>
+                    <p class="text-[12px] text-[#7A7A7A] dark:text-[#99a0ae] mt-1">{{ lang.language.value === 'en' ? "What's blocking you today?" : '¿Qué te está bloqueando hoy?' }}</p>
                   </div>
                 </div>
                 <button
@@ -445,18 +472,18 @@
           </div>
 
           <!-- AI Token Usage (detailed) -->
-          <div v-if="canViewUsageStats" class="bg-white rounded-[15px] border border-gray-100 p-4">
+          <div v-if="canViewUsageStats" class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-100 dark:border-white/10 p-4">
             <div class="flex items-center justify-between mb-3">
-              <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">{{ lang.language.value === 'en' ? "Today's Sessions" : 'Sesiones de hoy' }}</h3>
+              <h3 class="text-[16px] font-semibold text-[#0D0D0D] dark:text-gray-100" style="letter-spacing: -0.32px;">{{ lang.language.value === 'en' ? "Today's Sessions" : 'Sesiones de hoy' }}</h3>
               <div class="flex items-center gap-2">
                 <span
                   class="text-[12px] rounded-full px-3 py-1 cursor-pointer transition-colors"
-                  :class="aiTab === 'overview' ? 'bg-[#0D0D0D] text-white' : 'bg-[#f6f6f6] text-[#7A7A7A] hover:bg-gray-200'"
+                  :class="aiTab === 'overview' ? 'bg-[#0D0D0D] text-white dark:bg-white dark:text-[#0D0D0D]' : 'bg-[#f6f6f6] dark:bg-white/5 text-[#7A7A7A] dark:text-[#99a0ae] hover:bg-gray-200'"
                   @click="aiTab = 'overview'"
                 >{{ t.general }}</span>
                 <span
                   class="text-[12px] rounded-full px-3 py-1 cursor-pointer transition-colors"
-                  :class="aiTab === 'daily' ? 'bg-[#0D0D0D] text-white' : 'bg-[#f6f6f6] text-[#7A7A7A] hover:bg-gray-200'"
+                  :class="aiTab === 'daily' ? 'bg-[#0D0D0D] text-white dark:bg-white dark:text-[#0D0D0D]' : 'bg-[#f6f6f6] dark:bg-white/5 text-[#7A7A7A] dark:text-[#99a0ae] hover:bg-gray-200'"
                   @click="aiTab = 'daily'"
                 >{{ t.daily }}</span>
               </div>
@@ -467,20 +494,20 @@
               <div v-if="aiTab === 'overview'" class="space-y-3">
                 <div class="flex items-center gap-4">
                   <svg class="w-[80px] h-[80px] shrink-0" viewBox="0 0 80 80">
-                    <circle cx="40" cy="40" r="34" fill="none" stroke="#E8E8E8" stroke-width="6" />
+                    <circle cx="40" cy="40" r="34" fill="none" stroke-width="6" class="stroke-[#E8E8E8] dark:stroke-white/10" />
                     <circle cx="40" cy="40" r="34" fill="none" stroke="#10B981" stroke-width="6"
                       :stroke-dasharray="213.63" :stroke-dashoffset="213.63 * (1 - tokenStats.percentUsed / 100)"
                       stroke-linecap="round" transform="rotate(-90 40 40)" class="transition-all duration-700" />
-                    <text x="40" y="38" text-anchor="middle" font-size="14" font-weight="700" fill="#0D0D0D" style="font-family: 'Space Grotesk'">{{ tokenStats.percentUsed }}%</text>
-                    <text x="40" y="50" text-anchor="middle" font-size="8" fill="#7A7A7A">{{ lang.language.value === 'en' ? 'used' : 'usado' }}</text>
+                    <text x="40" y="38" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor" class="text-[#0D0D0D] dark:text-gray-100" style="font-family: 'Space Grotesk'">{{ tokenStats.percentUsed }}%</text>
+                    <text x="40" y="50" text-anchor="middle" font-size="8" fill="currentColor" class="text-[#7A7A7A] dark:text-[#99a0ae]">{{ lang.language.value === 'en' ? 'used' : 'usado' }}</text>
                   </svg>
                   <div class="space-y-2 flex-1">
                     <div v-for="(tokens, actionName) in topActions" :key="actionName">
                       <div class="flex items-center justify-between text-[11px] mb-0.5">
-                        <span class="text-[#7A7A7A]">{{ actionName }}</span>
-                        <span class="font-semibold text-[#0D0D0D] tabular-nums">{{ formatTokens(tokens) }}</span>
+                        <span class="text-[#7A7A7A] dark:text-[#99a0ae]">{{ actionName }}</span>
+                        <span class="font-semibold text-[#0D0D0D] dark:text-gray-100 tabular-nums">{{ formatTokens(tokens) }}</span>
                       </div>
-                      <div class="h-[3px] bg-gray-100 rounded-full overflow-hidden">
+                      <div class="h-[3px] bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
                         <div class="h-full bg-[#10B981] rounded-full" :style="{ width: `${(tokens / tokenStats.totalTokens) * 100}%` }" />
                       </div>
                     </div>
@@ -490,8 +517,8 @@
               <!-- Daily tab -->
               <div v-else class="space-y-3">
                 <div>
-                  <p class="text-[11px] text-[#7A7A7A]">{{ t.today }}</p>
-                  <span class="text-[28px] font-bold text-[#0D0D0D] tabular-nums" style="font-family: 'Space Grotesk';">{{ formatTokens(todayTokens) }}</span>
+                  <p class="text-[11px] text-[#7A7A7A] dark:text-[#99a0ae]">{{ t.today }}</p>
+                  <span class="text-[28px] font-bold text-[#0D0D0D] dark:text-gray-100 tabular-nums" style="font-family: 'Space Grotesk';">{{ formatTokens(todayTokens) }}</span>
                   <span v-if="todayTokens > yesterdayTokens && yesterdayTokens > 0" class="text-[11px] font-bold text-red-500 ml-2">
                     +{{ Math.round(((todayTokens - yesterdayTokens) / yesterdayTokens) * 100) }}%
                   </span>
@@ -499,18 +526,18 @@
                 <div class="flex items-end gap-1 h-[60px]">
                   <div v-for="(day, i) in last7Days" :key="i"
                     class="flex-1 rounded-sm transition-all duration-300"
-                    :class="day.isToday ? 'bg-[#10B981]' : 'bg-gray-200'"
+                    :class="day.isToday ? 'bg-[#10B981]' : 'bg-gray-200 dark:bg-white/15'"
                     :style="{ height: `${day.height}%`, minHeight: day.tokens > 0 ? '4px' : '2px' }"
                     :title="`${day.date}: ${formatTokens(day.tokens)}`" />
                 </div>
-                <div class="flex justify-between text-[9px] text-[#7A7A7A]">
+                <div class="flex justify-between text-[9px] text-[#7A7A7A] dark:text-[#99a0ae]">
                   <span>{{ lang.language.value === 'en' ? '7d ago' : '7d atrás' }}</span><span>{{ t.today }}</span>
                 </div>
               </div>
             </template>
             <template v-else>
               <div class="space-y-2">
-                <div class="h-[80px] bg-gray-100 rounded-lg animate-pulse" />
+                <div class="h-[80px] bg-gray-100 dark:bg-white/10 rounded-lg animate-pulse" />
               </div>
             </template>
           </div>
@@ -551,20 +578,20 @@
           </div>
 
           <!-- Daily Plan (compact) -->
-          <div v-if="canUseAI" class="bg-white rounded-[15px] border border-gray-100 p-4 cursor-pointer hover:shadow-sm transition-all"
+          <div v-if="canUseAI" class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-100 dark:border-white/10 p-4 cursor-pointer hover:shadow-sm transition-all"
             @click="loadDailyPlan">
             <div class="flex items-center justify-between mb-2">
-              <h3 class="text-[14px] font-semibold text-[#0D0D0D]">{{ t.dailyPlan }}</h3>
-              <div class="w-6 h-6 rounded-full bg-violet-50 flex items-center justify-center">
+              <h3 class="text-[14px] font-semibold text-[#0D0D0D] dark:text-gray-100">{{ t.dailyPlan }}</h3>
+              <div class="w-6 h-6 rounded-full bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center">
                 <UIcon name="i-heroicons-sparkles" class="w-3.5 h-3.5 text-violet-600" />
               </div>
             </div>
             <div v-if="dailyPlan">
-              <p class="text-[12px] text-[#0D0D0D] font-medium mb-2">{{ dailyPlan.greeting }}</p>
+              <p class="text-[12px] text-[#0D0D0D] dark:text-gray-100 font-medium mb-2">{{ dailyPlan.greeting }}</p>
               <div class="space-y-1">
                 <div v-for="(task, i) in (dailyPlan.focus_tasks || []).slice(0, 3)" :key="i" class="flex items-start gap-1.5">
                   <span class="text-[10px] font-bold text-[#10B981] mt-0.5 tabular-nums">{{ Number(i) + 1 }}.</span>
-                  <span class="text-[11px] text-[#7A7A7A] leading-snug">{{ task }}</span>
+                  <span class="text-[11px] text-[#7A7A7A] dark:text-[#99a0ae] leading-snug">{{ task }}</span>
                 </div>
               </div>
             </div>
@@ -580,7 +607,7 @@
       <div class="flex items-center gap-3">
         <button
           @click="router.push(`/${store.slug}/projects`)"
-          class="bg-white hover:bg-gray-50 text-[#0D0D0D] text-[12px] font-semibold px-4 py-2 rounded-lg border border-gray-100 transition-all cursor-pointer"
+          class="bg-white dark:bg-[#1b1b1b] hover:bg-gray-50 dark:hover:bg-white/5 text-[#0D0D0D] dark:text-gray-100 text-[12px] font-semibold px-4 py-2 rounded-lg border border-gray-100 dark:border-white/10 transition-all cursor-pointer"
         >
           {{ t.viewProjects }}
         </button>
@@ -596,8 +623,8 @@
     <!-- Quick create project modal -->
     <UModal v-model:open="showCreate">
       <template #content>
-        <div class="p-6">
-          <h2 class="text-lg font-bold text-gray-900 mb-5">{{ t.newProject }}</h2>
+        <div class="p-6 bg-white dark:bg-[#1b1b1b]">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-5">{{ t.newProject }}</h2>
           <form class="space-y-4" @submit.prevent="handleCreate">
             <UFormField :label="t.name">
               <UInput v-model="newName" :placeholder="lang.language.value === 'en' ? 'Project name' : 'Nombre del proyecto'" required class="w-full" size="lg" autofocus />
@@ -605,7 +632,7 @@
             <UFormField :label="lang.language.value === 'en' ? 'Kanban Template' : 'Plantilla Kanban'">
               <USelectMenu v-model="newTemplate" :items="templateOptions" value-key="value" class="w-full" />
             </UFormField>
-            <p v-if="createError" class="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{{ createError }}</p>
+            <p v-if="createError" class="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-lg px-3 py-2">{{ createError }}</p>
             <div class="flex justify-end gap-3">
               <UButton variant="ghost" @click="showCreate = false">{{ t.cancel }}</UButton>
               <UButton type="submit" color="primary" :loading="creating" class="font-semibold">{{ t.createProject }}</UButton>
@@ -614,6 +641,14 @@
         </div>
       </template>
     </UModal>
+
+    <!-- Procrastination Quiz Modal -->
+    <ProcrastinationQuiz
+      v-if="showQuiz && store.workspace?.id"
+      :workspace-id="store.workspace.id"
+      @close="showQuiz = false"
+      @done="onQuizDone"
+    />
   </div>
 </template>
 
@@ -642,6 +677,34 @@ const creating = ref(false)
 const createError = ref('')
 const newName = ref('')
 const newTemplate = ref('simple')
+
+// Assessment
+const showQuiz = ref(false)
+const assessmentScore = ref<number | null>(null)
+const assessmentAnalysis = ref('')
+
+async function loadAssessment() {
+  if (!store.workspace?.id) return
+  try {
+    const data = await $fetch<any>(`/api/workspaces/${store.workspace.id}/assessment`)
+    if (data) {
+      assessmentScore.value = data.score
+      assessmentAnalysis.value = data.ai_analysis || ''
+    } else {
+      // No assessment yet — show quiz after a short delay
+      setTimeout(() => { showQuiz.value = true }, 1500)
+    }
+  } catch { /* silent */ }
+}
+
+function onQuizDone(score: number) {
+  assessmentScore.value = score
+  showQuiz.value = false
+}
+
+function retakeQuiz() {
+  showQuiz.value = true
+}
 
 // Coach data
 const coachLoading = ref(false)
@@ -839,6 +902,7 @@ watch(() => store.workspace?.id, async (wsId) => {
   if (!wsId || store.projects.length === 0) return
 
   loadTokenUsage()
+  loadAssessment()
 
   try {
     const supabase = useSupabaseClient()

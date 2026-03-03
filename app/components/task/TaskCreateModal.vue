@@ -1,9 +1,9 @@
 <template>
   <UModal v-model:open="isOpen">
     <template #content>
-      <div class="p-6 max-h-[85vh] overflow-y-auto">
-        <h2 class="text-lg font-bold text-gray-900 mb-1">{{ t.newTask }}</h2>
-        <p class="text-sm text-gray-500 mb-5">{{ t.addToBoard }}</p>
+      <div class="p-6 max-h-[85vh] overflow-y-auto bg-white dark:bg-[#1b1b1b]">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">{{ t.newTask }}</h2>
+        <p class="text-sm text-gray-500 dark:text-[#99a0ae] mb-5">{{ t.addToBoard }}</p>
 
         <form class="space-y-4" @submit.prevent="handleCreate">
           <UFormField :label="t.title">
@@ -45,11 +45,11 @@
                 type="button"
                 class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border"
                 :class="form.assignees.includes(m.user_id)
-                  ? 'bg-focusflow-50 text-focusflow-700 border-focusflow-200'
-                  : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200'"
+                  ? 'bg-focusflow-50 dark:bg-focusflow-950 text-focusflow-700 dark:text-focusflow-300 border-focusflow-200'
+                  : 'bg-white dark:bg-white/5 text-gray-500 dark:text-[#99a0ae] border-gray-100 dark:border-white/10 hover:border-gray-200 dark:hover:border-white/20'"
                 @click="toggleAssignee(m.user_id)"
               >
-                <div class="w-4 h-4 rounded-full bg-focusflow-100 text-focusflow-700 flex items-center justify-center text-[7px] font-bold">
+                <div class="w-4 h-4 rounded-full bg-focusflow-100 dark:bg-focusflow-950 text-focusflow-700 dark:text-focusflow-300 flex items-center justify-center text-[7px] font-bold">
                   {{ getInitials(m.email) }}
                 </div>
                 {{ m.email.split('@')[0] }}
@@ -64,7 +64,7 @@
             <UInput v-model="form.tagsStr" :placeholder="t.tagPlaceholder" class="w-full" />
           </UFormField>
 
-          <p v-if="error" class="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{{ error }}</p>
+          <p v-if="error" class="text-sm text-red-600 bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-800/30 rounded-lg px-3 py-2">{{ error }}</p>
 
           <div class="flex justify-end gap-3 pt-2">
             <UButton variant="ghost" @click="isOpen = false">{{ t.cancel }}</UButton>
@@ -138,13 +138,6 @@ watch(() => props.open, (val) => {
   }
 })
 
-// Auto-suggest estimated hours when deadline is set and no estimate exists
-watch(() => form.due_date, (newDate) => {
-  if (!newDate || form.estimated_hours) return
-  const daysUntilDue = Math.max(1, Math.ceil((new Date(newDate).getTime() - Date.now()) / 86400000))
-  const suggested = Math.min(daysUntilDue * 2, 40)
-  form.estimated_hours = String(Math.round(suggested * 2) / 2) // Round to nearest 0.5
-})
 
 function toggleAssignee(userId: string) {
   const idx = form.assignees.indexOf(userId)

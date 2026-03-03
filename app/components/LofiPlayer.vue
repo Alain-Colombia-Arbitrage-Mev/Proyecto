@@ -2,7 +2,7 @@
   <!-- FAB Button (collapsed state) -->
   <button
     v-if="!isExpanded"
-    class="fixed bottom-20 left-4 md:bottom-6 md:left-auto md:right-6 z-40 cursor-pointer group"
+    class="fixed bottom-20 left-4 md:bottom-6 md:left-4 z-40 cursor-pointer group"
     @click="expand()"
     title="Focus Music"
   >
@@ -33,7 +33,7 @@
   <transition name="player-slide">
     <div
       v-if="isExpanded"
-      class="fixed bottom-20 left-4 md:bottom-6 md:left-auto md:right-6 w-80 z-40 rounded-2xl shadow-2xl overflow-hidden border border-white/20"
+      class="fixed bottom-20 left-4 md:bottom-6 md:left-4 w-[calc(100vw-5rem)] max-w-80 z-40 rounded-2xl shadow-2xl overflow-hidden border border-white/20 dark:border-white/10"
       style="backdrop-filter: blur(20px);"
     >
       <!-- Gradient Header with Now Playing -->
@@ -43,7 +43,7 @@
       >
         <!-- Close button -->
         <button
-          class="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-white/60 transition-all cursor-pointer"
+          class="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-white/60 dark:text-[#99a0ae] dark:hover:text-gray-100 dark:hover:bg-white/10 transition-all cursor-pointer"
           @click="collapse()"
         >
           <UIcon name="i-heroicons-chevron-down" class="w-4 h-4" />
@@ -59,9 +59,9 @@
             {{ currentStation.emoji }}
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Ahora sonando</p>
-            <p class="text-sm font-bold text-gray-900 truncate">{{ currentTrack.title }}</p>
-            <p class="text-[10px] text-gray-500 truncate">{{ currentTrack.artist }} &middot; {{ currentStation.name }}</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-[#99a0ae] mb-0.5">Ahora sonando</p>
+            <p class="text-sm font-bold text-gray-900 dark:text-gray-100 truncate">{{ currentTrack.title }}</p>
+            <p class="text-[10px] text-gray-500 dark:text-[#99a0ae] truncate">{{ currentTrack.artist }} &middot; {{ currentStation.name }}</p>
             <div class="flex items-center gap-1.5 mt-0.5">
               <span v-if="isPlaying" class="flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -75,7 +75,7 @@
 
         <!-- Session timer -->
         <div v-if="sessionElapsed > 0" class="mt-2.5 flex items-center gap-2">
-          <div class="flex-1 h-1 rounded-full bg-gray-200/60 overflow-hidden">
+          <div class="flex-1 h-1 rounded-full bg-gray-200/60 dark:bg-white/10 overflow-hidden">
             <div
               class="h-full rounded-full transition-all duration-1000"
               :style="{
@@ -91,17 +91,17 @@
       </div>
 
       <!-- Motivational quote -->
-      <div class="px-5 py-2 bg-white/80">
-        <p class="text-[10px] text-gray-500 italic leading-relaxed text-center">
+      <div class="px-5 py-2 bg-white/80 dark:bg-[#1b1b1b]/80">
+        <p class="text-[10px] text-gray-500 dark:text-[#99a0ae] italic leading-relaxed text-center">
           "{{ currentQuote }}"
         </p>
       </div>
 
       <!-- Main Controls -->
-      <div class="bg-white px-5 py-3 flex items-center justify-center gap-3">
+      <div class="bg-white dark:bg-[#1b1b1b] px-5 py-3 flex items-center justify-center gap-3">
         <!-- Prev track -->
         <button
-          class="w-8 h-8 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all cursor-pointer"
+          class="w-8 h-8 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 dark:text-[#99a0ae] dark:hover:text-gray-100 dark:hover:bg-white/10 transition-all cursor-pointer"
           @click="prevTrack()"
           title="Tema anterior"
         >
@@ -122,7 +122,7 @@
 
         <!-- Next track -->
         <button
-          class="w-8 h-8 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all cursor-pointer"
+          class="w-8 h-8 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 dark:text-[#99a0ae] dark:hover:text-gray-100 dark:hover:bg-white/10 transition-all cursor-pointer"
           @click="nextTrack()"
           title="Siguiente tema"
         >
@@ -132,7 +132,7 @@
         <!-- Track list toggle -->
         <button
           class="w-8 h-8 rounded-xl flex items-center justify-center transition-all cursor-pointer"
-          :class="showTrackList ? 'text-gray-900 bg-gray-100' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'"
+          :class="showTrackList ? 'text-gray-900 bg-gray-100 dark:text-gray-100 dark:bg-white/10' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100 dark:text-[#99a0ae] dark:hover:text-gray-100 dark:hover:bg-white/10'"
           @click="toggleTrackList()"
           title="Lista de canciones"
         >
@@ -141,17 +141,17 @@
       </div>
 
       <!-- Volume Control -->
-      <div class="bg-white px-5 pb-3">
+      <div class="bg-white dark:bg-[#1b1b1b] px-5 pb-3">
         <div class="flex items-center gap-3">
           <button
-            class="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+            class="text-gray-400 hover:text-gray-600 dark:text-[#99a0ae] dark:hover:text-gray-100 transition-colors cursor-pointer"
             @click="setVolume(volume > 0 ? 0 : 0.7)"
           >
             <UIcon :name="volume === 0 ? 'i-heroicons-speaker-x-mark' : 'i-heroicons-speaker-wave'" class="w-4 h-4" />
           </button>
           <div class="flex-1 relative h-8 flex items-center group">
             <!-- Track bg -->
-            <div class="absolute inset-x-0 h-1.5 rounded-full bg-gray-100" />
+            <div class="absolute inset-x-0 h-1.5 rounded-full bg-gray-100 dark:bg-white/10" />
             <!-- Track fill -->
             <div
               class="absolute left-0 h-1.5 rounded-full transition-all"
@@ -162,7 +162,7 @@
             />
             <!-- Thumb -->
             <div
-              class="absolute w-4 h-4 rounded-full bg-white shadow-md border-2 -translate-x-1/2 transition-transform group-hover:scale-110"
+              class="absolute w-4 h-4 rounded-full bg-white dark:bg-[#1b1b1b] shadow-md border-2 -translate-x-1/2 transition-transform group-hover:scale-110"
               :style="{
                 left: (volume * 100) + '%',
                 borderColor: currentStation.color,
@@ -179,7 +179,7 @@
               @input="setVolume(Number(($event.target as HTMLInputElement).value))"
             />
           </div>
-          <span class="text-[10px] font-mono font-bold text-gray-400 w-7 text-right tabular-nums">
+          <span class="text-[10px] font-mono font-bold text-gray-400 dark:text-[#99a0ae] w-7 text-right tabular-nums">
             {{ Math.round(volume * 100) }}
           </span>
         </div>
@@ -187,9 +187,9 @@
 
       <!-- Track List (expandable) -->
       <transition name="track-list">
-        <div v-if="showTrackList" class="bg-white border-t border-gray-100 max-h-[180px] overflow-y-auto track-list-scroll">
+        <div v-if="showTrackList" class="bg-white dark:bg-[#1b1b1b] border-t border-gray-100 dark:border-white/10 max-h-[180px] overflow-y-auto track-list-scroll">
           <div class="px-3 py-2">
-            <p class="text-[9px] font-bold uppercase tracking-widest text-gray-300 px-2 mb-1.5">
+            <p class="text-[9px] font-bold uppercase tracking-widest text-gray-300 dark:text-[#99a0ae] px-2 mb-1.5">
               Canciones &middot; {{ currentStation.tracks.length }} temas
             </p>
             <div class="space-y-0.5">
@@ -198,8 +198,8 @@
                 :key="idx"
                 class="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer"
                 :class="currentTrackIndex === idx
-                  ? 'font-semibold text-gray-900'
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'"
+                  ? 'font-semibold text-gray-900 dark:text-gray-100'
+                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700 dark:text-[#99a0ae] dark:hover:bg-white/5 dark:hover:text-gray-100'"
                 :style="currentTrackIndex === idx ? { backgroundColor: currentStation.color + '10' } : {}"
                 @click="selectTrack(idx)"
               >
@@ -215,10 +215,10 @@
                 <!-- Track info -->
                 <div class="flex-1 min-w-0 text-left">
                   <p class="truncate text-[11px]">{{ track.title }}</p>
-                  <p class="truncate text-[9px] text-gray-400">{{ track.artist }}</p>
+                  <p class="truncate text-[9px] text-gray-400 dark:text-[#99a0ae]">{{ track.artist }}</p>
                 </div>
                 <!-- Duration -->
-                <span class="text-[10px] text-gray-400 tabular-nums shrink-0">{{ track.duration }}</span>
+                <span class="text-[10px] text-gray-400 dark:text-[#99a0ae] tabular-nums shrink-0">{{ track.duration }}</span>
               </button>
             </div>
           </div>
@@ -226,22 +226,22 @@
       </transition>
 
       <!-- Error message -->
-      <div v-if="hasError" class="bg-red-50 px-5 py-2 flex items-center gap-2">
+      <div v-if="hasError" class="bg-red-50 dark:bg-red-950 px-5 py-2 flex items-center gap-2">
         <UIcon name="i-heroicons-exclamation-triangle" class="w-3.5 h-3.5 text-red-400 shrink-0" />
         <p class="text-[10px] text-red-600 font-medium">{{ errorMessage }}</p>
       </div>
 
       <!-- Station Selector -->
-      <div class="bg-white border-t border-gray-100 px-3 py-2 max-h-[200px] overflow-y-auto">
-        <p class="text-[9px] font-bold uppercase tracking-widest text-gray-300 px-2 mb-1.5">Estaciones</p>
+      <div class="bg-white dark:bg-[#1b1b1b] border-t border-gray-100 dark:border-white/10 px-3 py-2 max-h-[200px] overflow-y-auto">
+        <p class="text-[9px] font-bold uppercase tracking-widest text-gray-300 dark:text-[#99a0ae] px-2 mb-1.5">Estaciones</p>
         <div class="space-y-0.5">
           <button
             v-for="station in stations"
             :key="station.id"
             class="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs transition-all cursor-pointer"
             :class="currentStationId === station.id
-              ? 'font-bold text-gray-900'
-              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'"
+              ? 'font-bold text-gray-900 dark:text-gray-100'
+              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700 dark:text-[#99a0ae] dark:hover:bg-white/5 dark:hover:text-gray-100'"
             :style="currentStationId === station.id ? { backgroundColor: station.color + '10' } : {}"
             @click="setStation(station.id)"
           >
@@ -334,6 +334,9 @@ const {
   background: #e5e7eb;
   border-radius: 2px;
 }
+.dark .track-list-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
 
 @keyframes bar1 {
   0%, 100% { height: 30%; }
@@ -372,5 +375,8 @@ const {
 .max-h-\[200px\]::-webkit-scrollbar-thumb {
   background: #e5e7eb;
   border-radius: 2px;
+}
+.dark .max-h-\[200px\]::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
 }
 </style>
