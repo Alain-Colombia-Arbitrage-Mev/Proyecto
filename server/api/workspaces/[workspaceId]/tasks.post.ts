@@ -53,6 +53,10 @@ export default defineEventHandler(async (event) => {
     tags: body.tags || [],
   }
 
+  // Bilingual fields (optional — migration 018 may not be applied yet)
+  if (body.title_en !== undefined) insertPayload.title_en = body.title_en
+  if (body.description_en !== undefined) insertPayload.description_en = body.description_en
+
   // Only include figma_links when the caller sends it (migration may not be applied yet)
   if (body.figma_links !== undefined) {
     insertPayload.figma_links = body.figma_links
@@ -95,6 +99,16 @@ export default defineEventHandler(async (event) => {
         emailHtml: taskAssignedEmailHtml(task.title, projectName, assignerName),
       }).catch(() => {})
     }
+  }
+
+  // Auto-translate to English if no English title was provided (fire-and-forget)
+  if (!task.title_en && task.title) {
+    translateTaskToEnglish({
+      supabase,
+      taskId: task.id,
+      title: task.title,
+      description: task.description || null,
+    }).catch(() => {})
   }
 
   // Auto-store task as memory for the task agent (fire-and-forget)

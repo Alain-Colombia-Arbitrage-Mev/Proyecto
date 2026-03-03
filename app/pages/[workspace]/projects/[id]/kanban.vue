@@ -92,6 +92,19 @@
             <UIcon name="i-heroicons-bars-3" class="w-3.5 h-3.5" />
           </button>
         </div>
+        <!-- Language toggle -->
+        <div class="flex items-center bg-gray-100 rounded-lg p-0.5">
+          <button
+            class="text-[10px] font-bold px-2 py-1 rounded-md transition-all cursor-pointer"
+            :class="language === 'es' ? 'bg-white text-[#0D0D0D] shadow-sm' : 'text-gray-400 hover:text-gray-600'"
+            @click="setLang('es')"
+          >ES</button>
+          <button
+            class="text-[10px] font-bold px-2 py-1 rounded-md transition-all cursor-pointer"
+            :class="language === 'en' ? 'bg-white text-[#0D0D0D] shadow-sm' : 'text-gray-400 hover:text-gray-600'"
+            @click="setLang('en')"
+          >EN</button>
+        </div>
         <!-- Kanban filter -->
         <button
           class="text-[11px] font-medium px-3 py-1.5 rounded-full transition-all cursor-pointer"
@@ -263,11 +276,11 @@
                   'bg-gray-300': task.priority === 'low',
                 }"
               />
-              <p class="text-[13px] font-semibold text-gray-900 leading-snug">{{ task.title }}</p>
+              <p class="text-[13px] font-semibold text-gray-900 leading-snug">{{ localizedTitle(task) }}</p>
             </div>
 
             <!-- Description preview -->
-            <p v-if="task.description" class="text-[11px] text-gray-500 leading-relaxed mb-2 line-clamp-2">{{ htmlToPlainText(task.description).slice(0, 100) }}</p>
+            <p v-if="localizedDescription(task)" class="text-[11px] text-gray-500 leading-relaxed mb-2 line-clamp-2">{{ htmlToPlainText(localizedDescription(task)).slice(0, 100) }}</p>
 
             <!-- Time progress bar -->
             <div v-if="getTaskProgress(task.due_date, task.created_at, task.estimated_hours)" class="mb-2.5">
@@ -430,7 +443,7 @@
                   'bg-gray-300': task.priority === 'low',
                 }"
               />
-              <span class="text-gray-900 font-medium truncate">{{ task.title }}</span>
+              <span class="text-gray-900 font-medium truncate">{{ localizedTitle(task) }}</span>
             </div>
             <!-- Column (hidden mobile) -->
             <span class="text-gray-500 truncate flex items-center gap-1 hidden md:flex">
@@ -952,6 +965,7 @@ import { htmlToPlainText } from '~/utils/richtext'
 definePageMeta({ middleware: 'auth' })
 
 const { getDeadlineInfo, getEstimatedLabel, getTaskProgress } = useTaskDeadline()
+const { language, setLanguage: setLang, localizedTitle, localizedDescription } = useLanguage()
 const pomodoro = usePomodoroTimer()
 
 const route = useRoute()

@@ -76,7 +76,7 @@ Responde en JSON con:
 - "duration_days": number (duración recomendada: 7, 10 o 14 días)
 - "analysis": string (análisis breve del estado actual del proyecto)
 - "prioritized_existing": array de { "task_id": string, "title": string, "recommended_priority": "low"|"medium"|"high"|"critical", "reason": string } (tareas existentes reordenadas por prioridad)
-- "new_tasks": array de { "title": string, "description": string, "priority": "low"|"medium"|"high"|"critical", "tags": string[], "estimated_hours": number } (3-5 nuevas tareas que faltan para completar el sprint goal)
+- "new_tasks": array de { "title": string, "title_en": string, "description": string, "description_en": string, "priority": "low"|"medium"|"high"|"critical", "tags": string[], "estimated_hours": number } (3-5 nuevas tareas que faltan para completar el sprint goal)
 - "risks": string[] (riesgos del sprint)
 - "velocity_estimate": number (story points o horas totales estimadas)
 
@@ -87,14 +87,16 @@ IMPORTANTE — Cada tarea en "new_tasks" debe tener un "description" COMPLETO y 
 4. **Criterios de aceptación**: Checklist con ✅ de condiciones que deben cumplirse
 5. **Notas técnicas**: Dependencias, patrones a seguir, o consideraciones especiales
 
-El description debe ser lo suficientemente detallado para que un desarrollador pueda ejecutar la tarea SIN preguntar nada adicional.`,
+El description debe ser lo suficientemente detallado para que un desarrollador pueda ejecutar la tarea SIN preguntar nada adicional.
+
+BILINGÜE: Cada tarea DEBE incluir "title_en" (título en inglés) y "description_en" (description completo traducido al inglés con el mismo nivel de detalle). El "title" y "description" son en español. El "title_en" y "description_en" son la traducción exacta al inglés.`,
 
     agent_task_generator: `Eres un tech lead senior que genera tareas técnicas detalladas y accionables.
 Usa la documentación real de frameworks y librerías proporcionada para generar tareas específicas con código de referencia.
 
 Responde en JSON con:
 - "feature_summary": string (resumen de las features que cubren las tareas)
-- "tasks": array de { "title": string, "description": string, "priority": "low"|"medium"|"high"|"critical", "tags": string[], "estimated_hours": number, "acceptance_criteria": string[] } (8-12 tareas técnicas detalladas)
+- "tasks": array de { "title": string, "title_en": string, "description": string, "description_en": string, "priority": "low"|"medium"|"high"|"critical", "tags": string[], "estimated_hours": number, "acceptance_criteria": string[] } (8-12 tareas técnicas detalladas)
 - "dependencies": array de { "task_index": number, "depends_on": number[] } (dependencias entre tareas)
 - "tech_notes": string (notas técnicas relevantes basadas en la documentación)
 
@@ -126,7 +128,9 @@ Qué se logra al completar esta tarea (1 línea clara).
 ## Notas técnicas
 Dependencias, patrones, APIs externas, consideraciones de seguridad o performance.
 
-El description debe ser lo suficientemente detallado para que un desarrollador junior pueda ejecutar la tarea SIN necesidad de preguntar. Incluye imports, nombres de funciones, y patrones del framework correspondiente.`,
+El description debe ser lo suficientemente detallado para que un desarrollador junior pueda ejecutar la tarea SIN necesidad de preguntar. Incluye imports, nombres de funciones, y patrones del framework correspondiente.
+
+BILINGÜE: Cada tarea DEBE incluir "title_en" (título en inglés) y "description_en" (description completo traducido al inglés con el mismo nivel de detalle). El "title" y "description" son en español. El "title_en" y "description_en" son la traducción exacta al inglés.`,
 
     agent_workload_analyzer: `Eres un Project Manager senior experto en análisis de carga de trabajo y optimización de equipos.
 Analiza las tareas del proyecto, su distribución entre miembros y estado actual.
@@ -150,6 +154,8 @@ Responde en JSON con:
     "original_title": string,
     "improved_title": string,
     "improved_description": string,
+    "improved_title_en": string,
+    "improved_description_en": string,
     "suggested_priority": "low"|"medium"|"high"|"critical",
     "suggested_estimated_hours": number,
     "suggested_tags": string[],
@@ -158,7 +164,7 @@ Responde en JSON con:
   }
 - "overall_quality_before": number (promedio 1-10)
 - "overall_quality_after": number (promedio 1-10)
-- "missing_tasks": array de { "title": string, "description": string, "priority": string, "tags": string[], "estimated_hours": number } (tareas que faltan basándose en gaps detectados)
+- "missing_tasks": array de { "title": string, "title_en": string, "description": string, "description_en": string, "priority": string, "tags": string[], "estimated_hours": number } (tareas que faltan basándose en gaps detectados)
 
 IMPORTANTE — El campo "improved_description" DEBE ser un manual completo de implementación con markdown:
 
@@ -180,7 +186,9 @@ Qué se logra al completar esta tarea.
 ## Notas técnicas
 Dependencias, edge cases, consideraciones de seguridad/performance.
 
-Cada "missing_tasks" también debe tener description con el mismo nivel de detalle.`,
+Cada "missing_tasks" también debe tener description con el mismo nivel de detalle.
+
+BILINGÜE: Incluye "improved_title_en" y "improved_description_en" (traducciones al inglés) para cada mejora. Para "missing_tasks", incluye "title_en" y "description_en".`,
   }
 
   let prompt = basePrompts[config.action] || ''

@@ -15,7 +15,7 @@
               }"
             />
             <h2 v-if="!editingTitle" class="text-lg font-bold text-gray-900 truncate cursor-pointer hover:text-focusflow-700" @click="editingTitle = true">
-              {{ editForm.title || task.title }}
+              {{ language === 'en' ? (editForm.title_en || editForm.title || task.title) : (editForm.title || task.title) }}
             </h2>
             <input
               v-else
@@ -58,13 +58,36 @@
             <div class="flex-1 px-6 py-5 space-y-6 md:border-r border-gray-100 min-w-0">
               <!-- Description -->
               <div>
-                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Descripción</h4>
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ lang.labels.value.description }}</h4>
+                  <div class="flex items-center bg-gray-100 rounded-md p-0.5">
+                    <button
+                      class="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer"
+                      :class="descLang === 'es' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'"
+                      @click="descLang = 'es'"
+                    >ES</button>
+                    <button
+                      class="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer"
+                      :class="descLang === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'"
+                      @click="descLang = 'en'"
+                    >EN</button>
+                  </div>
+                </div>
                 <LazyTaskEditor
+                  v-if="descLang === 'es'"
                   v-model="editForm.description"
                   :workspace-id="workspaceId"
-                  placeholder="Agrega una descripción detallada..."
+                  :placeholder="lang.labels.value.addDescription"
                   min-height="150px"
                 />
+                <LazyTaskEditor
+                  v-else
+                  v-model="editForm.description_en"
+                  :workspace-id="workspaceId"
+                  placeholder="Add a detailed description..."
+                  min-height="150px"
+                />
+                <p v-if="descLang === 'en' && !editForm.description_en" class="text-[10px] text-amber-500 mt-1">{{ lang.labels.value.noTranslation }}</p>
               </div>
 
               <!-- Attachments -->
@@ -154,6 +177,9 @@ import type { Task, FigmaLink, Label } from '~/types'
 import { plainTextToHtml } from '~/utils/richtext'
 
 const pomodoro = usePomodoroTimer()
+const lang = useLanguage()
+const { language } = lang
+const descLang = ref<'es' | 'en'>('es')
 
 const props = defineProps<{
   open: boolean
@@ -182,7 +208,9 @@ const selectedLabelIds = ref<string[]>([])
 
 const editForm = reactive({
   title: '',
+  title_en: '',
   description: '',
+  description_en: '',
   priority: '',
   column_id: '',
   due_date: '',
@@ -206,9 +234,12 @@ const columnOptions = computed(() =>
 watch(() => props.task, (t) => {
   if (!t) return
   const desc = t.description ? plainTextToHtml(t.description) : ''
+  const descEn = t.description_en ? plainTextToHtml(t.description_en) : ''
   Object.assign(editForm, {
     title: t.title,
+    title_en: t.title_en || '',
     description: desc,
+    description_en: descEn,
     priority: t.priority,
     column_id: t.column_id || '',
     due_date: t.due_date ? t.due_date.split('T')[0] : '',
@@ -219,6 +250,7 @@ watch(() => props.task, (t) => {
   })
   selectedLabelIds.value = (t.labels || []).map(l => l.id)
   editingTitle.value = false
+  descLang.value = 'es'
 }, { immediate: true })
 
 function toggleAssignee(userId: string) {
@@ -245,7 +277,9 @@ async function handleSave() {
       method: 'PATCH',
       body: {
         title: editForm.title,
+        title_en: editForm.title_en || null,
         description: editForm.description || null,
+        description_en: editForm.description_en || null,
         priority: editForm.priority,
         column_id: editForm.column_id || null,
         due_date: editForm.due_date || null,

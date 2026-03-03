@@ -331,7 +331,7 @@ Tareas actuales:\n${taskSummary || 'Sin tareas'}`
 
 REGLAS ESTRICTAS:
 1. Si el usuario pide CREAR, SUGERIR, GENERAR o LISTAR tareas → responde ÚNICAMENTE con un JSON array:
-   [{"title":"...","description":"...","priority":"medium","tags":["..."],"estimated_hours":N}]
+   [{"title":"...","title_en":"...","description":"...","description_en":"...","priority":"medium","tags":["..."],"estimated_hours":N}]
    Sin texto adicional antes ni después del JSON.
 
 2. Para cualquier otra consulta → responde en texto plano en español (máximo 5 líneas).
@@ -344,6 +344,8 @@ IMPORTANTE — Cada tarea generada DEBE tener un "description" COMPLETO y DETALL
 - **Notas técnicas**: Dependencias, patrones, consideraciones de seguridad/performance
 
 El description debe ser lo suficientemente detallado para que un desarrollador pueda ejecutar la tarea sin preguntar nada adicional. Incluye código de referencia cuando sea útil.
+
+BILINGÜE: Cada tarea DEBE incluir "title_en" (título en inglés) y "description_en" (description completo traducido al inglés). El "title" y "description" son en español.
 
 EJEMPLOS de peticiones que requieren JSON array de tareas:
 - "Crea tareas para el módulo de pagos" → JSON array
@@ -699,7 +701,9 @@ Genera exactamente 8 tareas en formato JSON array. Distribuye las tareas así:
 
 Cada tarea:
 - "title": string (acción concreta en español, ej: "Configurar pipeline CI/CD con GitHub Actions")
-- "description": string (INSTRUCCIONES COMPLETAS — ver formato abajo)
+- "title_en": string (traducción del título al inglés)
+- "description": string (INSTRUCCIONES COMPLETAS en español — ver formato abajo)
+- "description_en": string (traducción completa del description al inglés)
 - "priority": "low" | "medium" | "high" | "critical"
 - "tags": string[] (2-3 tags de: backend, devops, ci-cd, docker, testing, seguridad, monitoring, api, database, documentación, infraestructura)
 - "estimated_hours": number
@@ -777,7 +781,7 @@ Responde SOLO con el JSON array, sin markdown, sin texto extra, sin <think> tags
               const taskRows = aiTasks
                 .filter((t: any) => t.title && typeof t.title === 'string')
                 .map((aiTask: any) => {
-                  const row = {
+                  const row: Record<string, unknown> = {
                     project_id: meta.projectId,
                     column_id: firstColumn.id,
                     title: String(aiTask.title).slice(0, 500),
@@ -789,6 +793,8 @@ Responde SOLO con el JSON array, sin markdown, sin texto extra, sin <think> tags
                     estimated_hours: typeof aiTask.estimated_hours === 'number' ? aiTask.estimated_hours : null,
                     position: nextPosition,
                   }
+                  if (aiTask.title_en) row.title_en = String(aiTask.title_en).slice(0, 500)
+                  if (aiTask.description_en) row.description_en = String(aiTask.description_en).slice(0, 10000)
                   nextPosition++
                   return row
                 })
@@ -979,7 +985,7 @@ Responde SOLO con el JSON array, sin markdown, sin texto extra, sin <think> tags
               .filter((t: any) => t.title && typeof t.title === 'string')
               .slice(0, 12)
               .map((t: any) => {
-                const row = {
+                const row: Record<string, unknown> = {
                   project_id: taMeta.projectId,
                   column_id: firstColumn.id,
                   title: String(t.title).slice(0, 500),
@@ -991,6 +997,8 @@ Responde SOLO con el JSON array, sin markdown, sin texto extra, sin <think> tags
                   estimated_hours: typeof t.estimated_hours === 'number' ? t.estimated_hours : null,
                   position: nextPosition,
                 }
+                if (t.title_en) row.title_en = String(t.title_en).slice(0, 500)
+                if (t.description_en) row.description_en = String(t.description_en).slice(0, 10000)
                 nextPosition++
                 return row
               })
@@ -1017,6 +1025,8 @@ Responde SOLO con el JSON array, sin markdown, sin texto extra, sin <think> tags
               const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
               if (imp.improved_title) updates.title = String(imp.improved_title).slice(0, 500)
               if (imp.improved_description) updates.description = String(imp.improved_description).slice(0, 10000)
+              if (imp.improved_title_en) updates.title_en = String(imp.improved_title_en).slice(0, 500)
+              if (imp.improved_description_en) updates.description_en = String(imp.improved_description_en).slice(0, 10000)
               if (VALID_PRIORITIES.includes(imp.suggested_priority)) updates.priority = imp.suggested_priority
               if (typeof imp.suggested_estimated_hours === 'number') updates.estimated_hours = imp.suggested_estimated_hours
               if (Array.isArray(imp.suggested_tags)) updates.tags = imp.suggested_tags.map((t: any) => String(t).slice(0, 50))
@@ -1045,18 +1055,23 @@ Responde SOLO con el JSON array, sin markdown, sin texto extra, sin <think> tags
               const missingRows = parsed.missing_tasks
                 .filter((t: any) => t.title)
                 .slice(0, 5)
-                .map((t: any) => ({
-                  project_id: taMeta.projectId,
-                  column_id: firstCol.id,
-                  title: String(t.title).slice(0, 500),
-                  description: t.description ? String(t.description).slice(0, 10000) : null,
-                  priority: VALID_PRIORITIES.includes(t.priority) ? t.priority : 'medium',
-                  assignees: [user.id],
-                  reporter_id: user.id,
-                  tags: Array.isArray(t.tags) ? t.tags.map((tag: any) => String(tag).slice(0, 50)) : [],
-                  estimated_hours: typeof t.estimated_hours === 'number' ? t.estimated_hours : null,
-                  position: pos++,
-                }))
+                .map((t: any) => {
+                  const row: Record<string, unknown> = {
+                    project_id: taMeta.projectId,
+                    column_id: firstCol.id,
+                    title: String(t.title).slice(0, 500),
+                    description: t.description ? String(t.description).slice(0, 10000) : null,
+                    priority: VALID_PRIORITIES.includes(t.priority) ? t.priority : 'medium',
+                    assignees: [user.id],
+                    reporter_id: user.id,
+                    tags: Array.isArray(t.tags) ? t.tags.map((tag: any) => String(tag).slice(0, 50)) : [],
+                    estimated_hours: typeof t.estimated_hours === 'number' ? t.estimated_hours : null,
+                    position: pos++,
+                  }
+                  if (t.title_en) row.title_en = String(t.title_en).slice(0, 500)
+                  if (t.description_en) row.description_en = String(t.description_en).slice(0, 10000)
+                  return row
+                })
 
               if (missingRows.length > 0) {
                 const { data: ins } = await supabase.from('tasks').insert(missingRows).select()

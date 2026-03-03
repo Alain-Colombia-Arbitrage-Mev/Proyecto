@@ -27,6 +27,8 @@ export default defineEventHandler(async (event) => {
 
   if (body.title !== undefined) updates.title = body.title
   if (body.description !== undefined) updates.description = body.description
+  if (body.title_en !== undefined) updates.title_en = body.title_en
+  if (body.description_en !== undefined) updates.description_en = body.description_en
   if (body.priority !== undefined) updates.priority = body.priority
   if (body.assignees !== undefined) updates.assignees = body.assignees
   if (body.due_date !== undefined) updates.due_date = body.due_date

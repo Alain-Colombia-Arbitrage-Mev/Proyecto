@@ -64,7 +64,9 @@ export interface Task {
   column_id?: string
   parent_task_id?: string
   title: string
+  title_en?: string
   description?: string
+  description_en?: string
   priority: Priority
   assignees: string[]
   reporter_id?: string
