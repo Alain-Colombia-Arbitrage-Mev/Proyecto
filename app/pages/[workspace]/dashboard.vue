@@ -1,13 +1,16 @@
 <template>
   <div class="min-h-screen bg-[#f6f6f6]">
-    <div class="p-6 space-y-3 animate-fade-up">
+    <div class="p-4 sm:p-6 space-y-3 animate-fade-up">
 
       <!-- ═══════ WELCOME ═══════ -->
-      <div class="mb-1">
-        <p class="text-[22px] text-[#7A7A7A]" style="letter-spacing: -0.44px;">{{ motivationalQuote }}</p>
-        <h1 class="text-[28px] md:text-[42px] font-bold text-[#0D0D0D] leading-[1.2]" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">
-          {{ greeting }}, {{ userName }} <span>&#x1F44B;</span>
-        </h1>
+      <div class="mb-1 flex items-start justify-between gap-4">
+        <div>
+          <p class="text-base sm:text-[22px] text-[#7A7A7A]" style="letter-spacing: -0.44px;">{{ motivationalQuote }}</p>
+          <h1 class="text-[28px] md:text-[42px] font-bold text-[#0D0D0D] leading-[1.2]" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">
+            {{ greeting }}, {{ userName }} <span>&#x1F44B;</span>
+          </h1>
+        </div>
+        <LanguageToggle class="mt-2" />
       </div>
 
       <!-- ═══════ MAIN LAYOUT: Left+Center / Right ═══════ -->
@@ -17,15 +20,15 @@
         <div class="flex-1 min-w-0 space-y-3">
 
           <!-- 3 Stat Cards -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <!-- Tareas Totales -->
-            <div class="bg-white rounded-[15px] border border-gray-100 p-4 h-[143px] relative overflow-hidden">
+            <div class="bg-white rounded-[15px] border border-gray-100 p-4 min-h-[120px] sm:h-[143px] relative overflow-hidden">
               <div class="flex items-center justify-between mb-1">
-                <span class="text-[12px] text-[#7A7A7A]">Tareas Totales</span>
+                <span class="text-[12px] text-[#7A7A7A]">{{ t.totalTasks }}</span>
                 <UIcon name="i-heroicons-arrow-up-right" class="w-4 h-4 text-gray-400" />
               </div>
               <div class="flex items-end justify-between mt-auto">
-                <span class="text-[42px] font-bold text-[#0D0D0D] leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">{{ taskCount }}</span>
+                <span class="text-[32px] sm:text-[42px] font-bold text-[#0D0D0D] leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">{{ taskCount }}</span>
                 <div class="flex items-end gap-[3px] h-[50px]">
                   <div v-for="i in 7" :key="'t-'+i" class="w-[8px] rounded-sm"
                     :class="i % 2 === 0 ? 'bg-[#10B981]' : 'bg-[#E8E8E8]'"
@@ -35,13 +38,13 @@
             </div>
 
             <!-- En Progreso -->
-            <div class="bg-white rounded-[15px] border border-gray-100 p-4 h-[143px] relative overflow-hidden">
+            <div class="bg-white rounded-[15px] border border-gray-100 p-4 min-h-[120px] sm:h-[143px] relative overflow-hidden">
               <div class="flex items-center justify-between mb-1">
-                <span class="text-[12px] text-[#7A7A7A]">En Progreso</span>
+                <span class="text-[12px] text-[#7A7A7A]">{{ t.inProgress }}</span>
                 <UIcon name="i-heroicons-arrow-up-right" class="w-4 h-4 text-gray-400" />
               </div>
               <div class="flex items-end justify-between mt-auto">
-                <span class="text-[42px] font-bold text-[#0D0D0D] leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">{{ inProgressTasks }}</span>
+                <span class="text-[32px] sm:text-[42px] font-bold text-[#0D0D0D] leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">{{ inProgressTasks }}</span>
                 <div class="flex items-end gap-[3px] h-[50px]">
                   <div v-for="i in 7" :key="'p-'+i" class="w-[8px] rounded-sm"
                     :class="i % 3 === 0 ? 'bg-[#10B981]' : 'bg-[#E8E8E8]'"
@@ -51,13 +54,13 @@
             </div>
 
             <!-- Completadas -->
-            <div class="bg-white rounded-[15px] border border-gray-100 p-4 h-[143px] relative overflow-hidden">
+            <div class="bg-white rounded-[15px] border border-gray-100 p-4 min-h-[120px] sm:h-[143px] relative overflow-hidden">
               <div class="flex items-center justify-between mb-1">
-                <span class="text-[12px] text-[#7A7A7A]">Completadas</span>
+                <span class="text-[12px] text-[#7A7A7A]">{{ t.completed }}</span>
                 <UIcon name="i-heroicons-arrow-up-right" class="w-4 h-4 text-gray-400" />
               </div>
               <div class="flex items-end justify-between mt-auto">
-                <span class="text-[42px] font-bold text-[#0D0D0D] leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">{{ completedTasks }}</span>
+                <span class="text-[32px] sm:text-[42px] font-bold text-[#0D0D0D] leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2.52px;">{{ completedTasks }}</span>
                 <div class="flex items-end gap-[3px] h-[50px]">
                   <div v-for="i in 7" :key="'c-'+i" class="w-[8px] rounded-sm"
                     :class="i <= 4 ? 'bg-[#10B981]' : 'bg-[#E8E8E8]'"
@@ -73,8 +76,8 @@
             <!-- Resumen de Proyectos (bar chart) -->
             <div class="bg-white rounded-[15px] border border-gray-100 p-4 min-h-[301px]">
               <div class="flex items-center justify-between mb-4">
-                <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">Resumen de Proyectos</h3>
-                <span class="text-[12px] text-[#7A7A7A] bg-[#f6f6f6] rounded-full px-3 py-1">Este Mes</span>
+                <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">{{ t.projectSummary }}</h3>
+                <span class="text-[12px] text-[#7A7A7A] bg-[#f6f6f6] rounded-full px-3 py-1">{{ t.thisMonth }}</span>
               </div>
               <!-- Y axis labels + bars -->
               <div class="flex gap-2 mt-4">
@@ -97,7 +100,7 @@
                   </div>
                   <!-- X axis -->
                   <div class="flex justify-around mt-2 text-[14px] text-[#00000099] font-medium" style="letter-spacing: -0.28px;">
-                    <span>Ene</span><span>Feb</span><span>Mar</span><span>Abr</span><span>May</span>
+                    <span>{{ lang.language.value === 'en' ? 'Jan' : 'Ene' }}</span><span>Feb</span><span>Mar</span><span>{{ lang.language.value === 'en' ? 'Apr' : 'Abr' }}</span><span>{{ lang.language.value === 'en' ? 'May' : 'May' }}</span>
                   </div>
                 </div>
               </div>
@@ -106,17 +109,17 @@
             <!-- Right sub-column: Token Usage + Pomodoro -->
             <div class="space-y-3">
               <!-- Uso de Tokens AI -->
-              <div class="bg-white rounded-[15px] border border-gray-100 p-4 min-h-[164px]">
+              <div v-if="canViewUsageStats" class="bg-white rounded-[15px] border border-gray-100 p-4 min-h-[164px]">
                 <div class="flex items-center justify-between mb-2">
-                  <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">Uso de Tokens AI</h3>
+                  <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">{{ t.tokenUsage }}</h3>
                   <button @click="loadTokenUsage" class="text-[12px] text-[#7A7A7A] bg-[#f6f6f6] rounded-full px-3 py-1 hover:bg-gray-200 transition-colors cursor-pointer">
-                    {{ tokenLoading ? 'Cargando...' : 'Actualizar' }}
+                    {{ tokenLoading ? '...' : t.update }}
                   </button>
                 </div>
                 <template v-if="tokenStats">
                   <div class="flex items-start justify-between">
                     <div>
-                      <p class="text-[12px] text-[#666d80]">Tokens Usados</p>
+                      <p class="text-[12px] text-[#666d80]">{{ lang.language.value === 'en' ? 'Tokens Used' : 'Tokens Usados' }}</p>
                       <div class="flex items-center gap-2">
                         <span class="text-[32px] font-bold text-[#0D0D0D] tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -1.92px;">{{ formatTokens(tokenStats.totalTokens) }}</span>
                         <span class="bg-[#ECFDF5] text-[#10B981] text-[11px] font-medium px-2 py-1 rounded-full">{{ tokenStats.percentUsed }}%</span>
@@ -160,17 +163,17 @@
                 <div class="flex items-start gap-4">
                   <!-- Left: title + time + label -->
                   <div class="flex-1 min-w-0">
-                    <p class="text-[14px] font-semibold text-[#0D0D0D]">Pomodoro Timer</p>
+                    <p class="text-[14px] font-semibold text-[#0D0D0D]">{{ t.pomodoroTimer }}</p>
                     <p class="text-[36px] sm:text-[48px] font-bold text-[#0D0D0D] leading-none tabular-nums mt-1" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2px;">
                       {{ pomodoroDisplay }}
                     </p>
                     <p class="text-[12px] text-[#7A7A7A] mt-1">
-                      {{ pomodoroPhase === 'work' ? 'Sesión de enfoque' : 'Descanso' }}
+                      {{ pomodoroPhase === 'work' ? t.focusSession : t.breakTime }}
                     </p>
                     <p v-if="pomodoro.activeTask.value" class="text-[11px] text-emerald-600 font-medium mt-0.5 truncate">
-                      Enfocado en: {{ pomodoro.activeTask.value.title }}
+                      {{ lang.language.value === 'en' ? 'Focused on' : 'Enfocado en' }}: {{ pomodoro.activeTask.value.title }}
                     </p>
-                    <p v-else class="text-[11px] text-gray-400 mt-0.5">Sesión libre</p>
+                    <p v-else class="text-[11px] text-gray-400 mt-0.5">{{ lang.language.value === 'en' ? 'Free session' : 'Sesión libre' }}</p>
                   </div>
                   <!-- Center: Ring -->
                   <div class="relative shrink-0">
@@ -190,12 +193,12 @@
                 <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
                   <div class="flex items-center gap-4">
                     <div>
-                      <p class="text-[11px] text-[#7A7A7A]">Sesiones hoy</p>
+                      <p class="text-[11px] text-[#7A7A7A]">{{ lang.language.value === 'en' ? 'Sessions today' : 'Sesiones hoy' }}</p>
                       <p class="text-[14px] font-bold text-[#0D0D0D] tabular-nums">{{ pomodoroSessions }}</p>
                     </div>
                     <div>
-                      <p class="text-[11px] text-[#7A7A7A]">Racha</p>
-                      <p class="text-[14px] font-bold text-[#0D0D0D]">{{ streak }} dias</p>
+                      <p class="text-[11px] text-[#7A7A7A]">{{ lang.language.value === 'en' ? 'Streak' : 'Racha' }}</p>
+                      <p class="text-[14px] font-bold text-[#0D0D0D]">{{ streak }} {{ lang.language.value === 'en' ? 'days' : 'dias' }}</p>
                     </div>
                   </div>
                   <div class="flex items-center gap-2">
@@ -204,14 +207,14 @@
                       class="px-4 py-1.5 rounded-lg text-[12px] font-semibold transition-all cursor-pointer"
                       :class="pomodoroRunning ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-[#10B981] text-white hover:bg-emerald-600'"
                     >
-                      {{ pomodoroRunning ? 'Pausar' : 'Iniciar' }}
+                      {{ pomodoroRunning ? t.pause : t.start }}
                     </button>
                     <button
                       v-if="pushNotif.permission.value !== 'granted'"
                       @click="pushNotif.requestPermission()"
                       class="px-3 py-1 rounded-lg text-[10px] font-medium text-amber-600 bg-amber-50 hover:bg-amber-100 transition-all cursor-pointer"
                     >
-                      Activar notif.
+                      {{ t.enableNotifications }}
                     </button>
                   </div>
                 </div>
@@ -226,14 +229,14 @@
             <div class="bg-white rounded-[15px] border border-gray-100 overflow-hidden min-h-[269px]">
               <div class="flex items-center justify-between p-4 pb-2">
                 <div class="flex items-center gap-3">
-                  <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">Tablero</h3>
+                  <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">{{ t.board }}</h3>
                   <!-- Project dropdown selector -->
                   <select
                     v-model="filterProjectId"
                     class="text-[12px] font-medium text-[#0D0D0D] bg-[#f6f6f6] rounded-full px-3 py-1 border-0 outline-none cursor-pointer hover:bg-gray-200 transition-colors appearance-none pr-6"
                     style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%237A7A7A%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 8px center; background-size: 14px;"
                   >
-                    <option value="">Todas las tareas</option>
+                    <option value="">{{ lang.language.value === 'en' ? 'All tasks' : 'Todas las tareas' }}</option>
                     <option v-for="p in store.projects" :key="p.id" :value="p.id">{{ p.name }}</option>
                   </select>
                   <!-- Filtros button -->
@@ -244,12 +247,12 @@
                   >
                     <span class="flex items-center gap-1">
                       <UIcon name="i-heroicons-funnel" class="w-3 h-3" />
-                      Filtros
+                      {{ t.filters }}
                     </span>
                   </button>
                 </div>
                 <NuxtLink :to="`/${store.slug}/projects`" class="text-[12px] text-[#10B981] font-semibold hover:text-emerald-700 transition-colors">
-                  Ver todo
+                  {{ t.viewAll }}
                 </NuxtLink>
               </div>
               <!-- Filter row -->
@@ -258,36 +261,36 @@
                   v-model="filterPriority"
                   class="text-[11px] font-medium text-[#7A7A7A] bg-[#f6f6f6] rounded-full px-2.5 py-1 border-0 outline-none cursor-pointer"
                 >
-                  <option value="">Prioridad</option>
-                  <option value="urgent">Urgente</option>
-                  <option value="high">Alta</option>
-                  <option value="medium">Media</option>
-                  <option value="low">Baja</option>
+                  <option value="">{{ t.priority }}</option>
+                  <option value="urgent">{{ t.priorityCritical }}</option>
+                  <option value="high">{{ t.priorityHigh }}</option>
+                  <option value="medium">{{ t.priorityMedium }}</option>
+                  <option value="low">{{ t.priorityLow }}</option>
                 </select>
                 <select
                   v-model="filterStatus"
                   class="text-[11px] font-medium text-[#7A7A7A] bg-[#f6f6f6] rounded-full px-2.5 py-1 border-0 outline-none cursor-pointer"
                 >
-                  <option value="">Estado</option>
-                  <option value="done">Hecho</option>
-                  <option value="progress">En progreso</option>
+                  <option value="">{{ t.status }}</option>
+                  <option value="done">{{ t.done }}</option>
+                  <option value="progress">{{ t.inProgress }}</option>
                 </select>
                 <button
                   v-if="filterPriority || filterStatus"
                   class="text-[11px] text-red-500 font-medium cursor-pointer hover:text-red-700"
                   @click="filterPriority = ''; filterStatus = ''"
                 >
-                  Limpiar
+                  {{ lang.language.value === 'en' ? 'Clear' : 'Limpiar' }}
                 </button>
               </div>
               <!-- Table header -->
               <div class="grid grid-cols-[2fr_1fr_1fr] md:grid-cols-[1.5fr_1fr_0.8fr_0.8fr_0.8fr_0.8fr] px-4 py-2 text-[12px] font-medium text-[#7A7A7A] border-b border-gray-50">
-                <span>Nombre</span>
-                <span class="hidden md:block">Proyecto</span>
-                <span>Fecha</span>
-                <span class="hidden md:block">Estado</span>
-                <span>Prioridad</span>
-                <span class="hidden md:block">Deadline</span>
+                <span>{{ t.name }}</span>
+                <span class="hidden md:block">{{ t.project }}</span>
+                <span>{{ t.date }}</span>
+                <span class="hidden md:block">{{ t.status }}</span>
+                <span>{{ t.priority }}</span>
+                <span class="hidden md:block">{{ t.deadline }}</span>
               </div>
               <!-- Table rows -->
               <div v-if="filteredTasks.length > 0">
@@ -304,7 +307,7 @@
                   <span class="hidden md:block">
                     <span class="text-[10px] font-medium px-2 py-0.5 rounded-full"
                       :class="task.isCompleted ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'">
-                      {{ task.isCompleted ? 'Hecho' : 'En progreso' }}
+                      {{ task.isCompleted ? t.done : t.inProgress }}
                     </span>
                   </span>
                   <span>
@@ -314,7 +317,7 @@
                         'bg-amber-50 text-amber-600': task.priority === 'medium',
                         'bg-blue-50 text-blue-600': task.priority === 'low',
                       }">
-                      {{ task.priority === 'high' || task.priority === 'urgent' ? 'Alta' : task.priority === 'medium' ? 'Media' : 'Baja' }}
+                      {{ task.priority === 'high' || task.priority === 'urgent' ? t.priorityHigh : task.priority === 'medium' ? t.priorityMedium : t.priorityLow }}
                     </span>
                   </span>
                   <span class="hidden md:block">
@@ -329,14 +332,14 @@
               </div>
               <div v-else class="flex flex-col items-center justify-center py-10 text-[#7A7A7A]">
                 <UIcon name="i-heroicons-clipboard-document-list" class="w-8 h-8 text-gray-300 mb-2" />
-                <p class="text-[12px]">{{ recentTasks.length > 0 ? 'Sin resultados con estos filtros' : 'No hay tareas recientes' }}</p>
+                <p class="text-[12px]">{{ recentTasks.length > 0 ? (lang.language.value === 'en' ? 'No results with these filters' : 'Sin resultados con estos filtros') : (lang.language.value === 'en' ? 'No recent tasks' : 'No hay tareas recientes') }}</p>
               </div>
             </div>
 
             <!-- Ranking de Proyectos -->
             <div class="bg-white rounded-[15px] border border-gray-100 p-4 min-h-[269px]">
               <div class="flex items-center justify-between mb-3">
-                <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">Ranking de Proyectos</h3>
+                <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">{{ t.projectRanking }}</h3>
               </div>
               <div class="space-y-2">
                 <NuxtLink
@@ -351,7 +354,7 @@
                   </div>
                   <div class="min-w-0 flex-1">
                     <p class="text-[13px] font-medium text-[#0D0D0D] truncate group-hover:text-[#10B981] transition-colors">{{ project.name }}</p>
-                    <p class="text-[10px] text-[#7A7A7A]">{{ project.taskCount || 0 }} tareas</p>
+                    <p class="text-[10px] text-[#7A7A7A]">{{ project.taskCount || 0 }} {{ t.tasks }}</p>
                   </div>
                   <div class="flex items-center gap-1">
                     <div class="w-[50px] h-[5px] bg-gray-100 rounded-full overflow-hidden">
@@ -362,9 +365,9 @@
                   </div>
                 </NuxtLink>
                 <div v-if="rankedProjects.length === 0" class="text-center py-6">
-                  <p class="text-[12px] text-[#7A7A7A]">No hay proyectos</p>
+                  <p class="text-[12px] text-[#7A7A7A]">{{ t.noProjects }}</p>
                   <button @click="showCreate = true" class="mt-2 text-[12px] font-semibold text-[#10B981] hover:text-emerald-700 cursor-pointer">
-                    + Crear proyecto
+                    + {{ t.createProject }}
                   </button>
                 </div>
               </div>
@@ -378,10 +381,10 @@
           <!-- Coach Anti-Procrastinación -->
           <div class="bg-white rounded-[15px] border border-gray-100 overflow-hidden">
             <div class="flex items-center justify-between p-4 pb-2">
-              <h3 class="text-[16px] font-semibold text-[#0D0D0D]">Coach Anti-Procrastinación</h3>
+              <h3 class="text-[16px] font-semibold text-[#0D0D0D]">{{ t.antiProcrastination }}</h3>
               <span class="text-[12px] text-[#7A7A7A] bg-[#f6f6f6] rounded-full px-3 py-1 cursor-pointer hover:bg-gray-200 transition-colors"
                 @click="loadCoachAdvice">
-                {{ coachLoading ? 'Analizando...' : 'Actualizar' }}
+                {{ coachLoading ? (lang.language.value === 'en' ? 'Analyzing...' : 'Analizando...') : t.update }}
               </span>
             </div>
 
@@ -402,12 +405,12 @@
                     {{ coachData.score }}
                   </div>
                   <div>
-                    <p class="text-[12px] font-semibold text-[#0D0D0D]">Riesgo de procrastinación</p>
+                    <p class="text-[12px] font-semibold text-[#0D0D0D]">{{ lang.language.value === 'en' ? 'Procrastination risk' : 'Riesgo de procrastinación' }}</p>
                     <p class="text-[11px] text-[#7A7A7A]">{{ coachData.analysis }}</p>
                   </div>
                 </div>
                 <div v-if="coachData.quick_wins?.length">
-                  <p class="text-[10px] font-bold uppercase tracking-widest text-[#7A7A7A] mb-2">Victorias rápidas</p>
+                  <p class="text-[10px] font-bold uppercase tracking-widest text-[#7A7A7A] mb-2">{{ t.quickWins }}</p>
                   <div class="space-y-1.5">
                     <div v-for="(win, i) in coachData.quick_wins.slice(0, 3)" :key="i" class="flex items-start gap-2 text-[12px] text-[#0D0D0D]">
                       <UIcon name="i-heroicons-check-circle" class="w-4 h-4 text-[#10B981] shrink-0 mt-0.5" />
@@ -427,35 +430,35 @@
                     <UIcon name="i-heroicons-sparkles" class="w-5 h-5 text-white" />
                   </div>
                   <div class="bg-[#f6f6f6] rounded-2xl rounded-tl-sm p-3 flex-1">
-                    <p class="text-[13px] text-[#0D0D0D] font-medium">Buenos dias, {{ userName }}.</p>
-                    <p class="text-[12px] text-[#7A7A7A] mt-1">¿Qué te está bloqueando hoy?</p>
+                    <p class="text-[13px] text-[#0D0D0D] font-medium">{{ lang.language.value === 'en' ? `Good morning, ${userName}.` : `Buenos dias, ${userName}.` }}</p>
+                    <p class="text-[12px] text-[#7A7A7A] mt-1">{{ lang.language.value === 'en' ? "What's blocking you today?" : '¿Qué te está bloqueando hoy?' }}</p>
                   </div>
                 </div>
                 <button
                   @click="loadCoachAdvice"
                   class="w-full bg-[#10B981] hover:bg-emerald-600 text-white text-[12px] font-semibold py-2.5 rounded-lg transition-all cursor-pointer"
                 >
-                  Analizar ahora
+                  {{ t.analyzeNow }}
                 </button>
               </div>
             </div>
           </div>
 
           <!-- AI Token Usage (detailed) -->
-          <div class="bg-white rounded-[15px] border border-gray-100 p-4">
+          <div v-if="canViewUsageStats" class="bg-white rounded-[15px] border border-gray-100 p-4">
             <div class="flex items-center justify-between mb-3">
-              <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">Sesiones de hoy</h3>
+              <h3 class="text-[16px] font-semibold text-[#0D0D0D]" style="letter-spacing: -0.32px;">{{ lang.language.value === 'en' ? "Today's Sessions" : 'Sesiones de hoy' }}</h3>
               <div class="flex items-center gap-2">
                 <span
                   class="text-[12px] rounded-full px-3 py-1 cursor-pointer transition-colors"
                   :class="aiTab === 'overview' ? 'bg-[#0D0D0D] text-white' : 'bg-[#f6f6f6] text-[#7A7A7A] hover:bg-gray-200'"
                   @click="aiTab = 'overview'"
-                >General</span>
+                >{{ t.general }}</span>
                 <span
                   class="text-[12px] rounded-full px-3 py-1 cursor-pointer transition-colors"
                   :class="aiTab === 'daily' ? 'bg-[#0D0D0D] text-white' : 'bg-[#f6f6f6] text-[#7A7A7A] hover:bg-gray-200'"
                   @click="aiTab = 'daily'"
-                >Diario</span>
+                >{{ t.daily }}</span>
               </div>
             </div>
 
@@ -469,7 +472,7 @@
                       :stroke-dasharray="213.63" :stroke-dashoffset="213.63 * (1 - tokenStats.percentUsed / 100)"
                       stroke-linecap="round" transform="rotate(-90 40 40)" class="transition-all duration-700" />
                     <text x="40" y="38" text-anchor="middle" font-size="14" font-weight="700" fill="#0D0D0D" style="font-family: 'Space Grotesk'">{{ tokenStats.percentUsed }}%</text>
-                    <text x="40" y="50" text-anchor="middle" font-size="8" fill="#7A7A7A">usado</text>
+                    <text x="40" y="50" text-anchor="middle" font-size="8" fill="#7A7A7A">{{ lang.language.value === 'en' ? 'used' : 'usado' }}</text>
                   </svg>
                   <div class="space-y-2 flex-1">
                     <div v-for="(tokens, actionName) in topActions" :key="actionName">
@@ -487,7 +490,7 @@
               <!-- Daily tab -->
               <div v-else class="space-y-3">
                 <div>
-                  <p class="text-[11px] text-[#7A7A7A]">Hoy</p>
+                  <p class="text-[11px] text-[#7A7A7A]">{{ t.today }}</p>
                   <span class="text-[28px] font-bold text-[#0D0D0D] tabular-nums" style="font-family: 'Space Grotesk';">{{ formatTokens(todayTokens) }}</span>
                   <span v-if="todayTokens > yesterdayTokens && yesterdayTokens > 0" class="text-[11px] font-bold text-red-500 ml-2">
                     +{{ Math.round(((todayTokens - yesterdayTokens) / yesterdayTokens) * 100) }}%
@@ -501,7 +504,7 @@
                     :title="`${day.date}: ${formatTokens(day.tokens)}`" />
                 </div>
                 <div class="flex justify-between text-[9px] text-[#7A7A7A]">
-                  <span>7d ago</span><span>Hoy</span>
+                  <span>{{ lang.language.value === 'en' ? '7d ago' : '7d atrás' }}</span><span>{{ t.today }}</span>
                 </div>
               </div>
             </template>
@@ -548,10 +551,10 @@
           </div>
 
           <!-- Daily Plan (compact) -->
-          <div class="bg-white rounded-[15px] border border-gray-100 p-4 cursor-pointer hover:shadow-sm transition-all"
+          <div v-if="canUseAI" class="bg-white rounded-[15px] border border-gray-100 p-4 cursor-pointer hover:shadow-sm transition-all"
             @click="loadDailyPlan">
             <div class="flex items-center justify-between mb-2">
-              <h3 class="text-[14px] font-semibold text-[#0D0D0D]">Plan del dia</h3>
+              <h3 class="text-[14px] font-semibold text-[#0D0D0D]">{{ t.dailyPlan }}</h3>
               <div class="w-6 h-6 rounded-full bg-violet-50 flex items-center justify-center">
                 <UIcon name="i-heroicons-sparkles" class="w-3.5 h-3.5 text-violet-600" />
               </div>
@@ -567,7 +570,7 @@
             </div>
             <div v-else class="flex items-center gap-2 text-[#10B981]">
               <UIcon name="i-heroicons-sparkles" class="w-3.5 h-3.5" />
-              <span class="text-[11px] font-semibold">Generar plan con IA</span>
+              <span class="text-[11px] font-semibold">{{ t.generatePlan }}</span>
             </div>
           </div>
         </div>
@@ -579,13 +582,13 @@
           @click="router.push(`/${store.slug}/projects`)"
           class="bg-white hover:bg-gray-50 text-[#0D0D0D] text-[12px] font-semibold px-4 py-2 rounded-lg border border-gray-100 transition-all cursor-pointer"
         >
-          Ver proyectos
+          {{ t.viewProjects }}
         </button>
         <button
           @click="showCreate = true"
           class="bg-[#10B981] hover:bg-emerald-600 text-white text-[12px] font-semibold px-4 py-2 rounded-lg transition-all cursor-pointer"
         >
-          + Nuevo proyecto
+          + {{ t.newProject }}
         </button>
       </div>
     </div>
@@ -594,18 +597,18 @@
     <UModal v-model:open="showCreate">
       <template #content>
         <div class="p-6">
-          <h2 class="text-lg font-bold text-gray-900 mb-5">Nuevo proyecto</h2>
+          <h2 class="text-lg font-bold text-gray-900 mb-5">{{ t.newProject }}</h2>
           <form class="space-y-4" @submit.prevent="handleCreate">
-            <UFormField label="Nombre">
-              <UInput v-model="newName" placeholder="Nombre del proyecto" required class="w-full" size="lg" autofocus />
+            <UFormField :label="t.name">
+              <UInput v-model="newName" :placeholder="lang.language.value === 'en' ? 'Project name' : 'Nombre del proyecto'" required class="w-full" size="lg" autofocus />
             </UFormField>
-            <UFormField label="Plantilla Kanban">
+            <UFormField :label="lang.language.value === 'en' ? 'Kanban Template' : 'Plantilla Kanban'">
               <USelectMenu v-model="newTemplate" :items="templateOptions" value-key="value" class="w-full" />
             </UFormField>
             <p v-if="createError" class="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{{ createError }}</p>
             <div class="flex justify-end gap-3">
-              <UButton variant="ghost" @click="showCreate = false">Cancelar</UButton>
-              <UButton type="submit" color="primary" :loading="creating" class="font-semibold">Crear</UButton>
+              <UButton variant="ghost" @click="showCreate = false">{{ t.cancel }}</UButton>
+              <UButton type="submit" color="primary" :loading="creating" class="font-semibold">{{ t.createProject }}</UButton>
             </div>
           </form>
         </div>
@@ -616,7 +619,7 @@
 
 <script setup lang="ts">
 import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { es, enUS } from 'date-fns/locale'
 import type { TokenUsageStats } from '~/types'
 
 definePageMeta({ middleware: 'auth' })
@@ -628,6 +631,9 @@ const lofi = useLofiPlayer()
 const pushNotif = usePushNotifications()
 const deadline = useTaskDeadline()
 const pomodoro = usePomodoroTimer()
+const { canUseAI, canViewUsageStats } = usePermissions()
+const lang = useLanguage()
+const t = lang.labels
 
 const taskCount = ref(0)
 const completedTasks = ref(0)
@@ -745,19 +751,29 @@ const userName = computed(() => {
 
 const greeting = computed(() => {
   const h = new Date().getHours()
-  if (h < 12) return 'Buenos días'
-  if (h < 18) return 'Buenas tardes'
-  return 'Buenas noches'
+  if (h < 12) return t.value.goodMorning
+  if (h < 18) return t.value.goodAfternoon
+  return t.value.goodEvening
 })
 
-const motivationalQuotes = [
+const motivationalQuotesEs = [
   '¿Listo para conquistar tus proyectos?',
   'Cada tarea completada es un paso hacia tu meta.',
   'Empieza por lo más pequeño, el momentum hará el resto.',
   'Tu yo del futuro te agradecerá empezar hoy.',
   'La disciplina es elegir entre lo que quieres ahora y lo que más quieres.',
 ]
-const motivationalQuote = computed(() => motivationalQuotes[new Date().getDate() % motivationalQuotes.length])
+const motivationalQuotesEn = [
+  'Ready to conquer your projects?',
+  'Every completed task is a step toward your goal.',
+  'Start with the smallest thing, momentum will do the rest.',
+  'Your future self will thank you for starting today.',
+  'Discipline is choosing between what you want now and what you want most.',
+]
+const motivationalQuote = computed(() => {
+  const quotes = lang.language.value === 'en' ? motivationalQuotesEn : motivationalQuotesEs
+  return quotes[new Date().getDate() % quotes.length]
+})
 
 // Token stats computed
 const topActions = computed(() => {
@@ -827,32 +843,34 @@ watch(() => store.workspace?.id, async (wsId) => {
   try {
     const supabase = useSupabaseClient()
     const projectIds = store.projects.map(p => p.id)
+    if (projectIds.length === 0) return
 
-    const { count: total } = await supabase
+    const { count: total, error: totalErr } = await supabase
       .from('tasks')
       .select('*', { count: 'exact', head: true })
       .in('project_id', projectIds)
-    taskCount.value = total || 0
+    if (!totalErr) taskCount.value = total || 0
 
     // Get completed tasks (last column of each project)
-    const { data: cols } = await supabase
+    const { data: cols, error: colsErr } = await supabase
       .from('kanban_columns')
       .select('id, project_id, position')
       .in('project_id', projectIds)
       .order('position', { ascending: false })
 
-    if (cols && cols.length > 0) {
+    if (!colsErr && cols && cols.length > 0) {
       const lastCols = new Map<string, string>()
       for (const col of cols as any[]) {
         if (!lastCols.has(col.project_id)) lastCols.set(col.project_id, col.id)
       }
       const lastColIds = Array.from(lastCols.values())
-
-      const { count: done } = await supabase
-        .from('tasks')
-        .select('*', { count: 'exact', head: true })
-        .in('column_id', lastColIds)
-      completedTasks.value = done || 0
+      if (lastColIds.length > 0) {
+        const { count: done } = await supabase
+          .from('tasks')
+          .select('*', { count: 'exact', head: true })
+          .in('column_id', lastColIds)
+        completedTasks.value = done || 0
+      }
     }
 
     // Load recent tasks for the table
@@ -875,7 +893,7 @@ watch(() => store.workspace?.id, async (wsId) => {
           priority: t.priority || 'medium',
           projectId: t.project_id,
           projectName: projectMap.get(t.project_id) || '—',
-          dateShort: t.created_at ? format(new Date(t.created_at), 'MMM d', { locale: es }) : '—',
+          dateShort: t.created_at ? format(new Date(t.created_at), 'MMM d', { locale: lang.language.value === 'en' ? enUS : es }) : '—',
           isCompleted: lastColSet.has(t.column_id),
           deadlineLabel: dlInfo?.label || null,
           deadlineColor: dlInfo?.colorClass || '',
@@ -883,7 +901,9 @@ watch(() => store.workspace?.id, async (wsId) => {
         }
       })
     }
-  } catch { /* silent */ }
+  } catch (err) {
+    console.warn('[dashboard] Error loading stats:', err)
+  }
 }, { immediate: true })
 
 // AI Coach

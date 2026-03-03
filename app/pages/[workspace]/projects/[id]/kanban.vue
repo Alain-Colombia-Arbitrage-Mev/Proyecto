@@ -8,32 +8,32 @@
           class="text-xs text-gray-400 hover:text-focusflow-700 mb-1 inline-flex items-center gap-1 font-medium transition-colors"
         >
           <UIcon name="i-heroicons-arrow-left" class="w-3.5 h-3.5" />
-          Proyectos
+          {{ t.projects }}
         </NuxtLink>
         <h1 class="text-2xl font-bold text-gray-900 tracking-tight">{{ project?.name || 'Kanban' }}</h1>
       </div>
       <div class="flex items-center gap-2">
         <!-- Full text on desktop -->
-        <UButton size="sm" variant="soft" icon="i-heroicons-sparkles" @click="handleSuggestTasks" :loading="aiLoading" class="font-medium hidden sm:inline-flex">
-          AI Sugerencias
+        <UButton v-if="canUseAI" size="sm" variant="soft" icon="i-heroicons-sparkles" @click="handleSuggestTasks" :loading="aiLoading" class="font-medium hidden sm:inline-flex">
+          {{ t.aiSuggestions }}
         </UButton>
-        <UButton size="sm" variant="soft" color="success" icon="i-heroicons-bolt" @click="handleAntiProcrastination" :loading="aiLoading" class="font-medium hidden sm:inline-flex">
-          Anti-Procrastinación
+        <UButton v-if="canUseAI" size="sm" variant="soft" color="success" icon="i-heroicons-bolt" @click="handleAntiProcrastination" :loading="aiLoading" class="font-medium hidden sm:inline-flex">
+          {{ t.antiProcrastination }}
         </UButton>
-        <UButton size="sm" variant="outline" icon="i-heroicons-arrow-up-tray" @click="showImportModal = true" class="font-medium hidden sm:inline-flex">
-          Importar
+        <UButton v-if="canImportTasks" size="sm" variant="outline" icon="i-heroicons-arrow-up-tray" @click="showImportModal = true" class="font-medium hidden sm:inline-flex">
+          {{ t.import }}
         </UButton>
         <!-- Icon-only on mobile -->
-        <UButton size="sm" variant="soft" icon="i-heroicons-sparkles" @click="handleSuggestTasks" :loading="aiLoading" class="sm:hidden" />
-        <UButton size="sm" variant="soft" color="success" icon="i-heroicons-bolt" @click="handleAntiProcrastination" :loading="aiLoading" class="sm:hidden" />
-        <UButton size="sm" variant="outline" icon="i-heroicons-arrow-up-tray" @click="showImportModal = true" class="sm:hidden" />
+        <UButton v-if="canUseAI" size="sm" variant="soft" icon="i-heroicons-sparkles" @click="handleSuggestTasks" :loading="aiLoading" class="sm:hidden" />
+        <UButton v-if="canUseAI" size="sm" variant="soft" color="success" icon="i-heroicons-bolt" @click="handleAntiProcrastination" :loading="aiLoading" class="sm:hidden" />
+        <UButton v-if="canImportTasks" size="sm" variant="outline" icon="i-heroicons-arrow-up-tray" @click="showImportModal = true" class="sm:hidden" />
       </div>
     </div>
 
     <!-- Stat Cards Row -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 animate-fade-up">
       <div class="bg-white rounded-[15px] border border-gray-100 p-3.5">
-        <p class="text-[11px] text-gray-500 mb-0.5">Tareas Totales</p>
+        <p class="text-[11px] text-gray-500 mb-0.5">{{ language === 'en' ? 'Total Tasks' : 'Tareas Totales' }}</p>
         <div class="flex items-end justify-between">
           <span class="text-[28px] font-bold text-[#0D0D0D] leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -1.5px;">{{ tasks.length }}</span>
           <div class="flex items-end gap-[2px] h-[32px]">
@@ -43,7 +43,7 @@
         </div>
       </div>
       <div class="bg-white rounded-[15px] border border-gray-100 p-3.5">
-        <p class="text-[11px] text-gray-500 mb-0.5">En Progreso</p>
+        <p class="text-[11px] text-gray-500 mb-0.5">{{ t.inProgress }}</p>
         <div class="flex items-end justify-between">
           <span class="text-[28px] font-bold text-[#0D0D0D] leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -1.5px;">{{ inProgressCount }}</span>
           <div class="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center">
@@ -52,7 +52,7 @@
         </div>
       </div>
       <div class="bg-white rounded-[15px] border border-gray-100 p-3.5">
-        <p class="text-[11px] text-gray-500 mb-0.5">Vencen Hoy</p>
+        <p class="text-[11px] text-gray-500 mb-0.5">{{ t.dueToday }}</p>
         <div class="flex items-end justify-between">
           <span class="text-[28px] font-bold leading-none tabular-nums" :class="dueTodayCount > 0 ? 'text-red-600' : 'text-[#0D0D0D]'" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -1.5px;">{{ dueTodayCount }}</span>
           <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center">
@@ -61,7 +61,7 @@
         </div>
       </div>
       <div class="bg-white rounded-[15px] border border-gray-100 p-3.5">
-        <p class="text-[11px] text-gray-500 mb-0.5">Completadas</p>
+        <p class="text-[11px] text-gray-500 mb-0.5">{{ t.completed }}</p>
         <div class="flex items-end justify-between">
           <span class="text-[28px] font-bold text-[#10B981] leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -1.5px;">{{ completedCount }}</span>
           <div class="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center">
@@ -74,75 +74,64 @@
     <!-- Tablero header bar -->
     <div class="flex items-center justify-between mb-4 animate-fade-up flex-wrap gap-2">
       <div class="flex items-center gap-3">
-        <h2 class="text-[16px] font-semibold text-[#0D0D0D]">Tablero</h2>
+        <h2 class="text-[16px] font-semibold text-[#0D0D0D]">{{ t.board }}</h2>
         <!-- View toggle -->
         <div class="flex items-center bg-gray-100 rounded-lg p-0.5">
           <button
-            class="text-[11px] font-medium px-2.5 py-1 rounded-md transition-all cursor-pointer"
+            class="text-xs font-medium px-2.5 py-2 rounded-md transition-all cursor-pointer"
             :class="viewMode === 'columns' ? 'bg-white text-[#0D0D0D] shadow-sm' : 'text-gray-500 hover:text-gray-700'"
             @click="setViewMode('columns')"
           >
-            <UIcon name="i-heroicons-view-columns" class="w-3.5 h-3.5" />
+            <UIcon name="i-heroicons-view-columns" class="w-4 h-4" />
           </button>
           <button
-            class="text-[11px] font-medium px-2.5 py-1 rounded-md transition-all cursor-pointer"
+            class="text-xs font-medium px-2.5 py-2 rounded-md transition-all cursor-pointer"
             :class="viewMode === 'list' ? 'bg-white text-[#0D0D0D] shadow-sm' : 'text-gray-500 hover:text-gray-700'"
             @click="setViewMode('list')"
           >
-            <UIcon name="i-heroicons-bars-3" class="w-3.5 h-3.5" />
+            <UIcon name="i-heroicons-bars-3" class="w-4 h-4" />
           </button>
         </div>
-        <!-- Language toggle -->
-        <div class="flex items-center bg-gray-100 rounded-lg p-0.5">
-          <button
-            class="text-[10px] font-bold px-2 py-1 rounded-md transition-all cursor-pointer"
-            :class="language === 'es' ? 'bg-white text-[#0D0D0D] shadow-sm' : 'text-gray-400 hover:text-gray-600'"
-            @click="setLang('es')"
-          >ES</button>
-          <button
-            class="text-[10px] font-bold px-2 py-1 rounded-md transition-all cursor-pointer"
-            :class="language === 'en' ? 'bg-white text-[#0D0D0D] shadow-sm' : 'text-gray-400 hover:text-gray-600'"
-            @click="setLang('en')"
-          >EN</button>
-        </div>
+        <LanguageToggle />
         <!-- Kanban filter -->
         <button
-          class="text-[11px] font-medium px-3 py-1.5 rounded-full transition-all cursor-pointer"
+          class="text-xs font-medium px-3.5 py-2 rounded-full transition-all cursor-pointer"
           :class="showKanbanFilter ? 'bg-[#0D0D0D] text-white' : 'text-gray-500 bg-gray-100 hover:bg-gray-200'"
           @click="showKanbanFilter = !showKanbanFilter"
         >
-          <span class="flex items-center gap-1">
-            <UIcon name="i-heroicons-funnel" class="w-3 h-3" />
-            Filtros
+          <span class="flex items-center gap-1.5">
+            <UIcon name="i-heroicons-funnel" class="w-3.5 h-3.5" />
+            {{ t.filters }}
           </span>
         </button>
       </div>
       <button
-        class="bg-[#10B981] hover:bg-emerald-600 text-white text-[12px] font-semibold px-4 py-2 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+        v-if="canCreateTasks"
+        class="bg-[#10B981] hover:bg-emerald-600 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
         @click="openAddTask(columns[0]?.id || '')"
       >
         <UIcon name="i-heroicons-plus" class="w-3.5 h-3.5" />
-        Crear tarea
+        {{ t.createTask }}
       </button>
     </div>
 
     <!-- Kanban filters row -->
-    <div v-if="showKanbanFilter" class="flex items-center gap-2 mb-4 animate-fade-up">
+    <div v-if="showKanbanFilter" class="flex items-center gap-2 mb-4 animate-fade-up flex-wrap">
       <select
         v-model="kanbanFilterPriority"
-        class="text-[11px] font-medium text-gray-600 bg-gray-100 rounded-full px-2.5 py-1.5 border-0 outline-none cursor-pointer"
+        class="text-xs font-medium text-gray-600 bg-gray-100 rounded-full px-3 py-2 border-0 outline-none cursor-pointer"
       >
-        <option value="">Prioridad</option>
-        <option value="critical">Crítica</option>
-        <option value="high">Alta</option>
-        <option value="medium">Media</option>
-        <option value="low">Baja</option>
+        <option value="">{{ t.priority }}</option>
+        <option value="critical">{{ t.priorityCritical }}</option>
+        <option value="high">{{ t.priorityHigh }}</option>
+        <option value="medium">{{ t.priorityMedium }}</option>
+        <option value="low">{{ t.priorityLow }}</option>
       </select>
       <select
         v-model="kanbanFilterAssignee"
-        class="text-[11px] font-medium text-gray-600 bg-gray-100 rounded-full px-2.5 py-1.5 border-0 outline-none cursor-pointer"
+        class="text-xs font-medium text-gray-600 bg-gray-100 rounded-full px-3 py-2 border-0 outline-none cursor-pointer"
       >
-        <option value="">Asignado a</option>
+        <option value="">{{ t.assignedTo }}</option>
         <option v-for="m in workspaceMembers" :key="m.user_id" :value="m.user_id">{{ m.email || m.user_id.slice(0, 12) }}</option>
       </select>
       <button
@@ -150,7 +139,7 @@
         class="text-[11px] text-red-500 font-medium cursor-pointer hover:text-red-700"
         @click="kanbanFilterPriority = ''; kanbanFilterAssignee = ''"
       >
-        Limpiar
+        {{ t.clear }}
       </button>
     </div>
 
@@ -158,16 +147,16 @@
     <div v-if="loading" class="flex justify-center py-16">
       <div class="flex items-center gap-3 text-gray-400">
         <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 animate-spin" />
-        <span class="text-sm">Cargando tablero...</span>
+        <span class="text-sm">{{ t.loadingBoard }}</span>
       </div>
     </div>
 
     <!-- Kanban Board (Columns View) -->
-    <div v-else-if="viewMode === 'columns'" class="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:-mx-8 md:px-8 min-h-[65vh] animate-fade-up delay-100">
+    <div v-else-if="viewMode === 'columns'" class="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:-mx-8 md:px-8 min-h-[65vh] animate-fade-up delay-100 snap-x snap-mandatory md:snap-none">
       <div
         v-for="column in columns"
         :key="column.id"
-        class="flex flex-col w-64 min-w-[256px] md:w-72 md:min-w-[288px] shrink-0"
+        class="flex flex-col w-[75vw] min-w-[256px] md:w-72 md:min-w-[288px] shrink-0 snap-center md:snap-align-none"
         :class="isWipExceeded(column) ? 'ring-2 ring-red-300 rounded-xl bg-red-50/30' : ''"
       >
         <!-- Column header -->
@@ -188,20 +177,21 @@
           </div>
           <div class="flex items-center gap-0.5">
             <button
-              class="w-6 h-6 flex items-center justify-center rounded-md text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition-all opacity-0 group-hover/col:opacity-100"
+              class="w-7 h-7 flex items-center justify-center rounded-md text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition-all sm:opacity-0 sm:group-hover/col:opacity-100"
               @click="openEditColumn(column)"
-              title="Editar columna"
+              :title="t.editColumn"
             >
-              <UIcon name="i-heroicons-pencil-square" class="w-3 h-3" />
+              <UIcon name="i-heroicons-pencil-square" class="w-3.5 h-3.5" />
             </button>
             <button
-              class="w-6 h-6 flex items-center justify-center rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover/col:opacity-100"
+              class="w-7 h-7 flex items-center justify-center rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all sm:opacity-0 sm:group-hover/col:opacity-100"
               @click="handleDeleteColumn(column)"
-              title="Eliminar columna"
+              :title="t.deleteColumn"
             >
               <UIcon name="i-heroicons-trash" class="w-3 h-3" />
             </button>
             <button
+              v-if="canCreateTasks"
               class="w-6 h-6 flex items-center justify-center rounded-md hover:bg-white/50 transition-all"
               :style="{ color: column.color }"
               @click="openAddTask(column.id)"
@@ -230,11 +220,11 @@
           >
             <!-- Pomodoro quick-start button -->
             <button
-              class="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center transition-all z-10"
+              class="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-all z-10"
               :class="pomodoro.activeTask.value?.id === task.id
                 ? 'bg-emerald-100 text-emerald-600 opacity-100'
-                : 'bg-gray-100 text-gray-400 hover:bg-focusflow-100 hover:text-focusflow-600 opacity-0 group-hover/card:opacity-100'"
-              :title="pomodoro.activeTask.value?.id === task.id ? `Pomodoro: ${pomodoro.display.value}` : 'Iniciar Pomodoro'"
+                : 'bg-gray-100 text-gray-400 hover:bg-focusflow-100 hover:text-focusflow-600 sm:opacity-0 sm:group-hover/card:opacity-100'"
+              :title="pomodoro.activeTask.value?.id === task.id ? `Pomodoro: ${pomodoro.display.value}` : t.startPomodoro"
               @click.stop="pomodoro.startForTask({ id: task.id, title: task.title }, workspaceId)"
             >
               <UIcon name="i-heroicons-clock" class="w-3.5 h-3.5" />
@@ -321,7 +311,7 @@
                     'bg-gray-50 text-gray-400': task.priority === 'low',
                   }"
                 >
-                  {{ { critical: 'Crítica', high: 'Alta', medium: 'Media', low: 'Baja' }[task.priority] || task.priority }}
+                  {{ { critical: t.priorityCritical, high: t.priorityHigh, medium: t.priorityMedium, low: t.priorityLow }[task.priority] || task.priority }}
                 </span>
               </div>
               <!-- Assignee avatars -->
@@ -349,17 +339,18 @@
             v-if="filteredTasksByColumn(column.id).length === 0"
             class="flex items-center justify-center h-24 border border-dashed border-gray-300 rounded-xl"
           >
-            <p class="text-[10px] text-gray-400 font-medium">Arrastra tareas aquí</p>
+            <p class="text-[10px] text-gray-400 font-medium"><span class="hidden sm:inline">{{ t.noTasksDrag }}</span><span class="sm:hidden">{{ t.noTasksMobile }}</span></p>
           </div>
         </div>
 
         <!-- Quick add -->
         <button
+          v-if="canCreateTasks"
           class="mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-400 hover:text-focusflow-700 hover:bg-focusflow-50/50 rounded-xl transition-all"
           @click="openAddTask(column.id)"
         >
           <UIcon name="i-heroicons-plus" class="w-3.5 h-3.5" />
-          Agregar
+          {{ language === 'en' ? 'Add' : 'Agregar' }}
         </button>
       </div>
 
@@ -371,14 +362,14 @@
             @click="showAddColumn = true"
           >
             <UIcon name="i-heroicons-plus" class="w-4 h-4" />
-            Agregar columna
+            {{ language === 'en' ? 'Add column' : 'Agregar columna' }}
           </button>
         </div>
         <div v-else class="bg-white rounded-xl p-4 border border-gray-100 shadow-card">
           <form @submit.prevent="handleAddColumn" class="space-y-3">
-            <UInput v-model="newColumnTitle" placeholder="Nombre de la columna" required class="w-full" size="sm" autofocus />
+            <UInput v-model="newColumnTitle" :placeholder="t.columnName" required class="w-full" size="sm" autofocus />
             <div class="flex items-center gap-2">
-              <label class="text-xs text-gray-500">Color:</label>
+              <label class="text-xs text-gray-500">{{ language === 'en' ? 'Color:' : 'Color:' }}</label>
               <div class="flex gap-1.5">
                 <button
                   v-for="c in columnColors"
@@ -392,8 +383,8 @@
               </div>
             </div>
             <div class="flex gap-2">
-              <UButton type="submit" size="xs" color="primary" :loading="addingColumn" class="font-semibold">Crear</UButton>
-              <UButton size="xs" variant="ghost" @click="showAddColumn = false">Cancelar</UButton>
+              <UButton type="submit" size="xs" color="primary" :loading="addingColumn" class="font-semibold">{{ t.create }}</UButton>
+              <UButton size="xs" variant="ghost" @click="showAddColumn = false">{{ t.cancel }}</UButton>
             </div>
           </form>
         </div>
@@ -405,12 +396,12 @@
       <div class="bg-white rounded-[15px] border border-gray-100 overflow-hidden">
         <!-- Table header -->
         <div class="grid grid-cols-[2fr_1fr_1fr] md:grid-cols-[2fr_1fr_0.8fr_0.8fr_0.8fr_0.6fr] px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 bg-gray-50/50">
-          <span>Tarea</span>
-          <span class="hidden md:block">Columna</span>
-          <span>Deadline</span>
-          <span>Prioridad</span>
-          <span class="hidden md:block">Tags</span>
-          <span class="hidden md:block">Asignados</span>
+          <span>{{ language === 'en' ? 'Task' : 'Tarea' }}</span>
+          <span class="hidden md:block">{{ t.column }}</span>
+          <span>{{ t.deadline }}</span>
+          <span>{{ t.priority }}</span>
+          <span class="hidden md:block">{{ t.tags }}</span>
+          <span class="hidden md:block">{{ t.assigned }}</span>
         </div>
         <!-- Rows grouped by column -->
         <template v-for="column in columns" :key="'list-'+column.id">
@@ -483,7 +474,7 @@
                   'bg-blue-50 text-blue-600': task.priority === 'medium',
                   'bg-gray-50 text-gray-400': task.priority === 'low',
                 }">
-                {{ { critical: 'Crítica', high: 'Alta', medium: 'Media', low: 'Baja' }[task.priority] || task.priority }}
+                {{ { critical: t.priorityCritical, high: t.priorityHigh, medium: t.priorityMedium, low: t.priorityLow }[task.priority] || task.priority }}
               </span>
             </span>
             <!-- Labels + Tags (hidden mobile) -->
@@ -516,7 +507,7 @@
         </template>
         <div v-if="allFilteredTasks.length === 0" class="flex flex-col items-center justify-center py-12 text-gray-400">
           <UIcon name="i-heroicons-clipboard-document-list" class="w-8 h-8 text-gray-300 mb-2" />
-          <p class="text-[12px]">Sin tareas</p>
+          <p class="text-[12px]">{{ t.noTasksMobile }}</p>
         </div>
       </div>
     </div>
@@ -540,10 +531,17 @@
           <div class="w-7 h-7 rounded-lg bg-focusflow-600 flex items-center justify-center">
             <UIcon name="i-heroicons-sparkles" class="w-3.5 h-3.5 text-white" />
           </div>
-          <div>
+          <div class="flex-1">
             <p class="text-sm font-bold text-gray-900">FocusFlow AI</p>
-            <p class="text-[10px] text-gray-400">MiniMax M2.5 · Asistente inteligente</p>
+            <p class="text-[10px] text-gray-400">MiniMax M2.5 · {{ language === 'en' ? 'Smart assistant' : 'Asistente inteligente' }}</p>
           </div>
+          <button
+            class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+            @click="showAiPanel = false"
+            :title="t.close"
+          >
+            <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+          </button>
         </div>
 
         <!-- Tabs -->
@@ -557,7 +555,7 @@
             class="text-[10px] font-semibold px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
             :class="aiTab === 'memory' ? 'bg-purple-50 text-purple-700' : 'text-gray-400 hover:text-gray-600'"
             @click="aiTab = 'memory'; loadMemoryAgents()"
-          >Memoria</button>
+          >{{ language === 'en' ? 'Memory' : 'Memoria' }}</button>
           <button
             class="text-[10px] font-semibold px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
             :class="aiTab === 'tokens' ? 'bg-emerald-50 text-emerald-700' : 'text-gray-400 hover:text-gray-600'"
@@ -568,16 +566,16 @@
         <!-- Quick actions (chat tab) -->
         <div v-if="aiTab === 'chat'" class="px-3 py-2 border-b border-gray-100 flex gap-1.5 flex-wrap">
           <button class="text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-focusflow-50 text-focusflow-700 hover:bg-focusflow-100 transition-colors cursor-pointer" @click="handleSuggestTasks" :disabled="aiLoading">
-            Sugerir tareas
+            {{ language === 'en' ? 'Suggest tasks' : 'Sugerir tareas' }}
           </button>
           <button class="text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors cursor-pointer" @click="handleDailyPlan" :disabled="aiLoading">
-            Plan del día
+            {{ t.dailyPlan }}
           </button>
           <button class="text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors cursor-pointer" @click="handleAntiProcrastination" :disabled="aiLoading">
-            Anti-Procrastinación
+            {{ t.antiProcrastination }}
           </button>
           <button class="text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors cursor-pointer" @click="handleDocumentArchitecture" :disabled="aiLoading">
-            Documentar Arquitectura
+            {{ language === 'en' ? 'Document Architecture' : 'Documentar Arquitectura' }}
           </button>
           <button class="text-[10px] font-semibold px-2.5 py-1 rounded-lg transition-colors cursor-pointer" style="background-color: #3B82F620; color: #3B82F6;" @click="handleDocAgent('doc_backend_architecture')" :disabled="aiLoading">
             Backend Arch
@@ -604,7 +602,7 @@
           <template v-else>
             <div v-if="memoryAgents.length === 0" class="text-center py-8">
               <UIcon name="i-heroicons-cpu-chip" class="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p class="text-xs text-gray-400">Sin memorias aún. Usa el chat para generar contexto.</p>
+              <p class="text-xs text-gray-400">{{ language === 'en' ? 'No memories yet. Use the chat to generate context.' : 'Sin memorias aún. Usa el chat para generar contexto.' }}</p>
             </div>
             <div v-for="agent in memoryAgents" :key="agent.type" class="bg-gray-50 rounded-xl p-3">
               <div class="flex items-center gap-2 mb-1">
@@ -624,7 +622,7 @@
               </div>
             </div>
             <div class="text-center pt-2">
-              <p class="text-[10px] text-gray-400">Total: {{ memoryTotalCount }} memorias vectoriales</p>
+              <p class="text-[10px] text-gray-400">Total: {{ memoryTotalCount }} {{ language === 'en' ? 'vector memories' : 'memorias vectoriales' }}</p>
             </div>
           </template>
         </div>
@@ -638,7 +636,7 @@
             <!-- Monthly usage bar -->
             <div class="bg-gray-50 rounded-xl p-3">
               <div class="flex items-center justify-between mb-2">
-                <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Uso mensual</p>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400">{{ language === 'en' ? 'Monthly usage' : 'Uso mensual' }}</p>
                 <span class="text-xs font-bold tabular-nums" :class="tokenStats.percentUsed >= 90 ? 'text-red-600' : tokenStats.percentUsed >= 70 ? 'text-amber-600' : 'text-emerald-600'">
                   {{ tokenStats.percentUsed }}%
                 </span>
@@ -656,18 +654,18 @@
             <!-- Today stats -->
             <div class="grid grid-cols-2 gap-2">
               <div class="bg-emerald-50 rounded-xl p-3 text-center">
-                <p class="text-[10px] text-emerald-600 font-bold uppercase tracking-wider mb-1">Hoy</p>
+                <p class="text-[10px] text-emerald-600 font-bold uppercase tracking-wider mb-1">{{ t.today }}</p>
                 <span class="text-lg font-bold text-emerald-700 tabular-nums">{{ formatTokens(tokenTodayCount) }}</span>
               </div>
               <div class="bg-gray-50 rounded-xl p-3 text-center">
-                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Este mes</p>
+                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">{{ t.thisMonth }}</p>
                 <span class="text-lg font-bold text-gray-700 tabular-nums">{{ formatTokens(tokenStats.totalTokens) }}</span>
               </div>
             </div>
 
             <!-- By action breakdown -->
             <div>
-              <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Por acción</p>
+              <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">{{ language === 'en' ? 'By action' : 'Por acción' }}</p>
               <div class="space-y-1.5">
                 <div v-for="(tokens, actionName) in tokenStats.byAction" :key="actionName" class="flex items-center gap-2">
                   <span class="text-[10px] text-gray-600 w-24 truncate">{{ actionName }}</span>
@@ -681,14 +679,14 @@
 
             <!-- Avg tokens per message -->
             <div class="bg-violet-50 rounded-xl p-3 text-center">
-              <p class="text-[10px] text-violet-600 font-bold uppercase tracking-wider mb-1">Promedio por llamada</p>
+              <p class="text-[10px] text-violet-600 font-bold uppercase tracking-wider mb-1">{{ t.avgPerCall }}</p>
               <span class="text-lg font-bold text-violet-700 tabular-nums">{{ formatTokens(tokenAvgPerCall) }}</span>
-              <p class="text-[10px] text-violet-500">tokens/llamada</p>
+              <p class="text-[10px] text-violet-500">{{ language === 'en' ? 'tokens/call' : 'tokens/llamada' }}</p>
             </div>
           </template>
           <div v-else class="text-center py-8">
             <UIcon name="i-heroicons-cpu-chip" class="w-8 h-8 text-gray-300 mx-auto mb-2" />
-            <p class="text-xs text-gray-400">Sin datos de uso de tokens</p>
+            <p class="text-xs text-gray-400">{{ language === 'en' ? 'No token usage data' : 'Sin datos de uso de tokens' }}</p>
           </div>
         </div>
 
@@ -696,7 +694,7 @@
         <div v-if="aiTab === 'chat'" ref="chatContainer" class="flex-1 overflow-y-auto p-3 space-y-3 min-h-[200px] max-h-[340px]">
           <div v-if="aiMessages.length === 0" class="flex flex-col items-center justify-center h-full text-center py-8">
             <UIcon name="i-heroicons-sparkles" class="w-8 h-8 text-gray-300 mb-2" />
-            <p class="text-xs text-gray-400">Pregúntame sobre tu proyecto o usa los botones de arriba</p>
+            <p class="text-xs text-gray-400">{{ language === 'en' ? 'Ask me about your project or use the buttons above' : 'Pregúntame sobre tu proyecto o usa los botones de arriba' }}</p>
           </div>
 
           <div
@@ -713,7 +711,7 @@
             >
               <!-- Suggestions -->
               <div v-if="msg.role === 'assistant' && msg.type === 'suggestions'" class="space-y-2">
-                <p class="font-semibold text-focusflow-700 mb-1">Tareas sugeridas:</p>
+                <p class="font-semibold text-focusflow-700 mb-1">{{ language === 'en' ? 'Suggested tasks:' : 'Tareas sugeridas:' }}</p>
                 <div
                   v-for="(s, si) in msg.suggestions"
                   :key="si"
@@ -737,7 +735,7 @@
                   :disabled="aiLoading"
                   @click="addAllSuggestedTasks(msg.suggestions!)"
                 >
-                  Crear todas en el tablero
+                  {{ t.createAllOnBoard }}
                 </button>
               </div>
 
@@ -754,7 +752,7 @@
                   @click="addDailyPlanTasks(msg.plan.focus_tasks)"
                   :disabled="aiLoading"
                 >
-                  Crear todas en el tablero
+                  {{ t.createAllOnBoard }}
                 </button>
                 </div>
                 <div v-if="msg.plan.pomodoro_suggestion" class="mt-2 px-2 py-1.5 bg-emerald-50 rounded-lg text-emerald-700 text-[10px] font-medium">
@@ -767,18 +765,18 @@
               <!-- Anti-procrastination -->
               <div v-else-if="msg.role === 'assistant' && msg.type === 'anti_procrastination'" class="space-y-2">
                 <div class="flex items-center gap-2 mb-2">
-                  <p class="font-semibold text-amber-700">Análisis Anti-Procrastinación</p>
+                  <p class="font-semibold text-amber-700">{{ language === 'en' ? 'Anti-Procrastination Analysis' : 'Análisis Anti-Procrastinación' }}</p>
                   <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" :class="msg.analysis.score > 60 ? 'bg-red-50 text-red-700' : msg.analysis.score > 30 ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'">
-                    Riesgo: {{ msg.analysis.score }}/100
+                    {{ language === 'en' ? 'Risk' : 'Riesgo' }}: {{ msg.analysis.score }}/100
                   </span>
                 </div>
                 <p class="text-gray-700">{{ msg.analysis.analysis }}</p>
                 <div v-if="msg.analysis.quick_wins?.length" class="mt-2">
-                  <p class="font-semibold text-emerald-700 text-[10px] uppercase tracking-wider mb-1">Quick Wins (menos de 15 min):</p>
+                  <p class="font-semibold text-emerald-700 text-[10px] uppercase tracking-wider mb-1">{{ language === 'en' ? 'Quick Wins (under 15 min):' : 'Quick Wins (menos de 15 min):' }}</p>
                   <div v-for="(qw, qi) in msg.analysis.quick_wins" :key="qi" class="text-gray-700">• {{ qw }}</div>
                 </div>
                 <div v-if="msg.analysis.techniques?.length" class="mt-2 space-y-1">
-                  <p class="font-semibold text-focusflow-700 text-[10px] uppercase tracking-wider mb-1">Técnicas recomendadas:</p>
+                  <p class="font-semibold text-focusflow-700 text-[10px] uppercase tracking-wider mb-1">{{ language === 'en' ? 'Recommended techniques:' : 'Técnicas recomendadas:' }}</p>
                   <div v-for="(tech, ti) in msg.analysis.techniques" :key="ti" class="bg-white rounded-lg p-2 border border-gray-100">
                     <p class="font-medium text-gray-900">{{ tech.name }}</p>
                     <p class="text-gray-500 mt-0.5">{{ tech.description }}</p>
@@ -808,19 +806,19 @@
 
                 <!-- Risks -->
                 <div v-if="msg.doc.risks?.length" class="mt-2 bg-red-50 rounded-lg p-2">
-                  <p class="font-semibold text-red-700 text-[10px] uppercase tracking-wider mb-1">Riesgos identificados:</p>
+                  <p class="font-semibold text-red-700 text-[10px] uppercase tracking-wider mb-1">{{ language === 'en' ? 'Identified risks:' : 'Riesgos identificados:' }}</p>
                   <div v-for="(risk, ri) in msg.doc.risks" :key="ri" class="text-red-700 text-[11px]">• {{ risk }}</div>
                 </div>
 
                 <!-- Recommendations -->
                 <div v-if="msg.doc.recommendations?.length" class="mt-2 bg-focusflow-50 rounded-lg p-2">
-                  <p class="font-semibold text-focusflow-700 text-[10px] uppercase tracking-wider mb-1">Recomendaciones:</p>
+                  <p class="font-semibold text-focusflow-700 text-[10px] uppercase tracking-wider mb-1">{{ t.recommendations }}:</p>
                   <div v-for="(rec, ri) in msg.doc.recommendations" :key="ri" class="text-focusflow-700 text-[11px]">• {{ rec }}</div>
                 </div>
 
                 <!-- Tasks created summary -->
                 <div v-if="msg.doc.tasksCreated > 0" class="mt-2 bg-emerald-50 rounded-lg p-2">
-                  <p class="font-semibold text-emerald-700 text-[10px] uppercase tracking-wider mb-1">{{ msg.doc.tasksCreated }} tareas creadas:</p>
+                  <p class="font-semibold text-emerald-700 text-[10px] uppercase tracking-wider mb-1">{{ msg.doc.tasksCreated }} {{ language === 'en' ? 'tasks created:' : 'tareas creadas:' }}</p>
                   <div v-for="(task, ti) in (msg.doc.createdTasks || []).slice(0, 8)" :key="ti" class="flex items-center gap-1.5 text-[11px]">
                     <span
                       class="px-1 py-0.5 rounded text-[9px] font-bold"
@@ -833,8 +831,8 @@
 
               <!-- Improve task -->
               <div v-else-if="msg.role === 'assistant' && msg.type === 'improve'" class="space-y-1.5">
-                <p class="font-semibold text-amber-700 mb-1">Tarea mejorada:</p>
-                <p><span class="text-gray-400">Título:</span> <span class="text-gray-900 font-medium">{{ msg.improved.title }}</span></p>
+                <p class="font-semibold text-amber-700 mb-1">{{ language === 'en' ? 'Improved task:' : 'Tarea mejorada:' }}</p>
+                <p><span class="text-gray-400">{{ t.title }}:</span> <span class="text-gray-900 font-medium">{{ msg.improved.title }}</span></p>
                 <p class="text-gray-600">{{ msg.improved.description }}</p>
                 <div class="flex gap-1.5 flex-wrap mt-1">
                   <span v-for="tag in msg.improved.tags" :key="tag" class="px-1.5 py-0.5 rounded bg-focusflow-50 text-focusflow-700 text-[10px] font-semibold">{{ tag }}</span>
@@ -843,7 +841,7 @@
                   class="mt-2 w-full text-center py-1.5 rounded-lg bg-focusflow-50 text-focusflow-700 font-semibold hover:bg-focusflow-100 transition-colors cursor-pointer"
                   @click="applyImprovedTask(msg.improved)"
                 >
-                  Aplicar cambios
+                  {{ language === 'en' ? 'Apply changes' : 'Aplicar cambios' }}
                 </button>
               </div>
 
@@ -855,7 +853,7 @@
                   :disabled="aiLoading"
                   @click="retryAsTaskSuggestions(msg.text!)"
                 >
-                  Reintentar como tareas
+                  {{ language === 'en' ? 'Retry as tasks' : 'Reintentar como tareas' }}
                 </button>
               </div>
             </div>
@@ -863,7 +861,7 @@
 
           <div v-if="aiLoading" class="flex items-center gap-2 text-xs text-gray-400">
             <UIcon name="i-heroicons-arrow-path" class="w-3.5 h-3.5 animate-spin" />
-            Pensando...
+            {{ language === 'en' ? 'Thinking...' : 'Pensando...' }}
           </div>
         </div>
 
@@ -872,7 +870,7 @@
           <form class="flex gap-2" @submit.prevent="handleChat">
             <input
               v-model="chatInput"
-              placeholder="Pregunta algo..."
+              :placeholder="language === 'en' ? 'Ask something...' : 'Pregunta algo...'"
               class="flex-1 bg-gray-50 rounded-lg px-3 py-2 text-xs text-gray-900 placeholder-gray-400 outline-none focus:ring-1 focus:ring-focusflow-300 border border-gray-100"
               :disabled="aiLoading"
             />
@@ -903,13 +901,13 @@
     <UModal v-model:open="showEditColumn">
       <template #content>
         <div class="p-6">
-          <h2 class="text-lg font-bold text-gray-900 mb-5">Editar columna</h2>
+          <h2 class="text-lg font-bold text-gray-900 mb-5">{{ t.editColumn }}</h2>
           <form class="space-y-4" @submit.prevent="handleUpdateColumn">
-            <UFormField label="Nombre">
+            <UFormField :label="t.name">
               <UInput v-model="editColumnData.title" required class="w-full" size="lg" autofocus />
             </UFormField>
             <div class="flex items-center gap-2">
-              <label class="text-xs text-gray-500">Color:</label>
+              <label class="text-xs text-gray-500">{{ language === 'en' ? 'Color:' : 'Color:' }}</label>
               <div class="flex gap-1.5">
                 <button
                   v-for="c in columnColors"
@@ -922,12 +920,12 @@
                 />
               </div>
             </div>
-            <UFormField label="Límite WIP (opcional)">
-              <UInput v-model="editColumnData.wip_limit" type="number" min="0" placeholder="Sin límite" class="w-full" />
+            <UFormField :label="language === 'en' ? 'WIP Limit (optional)' : 'Límite WIP (opcional)'">
+              <UInput v-model="editColumnData.wip_limit" type="number" min="0" :placeholder="language === 'en' ? 'No limit' : 'Sin límite'" class="w-full" />
             </UFormField>
             <div class="flex justify-end gap-3 pt-2">
-              <UButton variant="ghost" @click="showEditColumn = false">Cancelar</UButton>
-              <UButton type="submit" color="primary" :loading="savingColumn" class="font-semibold">Guardar</UButton>
+              <UButton variant="ghost" @click="showEditColumn = false">{{ t.cancel }}</UButton>
+              <UButton type="submit" color="primary" :loading="savingColumn" class="font-semibold">{{ t.save }}</UButton>
             </div>
           </form>
         </div>
@@ -965,11 +963,14 @@ import { htmlToPlainText } from '~/utils/richtext'
 definePageMeta({ middleware: 'auth' })
 
 const { getDeadlineInfo, getEstimatedLabel, getTaskProgress } = useTaskDeadline()
-const { language, setLanguage: setLang, localizedTitle, localizedDescription } = useLanguage()
+const lang = useLanguage()
+const { language, setLanguage: setLang, localizedTitle, localizedDescription } = lang
+const t = lang.labels
 const pomodoro = usePomodoroTimer()
 
 const route = useRoute()
 const store = useWorkspaceStore()
+const { canCreateTasks, canUseAI, canImportTasks } = usePermissions()
 
 const project = ref<Project | null>(null)
 const columns = ref<KanbanColumn[]>([])
@@ -1248,7 +1249,7 @@ function sectionTag(heading: string): string {
   if (h.includes('testing') || h.includes('test') || h.includes('cobertura')) return 'Testing'
   if (h.includes('flujo') || h.includes('branch') || h.includes('release') || h.includes('git')) return 'Workflow'
   if (h.includes('visión') || h.includes('vision') || h.includes('general') || h.includes('alcance')) return 'General'
-  if (h.includes('recomend') || h.includes('mejora')) return 'Mejoras'
+  if (h.includes('recomend') || h.includes('mejora')) return language.value === 'en' ? 'Improvements' : 'Mejoras'
   return 'Doc'
 }
 
@@ -1307,10 +1308,12 @@ async function handleUpdateColumn() {
 async function handleDeleteColumn(column: KanbanColumn) {
   const tasksInColumn = tasksByColumn(column.id).length
   if (tasksInColumn > 0) {
-    alert(`No puedes eliminar "${column.title}" porque tiene ${tasksInColumn} tarea(s). Mueve las tareas primero.`)
+    alert(language.value === 'en'
+      ? `Cannot delete "${column.title}" because it has ${tasksInColumn} task(s). Move the tasks first.`
+      : `No puedes eliminar "${column.title}" porque tiene ${tasksInColumn} tarea(s). Mueve las tareas primero.`)
     return
   }
-  if (!confirm(`¿Eliminar la columna "${column.title}"?`)) return
+  if (!confirm(language.value === 'en' ? `Delete column "${column.title}"?` : `¿Eliminar la columna "${column.title}"?`)) return
   try {
     await $fetch(`/api/workspaces/${workspaceId.value}/columns/${column.id}`, { method: 'DELETE' })
     columns.value = columns.value.filter(c => c.id !== column.id)
@@ -1361,7 +1364,7 @@ async function callAI(action: string, context: Record<string, any>) {
     })
     return res
   } catch (e: any) {
-    aiMessages.value.push({ role: 'assistant', text: `Error: ${e.data?.message || e.message || 'No se pudo conectar con AI'}`, type: 'text' })
+    aiMessages.value.push({ role: 'assistant', text: `Error: ${e.data?.message || e.message || (language.value === 'en' ? 'Could not connect to AI' : 'No se pudo conectar con AI')}`, type: 'text' })
     scrollChat()
     return null
   } finally {
@@ -1371,7 +1374,7 @@ async function callAI(action: string, context: Record<string, any>) {
 
 async function handleSuggestTasks() {
   showAiPanel.value = true
-  aiMessages.value.push({ role: 'user', text: 'Sugiéreme tareas para este proyecto' })
+  aiMessages.value.push({ role: 'user', text: language.value === 'en' ? 'Suggest tasks for this project' : 'Sugiéreme tareas para este proyecto' })
   scrollChat()
   const res = await callAI('suggest_tasks', {
     projectName: project.value?.name || '',
@@ -1425,10 +1428,10 @@ async function addSuggestedTask(suggestion: any) {
     addedSuggestions.value.add(suggestion.title)
     await loadTasks()
     const colName = columns.value.find(c => c.id === columnId)?.title || ''
-    aiMessages.value.push({ role: 'assistant', text: `"${suggestion.title}" agregada a ${colName}`, type: 'text' })
+    aiMessages.value.push({ role: 'assistant', text: language.value === 'en' ? `"${suggestion.title}" added to ${colName}` : `"${suggestion.title}" agregada a ${colName}`, type: 'text' })
     scrollChat()
   } catch (e: any) {
-    aiMessages.value.push({ role: 'assistant', text: `Error al agregar: ${e.message}`, type: 'text' })
+    aiMessages.value.push({ role: 'assistant', text: language.value === 'en' ? `Error adding: ${e.message}` : `Error al agregar: ${e.message}`, type: 'text' })
     scrollChat()
   }
 }
@@ -1458,7 +1461,7 @@ async function addAllSuggestedTasks(suggestions: any[]) {
   }
   await loadTasks()
   const colName = columns.value.find(c => c.id === columnId)?.title || ''
-  aiMessages.value.push({ role: 'assistant', text: `${added} tareas creadas en ${colName}`, type: 'text' })
+  aiMessages.value.push({ role: 'assistant', text: language.value === 'en' ? `${added} tasks created in ${colName}` : `${added} tareas creadas en ${colName}`, type: 'text' })
   scrollChat()
 }
 
@@ -1483,14 +1486,14 @@ async function addDailyPlanTasks(focusTasks: string[]) {
   }
   await loadTasks()
   const colName = columns.value.find(c => c.id === columnId)?.title || ''
-  aiMessages.value.push({ role: 'assistant', text: `${added} tareas del plan creadas en ${colName}`, type: 'text' })
+  aiMessages.value.push({ role: 'assistant', text: language.value === 'en' ? `${added} plan tasks created in ${colName}` : `${added} tareas del plan creadas en ${colName}`, type: 'text' })
   scrollChat()
 }
 
 async function handleDailyPlan() {
   if (!project.value) return
   showAiPanel.value = true
-  aiMessages.value.push({ role: 'user', text: 'Dame un plan para hoy' })
+  aiMessages.value.push({ role: 'user', text: language.value === 'en' ? 'Give me a plan for today' : 'Dame un plan para hoy' })
   scrollChat()
   const res = await callAI('daily_plan', { projectId: project.value.id })
   if (res?.type === 'json' && res.data.focus_tasks) {
@@ -1504,7 +1507,7 @@ async function handleDailyPlan() {
 async function handleAntiProcrastination() {
   if (!project.value) return
   showAiPanel.value = true
-  aiMessages.value.push({ role: 'user', text: 'Analiza mi procrastinación en este proyecto' })
+  aiMessages.value.push({ role: 'user', text: language.value === 'en' ? 'Analyze my procrastination on this project' : 'Analiza mi procrastinación en este proyecto' })
   scrollChat()
   const res = await callAI('anti_procrastination', { projectId: project.value.id, projectName: project.value.name })
   if (res?.type === 'json' && res.data.score !== undefined) {
@@ -1521,7 +1524,7 @@ async function handleAntiProcrastination() {
 async function handleDocumentArchitecture() {
   if (!project.value) return
   showAiPanel.value = true
-  aiMessages.value.push({ role: 'user', text: 'Documenta la arquitectura del workspace' })
+  aiMessages.value.push({ role: 'user', text: language.value === 'en' ? 'Document the workspace architecture' : 'Documenta la arquitectura del workspace' })
   scrollChat()
   const res = await callAI('document_architecture', { projectId: project.value.id })
   if (res?.type === 'json' && res.data.title) {
@@ -1532,10 +1535,10 @@ async function handleDocumentArchitecture() {
 
     const parts: string[] = []
     if (res.data.tasksCreated > 0) {
-      parts.push(`${res.data.tasksCreated} tareas creadas en el tablero`)
+      parts.push(language.value === 'en' ? `${res.data.tasksCreated} tasks created on the board` : `${res.data.tasksCreated} tareas creadas en el tablero`)
     }
-    if (res.data.document) parts.push('documento guardado')
-    if (res.data.savedFile) parts.push('archivo .md en Archivos')
+    if (res.data.document) parts.push(language.value === 'en' ? 'document saved' : 'documento guardado')
+    if (res.data.savedFile) parts.push(language.value === 'en' ? '.md file in Files' : 'archivo .md en Archivos')
 
     if (parts.length > 0) {
       aiMessages.value.push({
@@ -1549,7 +1552,7 @@ async function handleDocumentArchitecture() {
     if (res.data.postError) {
       aiMessages.value.push({
         role: 'assistant',
-        text: `Nota: hubo un error en post-procesamiento: ${res.data.postError}`,
+        text: language.value === 'en' ? `Note: post-processing error: ${res.data.postError}` : `Nota: hubo un error en post-procesamiento: ${res.data.postError}`,
         type: 'text',
       })
     }
@@ -1572,7 +1575,7 @@ async function handleDocAgent(action: string) {
   if (!project.value) return
   showAiPanel.value = true
   const agentName = docAgentNames[action] || action
-  aiMessages.value.push({ role: 'user', text: `Genera documentación: ${agentName}` })
+  aiMessages.value.push({ role: 'user', text: language.value === 'en' ? `Generate documentation: ${agentName}` : `Genera documentación: ${agentName}` })
   scrollChat()
   const res = await callAI(action, { projectId: project.value.id })
   if (res?.type === 'json' && res.data.title) {
@@ -1582,16 +1585,16 @@ async function handleDocAgent(action: string) {
     await loadTasks()
 
     const parts: string[] = []
-    if (res.data.tasksCreated > 0) parts.push(`${res.data.tasksCreated} tareas creadas`)
-    if (res.data.document) parts.push('documento guardado')
-    if (res.data.savedFile) parts.push('archivo .md generado')
+    if (res.data.tasksCreated > 0) parts.push(language.value === 'en' ? `${res.data.tasksCreated} tasks created` : `${res.data.tasksCreated} tareas creadas`)
+    if (res.data.document) parts.push(language.value === 'en' ? 'document saved' : 'documento guardado')
+    if (res.data.savedFile) parts.push(language.value === 'en' ? '.md file generated' : 'archivo .md generado')
     if (res.data.sessionId) parts.push(`session: ${res.data.sessionId.slice(0, 8)}`)
 
     if (parts.length > 0) {
       aiMessages.value.push({ role: 'assistant', text: parts.join(' · '), type: 'text' })
     }
     if (res.data.postError) {
-      aiMessages.value.push({ role: 'assistant', text: `Nota: ${res.data.postError}`, type: 'text' })
+      aiMessages.value.push({ role: 'assistant', text: language.value === 'en' ? `Note: ${res.data.postError}` : `Nota: ${res.data.postError}`, type: 'text' })
     }
     scrollChat()
   } else if (res) {
@@ -1603,7 +1606,7 @@ async function handleDocAgent(action: string) {
 async function handleImproveTask() {
   if (!selectedTask.value) return
   showAiPanel.value = true
-  aiMessages.value.push({ role: 'user', text: `Mejora la tarea: "${selectedTask.value.title}"` })
+  aiMessages.value.push({ role: 'user', text: language.value === 'en' ? `Improve task: "${selectedTask.value.title}"` : `Mejora la tarea: "${selectedTask.value.title}"` })
   scrollChat()
   const res = await callAI('improve_task', {
     taskTitle: selectedTask.value.title,
@@ -1634,9 +1637,9 @@ async function applyImprovedTask(improved: any) {
       body: updates,
     })
     await loadTasks()
-    aiMessages.value.push({ role: 'assistant', text: 'Mejoras aplicadas a la tarea.', type: 'text' })
+    aiMessages.value.push({ role: 'assistant', text: language.value === 'en' ? 'Improvements applied to task.' : 'Mejoras aplicadas a la tarea.', type: 'text' })
   } catch {
-    aiMessages.value.push({ role: 'assistant', text: 'Error al aplicar mejoras.', type: 'text' })
+    aiMessages.value.push({ role: 'assistant', text: language.value === 'en' ? 'Error applying improvements.' : 'Error al aplicar mejoras.', type: 'text' })
   }
   scrollChat()
 }
@@ -1651,8 +1654,8 @@ async function handleChat() {
   // Build conversation history for context continuity (last 10 messages)
   const history = aiMessages.value.slice(-10).map(m => ({
     role: m.role,
-    text: m.text || (m.type === 'suggestions' ? 'Sugerí tareas' : m.type === 'architecture' ? 'Generé documento de arquitectura' : ''),
-  }))
+    text: m.text || (m.type === 'suggestions' ? (language.value === 'en' ? 'Suggested tasks' : 'Sugerí tareas') : m.type === 'architecture' ? (language.value === 'en' ? 'Generated architecture document' : 'Generé documento de arquitectura') : (language.value === 'en' ? 'Assistant response' : 'Respuesta del asistente')),
+  })).filter(m => m.text && m.text.length > 0)
 
   const res = await callAI('chat', {
     message,
@@ -1711,5 +1714,17 @@ async function retryAsTaskSuggestions(originalText: string) {
 .slide-leave-to {
   opacity: 0;
   transform: translateY(16px) scale(0.95);
+}
+
+/* Kanban horizontal scroll - hide scrollbar on mobile for cleaner look */
+@media (max-width: 767px) {
+  .snap-x::-webkit-scrollbar {
+    height: 0;
+    display: none;
+  }
+  .snap-x {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 </style>

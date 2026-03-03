@@ -2,7 +2,7 @@
   <!-- FAB Button (collapsed state) -->
   <button
     v-if="!isExpanded"
-    class="fixed bottom-20 md:bottom-6 left-6 z-40 cursor-pointer group"
+    class="fixed bottom-20 left-4 md:bottom-6 md:left-auto md:right-6 z-40 cursor-pointer group"
     @click="expand()"
     title="Focus Music"
   >
@@ -33,7 +33,7 @@
   <transition name="player-slide">
     <div
       v-if="isExpanded"
-      class="fixed bottom-20 md:bottom-6 left-6 w-80 z-40 rounded-2xl shadow-2xl overflow-hidden border border-white/20"
+      class="fixed bottom-20 left-4 md:bottom-6 md:left-auto md:right-6 w-80 z-40 rounded-2xl shadow-2xl overflow-hidden border border-white/20"
       style="backdrop-filter: blur(20px);"
     >
       <!-- Gradient Header with Now Playing -->

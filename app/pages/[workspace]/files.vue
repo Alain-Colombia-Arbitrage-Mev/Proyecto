@@ -3,12 +3,12 @@
     <!-- Header -->
     <div class="flex items-center justify-between mb-6 animate-fade-up">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Archivos</h1>
-        <p class="text-sm text-gray-500 mt-0.5">Gestiona los documentos de tu workspace</p>
+        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">{{ t.filesTitle }}</h1>
+        <p class="text-sm text-gray-500 mt-0.5">{{ t.filesDesc }}</p>
       </div>
       <div class="flex items-center gap-2">
         <UButton size="sm" variant="soft" icon="i-heroicons-arrow-up-tray" @click="triggerUpload" :loading="uploading" class="font-medium">
-          Subir archivo
+          {{ t.uploadFile }}
         </UButton>
       </div>
     </div>
@@ -36,7 +36,7 @@
     <div v-if="loading" class="flex justify-center py-16">
       <div class="flex items-center gap-3 text-gray-400">
         <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 animate-spin" />
-        <span class="text-sm">Cargando archivos...</span>
+        <span class="text-sm">{{ t.loadingFiles }}</span>
       </div>
     </div>
 
@@ -45,16 +45,16 @@
       <div class="w-20 h-20 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-5">
         <UIcon name="i-heroicons-folder-open" class="w-10 h-10 text-gray-300" />
       </div>
-      <h2 class="text-xl font-bold text-gray-900">Sin archivos</h2>
-      <p class="text-sm text-gray-500 mt-2 mb-8 max-w-xs mx-auto">Sube archivos o genera documentos con AI para verlos aquí</p>
-      <UButton icon="i-heroicons-arrow-up-tray" color="primary" size="lg" class="font-semibold" @click="triggerUpload">Subir archivo</UButton>
+      <h2 class="text-xl font-bold text-gray-900">{{ t.noFiles }}</h2>
+      <p class="text-sm text-gray-500 mt-2 mb-8 max-w-xs mx-auto">{{ t.noFilesDesc }}</p>
+      <UButton icon="i-heroicons-arrow-up-tray" color="primary" size="lg" class="font-semibold" @click="triggerUpload">{{ t.uploadFile }}</UButton>
     </div>
 
     <!-- File grid -->
     <div v-else class="animate-fade-up delay-100">
       <!-- Subfolders -->
       <div v-if="subfolders.length > 0" class="mb-4">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 px-1">Carpetas</p>
+        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 px-1">{{ t.folders }}</p>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
           <button
             v-for="folder in subfolders"
@@ -72,7 +72,7 @@
 
       <!-- Files -->
       <div v-if="files.length > 0">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 px-1">Archivos</p>
+        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 px-1">{{ t.filesTitle }}</p>
         <div class="bg-white rounded-2xl border border-gray-100 shadow-card overflow-hidden divide-y divide-gray-50">
           <div
             v-for="file in files"
@@ -99,14 +99,14 @@
               <button
                 class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-focusflow-700 hover:bg-focusflow-50 transition-all cursor-pointer"
                 @click="downloadFile(file)"
-                title="Descargar"
+                :title="t.download"
               >
                 <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
               </button>
               <button
                 class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer"
                 @click="deleteFile(file)"
-                title="Eliminar"
+                :title="t.delete"
               >
                 <UIcon name="i-heroicons-trash" class="w-4 h-4" />
               </button>
@@ -124,9 +124,12 @@
 <script setup lang="ts">
 import type { WorkspaceFile } from '~/types'
 import { format } from 'date-fns'
+import { es, enUS } from 'date-fns/locale'
 
 definePageMeta({ middleware: 'auth' })
 
+const lang = useLanguage()
+const t = lang.labels
 const route = useRoute()
 const store = useWorkspaceStore()
 
@@ -195,7 +198,7 @@ async function handleFileUpload(event: Event) {
     }
     await loadFiles()
   } catch (e: any) {
-    alert(e.data?.message || 'Error al subir archivo')
+    alert(e.data?.message || t.value.errorUploading)
   } finally {
     uploading.value = false
     input.value = ''
@@ -209,14 +212,14 @@ async function downloadFile(file: WorkspaceFile) {
       window.open(data.download_url, '_blank')
     }
   } catch (e: any) {
-    alert(e.data?.message || 'Error al descargar')
+    alert(e.data?.message || t.value.errorDownloading)
   }
 }
 
 const deleting = ref<string | null>(null)
 
 async function deleteFile(file: WorkspaceFile) {
-  if (!confirm(`¿Eliminar "${file.file_name}"?`)) return
+  if (!confirm(t.value.confirmDeleteFile.replace('{name}', file.file_name))) return
   deleting.value = file.id
   try {
     await $fetch(`/api/workspaces/${workspaceId.value}/files/${file.id}`, { method: 'DELETE' })
@@ -224,7 +227,7 @@ async function deleteFile(file: WorkspaceFile) {
     files.value = files.value.filter(f => f.id !== file.id)
   } catch (e: any) {
     console.error('[files] Delete error:', e.data || e.message)
-    alert(e.data?.message || 'Error al eliminar archivo. Intenta de nuevo.')
+    alert(e.data?.message || t.value.errorDeletingFile)
     await loadFiles()
   } finally {
     deleting.value = null
@@ -238,7 +241,7 @@ function formatFileSize(bytes: number) {
 }
 
 function formatDate(d: string) {
-  try { return format(new Date(d), 'dd MMM yyyy HH:mm') } catch { return d }
+  try { return format(new Date(d), 'dd MMM yyyy HH:mm', { locale: lang.language.value === 'en' ? enUS : es }) } catch { return d }
 }
 
 function fileIcon(mime: string) {

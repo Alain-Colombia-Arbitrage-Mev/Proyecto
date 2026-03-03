@@ -12,7 +12,7 @@ const ALLOWED_MIME_TYPES = new Set([
 
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
-  const { user } = await requireWorkspaceMember(event, workspaceId)
+  const { user } = await requirePermission(event, workspaceId, 'upload_files')
 
   const supabase = serverSupabaseServiceRole(event)
 

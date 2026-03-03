@@ -6,7 +6,7 @@
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div class="flex items-center gap-2">
             <UIcon name="i-heroicons-arrow-up-tray" class="w-5 h-5 text-focusflow-600" />
-            <h2 class="text-lg font-bold text-gray-900">Importar tareas</h2>
+            <h2 class="text-lg font-bold text-gray-900">{{ t.importTasks }}</h2>
           </div>
           <UButton variant="ghost" size="xs" icon="i-heroicons-x-mark" @click="isOpen = false" />
         </div>
@@ -15,7 +15,7 @@
         <div class="px-6 py-5 space-y-4">
           <!-- Platform badges -->
           <div>
-            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Plataformas compatibles</p>
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{{ t.compatiblePlatforms }}</p>
             <div class="flex flex-wrap gap-1.5">
               <span v-for="p in platforms" :key="p" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">{{ p }}</span>
             </div>
@@ -23,19 +23,19 @@
 
           <!-- Column selector -->
           <div>
-            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">Columna destino (por defecto)</label>
-            <USelectMenu v-model="selectedColumnId" :items="columnOptions" value-key="value" class="w-full" size="sm" placeholder="Primera columna" />
+            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">{{ t.targetColumn }}</label>
+            <USelectMenu v-model="selectedColumnId" :items="columnOptions" value-key="value" class="w-full" size="sm" :placeholder="t.firstColumn" />
           </div>
 
           <!-- Map columns toggle -->
           <label class="flex items-center gap-2 cursor-pointer">
             <input v-model="mapColumns" type="checkbox" class="rounded border-gray-300 text-focusflow-600 focus:ring-focusflow-500" />
-            <span class="text-sm text-gray-700">Mapear status/columnas del CSV a las columnas del proyecto</span>
+            <span class="text-sm text-gray-700">{{ t.mapColumnsLabel }}</span>
           </label>
 
           <!-- CSV input -->
           <div>
-            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">Pegar CSV o subir archivo</label>
+            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">{{ t.pasteOrUpload }}</label>
             <div
               class="relative border-2 border-dashed rounded-xl transition-colors p-4"
               :class="dragOver ? 'border-focusflow-400 bg-focusflow-50' : 'border-gray-200 bg-gray-50/50'"
@@ -52,10 +52,10 @@
               <div class="flex items-center justify-between mt-2">
                 <label class="inline-flex items-center gap-1.5 text-xs text-focusflow-600 font-medium cursor-pointer hover:underline">
                   <UIcon name="i-heroicons-document-arrow-up" class="w-3.5 h-3.5" />
-                  Subir archivo .csv
+                  {{ t.uploadCsv }}
                   <input type="file" accept=".csv,.txt" class="hidden" @change="handleFileUpload" />
                 </label>
-                <span v-if="csvText" class="text-[10px] text-gray-400">{{ lineCount }} filas detectadas</span>
+                <span v-if="csvText" class="text-[10px] text-gray-400">{{ lineCount }} {{ t.rowsDetected }}</span>
               </div>
             </div>
           </div>
@@ -64,7 +64,7 @@
           <div v-if="preview" class="rounded-xl border border-gray-100 overflow-hidden">
             <div class="bg-gray-50 px-4 py-2 flex items-center justify-between">
               <span class="text-xs font-semibold text-gray-600">
-                Vista previa: {{ preview.tasks.length }} tareas
+                {{ t.preview }} {{ preview.tasks.length }} {{ t.tasks }}
                 <span v-if="preview.platform !== 'generic'" class="text-focusflow-600">({{ preview.platform }})</span>
               </span>
             </div>
@@ -83,7 +83,7 @@
                 <span v-for="tag in task.tags.slice(0, 2)" :key="tag" class="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">{{ tag }}</span>
               </div>
               <div v-if="preview.tasks.length > 10" class="px-4 py-2 text-xs text-gray-400 text-center">
-                +{{ preview.tasks.length - 10 }} tareas más...
+                +{{ preview.tasks.length - 10 }} {{ t.moreTasks }}
               </div>
             </div>
           </div>
@@ -93,14 +93,14 @@
 
           <!-- Success -->
           <div v-if="importResult" class="bg-emerald-50 border border-emerald-100 rounded-lg px-4 py-3">
-            <p class="text-sm font-semibold text-emerald-700">{{ importResult.imported }} tareas importadas correctamente</p>
-            <p v-if="importResult.platform !== 'generic'" class="text-xs text-emerald-600 mt-0.5">Formato detectado: {{ importResult.platform }}</p>
+            <p class="text-sm font-semibold text-emerald-700">{{ importResult.imported }} {{ t.tasksImported }}</p>
+            <p v-if="importResult.platform !== 'generic'" class="text-xs text-emerald-600 mt-0.5">{{ t.formatDetected }} {{ importResult.platform }}</p>
           </div>
         </div>
 
         <!-- Footer -->
         <div class="flex items-center justify-end gap-3 px-6 py-3 border-t border-gray-100">
-          <UButton variant="ghost" @click="isOpen = false">Cerrar</UButton>
+          <UButton variant="ghost" @click="isOpen = false">{{ t.close }}</UButton>
           <UButton
             color="primary"
             :loading="importing"
@@ -109,7 +109,7 @@
             @click="handleImport"
           >
             <UIcon name="i-heroicons-arrow-up-tray" class="w-4 h-4 mr-1" />
-            Importar
+            {{ t.import }}
           </UButton>
         </div>
       </div>
@@ -118,6 +118,9 @@
 </template>
 
 <script setup lang="ts">
+const lang = useLanguage()
+const t = lang.labels
+
 const props = defineProps<{
   open: boolean
   workspaceId: string
@@ -135,7 +138,7 @@ const isOpen = computed({
   set: (v) => emit('update:open', v),
 })
 
-const platforms = ['Linear', 'Jira', 'Trello', 'ClickUp', 'CSV genérico']
+const platforms = computed(() => ['Linear', 'Jira', 'Trello', 'ClickUp', t.value.genericCsv])
 const csvText = ref('')
 const selectedColumnId = ref('')
 const mapColumns = ref(true)
@@ -230,7 +233,7 @@ async function handleImport() {
     importResult.value = { imported: res.imported, platform: res.platform }
     emit('imported')
   } catch (e: any) {
-    error.value = e.data?.message || e.message || 'Error al importar'
+    error.value = e.data?.message || e.message || t.value.errorImporting
   } finally {
     importing.value = false
   }

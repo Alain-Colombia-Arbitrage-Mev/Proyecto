@@ -5,7 +5,7 @@ const MAX_IMPORT_TASKS = 500
 
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
-  const { user } = await requireWorkspaceRole(event, workspaceId, 'member')
+  const { user } = await requirePermission(event, workspaceId, 'import_tasks')
 
   const body = await readBody(event)
   if (!body.csv) throw createError({ statusCode: 400, message: 'csv field is required' })

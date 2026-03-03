@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 409, message: 'Este usuario ya es miembro del workspace' })
   }
 
-  const assignedRole = body.role || 'member'
+  const assignedRole = body.role || 'viewer'
 
   const { data: member, error } = await supabase
     .from('workspace_members')

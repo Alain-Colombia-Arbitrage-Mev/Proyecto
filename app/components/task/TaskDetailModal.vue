@@ -43,10 +43,10 @@
               icon="i-heroicons-clock"
               color="neutral"
               @click="pomodoro.startForTask({ id: task.id, title: task.title }, workspaceId)"
-              title="Iniciar Pomodoro"
+              :title="lang.labels.value.startPomodoro"
             />
-            <UButton variant="ghost" size="xs" icon="i-heroicons-sparkles" color="primary" @click="$emit('improveWithAI')" title="Mejorar con AI" />
-            <UButton variant="ghost" size="xs" icon="i-heroicons-trash" color="error" @click="handleDelete" title="Eliminar tarea" />
+            <UButton variant="ghost" size="xs" icon="i-heroicons-sparkles" color="primary" @click="$emit('improveWithAI')" :title="lang.labels.value.improveWithAI" />
+            <UButton variant="ghost" size="xs" icon="i-heroicons-trash" color="error" @click="handleDelete" :title="lang.labels.value.deleteTask" />
             <UButton variant="ghost" size="xs" icon="i-heroicons-x-mark" @click="isOpen = false" />
           </div>
         </div>
@@ -62,15 +62,15 @@
                   <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ lang.labels.value.description }}</h4>
                   <div class="flex items-center bg-gray-100 rounded-md p-0.5">
                     <button
-                      class="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer"
+                      class="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer flex items-center gap-0.5"
                       :class="descLang === 'es' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'"
                       @click="descLang = 'es'"
-                    >ES</button>
+                    ><span class="text-xs">🇪🇸</span>ES</button>
                     <button
-                      class="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer"
+                      class="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer flex items-center gap-0.5"
                       :class="descLang === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'"
                       @click="descLang = 'en'"
-                    >EN</button>
+                    ><span class="text-xs">🇺🇸</span>EN</button>
                   </div>
                 </div>
                 <LazyTaskEditor
@@ -101,13 +101,13 @@
             <div class="w-full md:w-72 lg:w-80 bg-gray-50/50 px-5 py-5 space-y-5 shrink-0">
               <!-- Status / Column -->
               <div>
-                <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">Columna</label>
+                <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">{{ lang.labels.value.column }}</label>
                 <USelectMenu v-model="editForm.column_id" :items="columnOptions" value-key="value" class="w-full" size="sm" />
               </div>
 
               <!-- Priority -->
               <div>
-                <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">Prioridad</label>
+                <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">{{ lang.labels.value.priority }}</label>
                 <USelectMenu v-model="editForm.priority" :items="priorityOptions" value-key="value" class="w-full" size="sm" />
               </div>
 
@@ -121,7 +121,7 @@
 
               <!-- Assignees -->
               <div>
-                <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">Asignados</label>
+                <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">{{ lang.labels.value.assigned }}</label>
                 <div class="flex flex-wrap gap-1.5">
                   <button
                     v-for="m in workspaceMembers"
@@ -143,19 +143,19 @@
 
               <!-- Due date -->
               <div>
-                <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">Fecha límite</label>
+                <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">{{ lang.labels.value.dueDate }}</label>
                 <UInput v-model="editForm.due_date" type="date" class="w-full" size="sm" />
               </div>
 
               <!-- Estimated hours -->
               <div>
-                <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">Estimación (horas)</label>
-                <UInput v-model="editForm.estimated_hours" type="number" step="0.5" placeholder="Sin estimación" class="w-full" size="sm" />
+                <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">{{ lang.labels.value.estimation }}</label>
+                <UInput v-model="editForm.estimated_hours" type="number" step="0.5" :placeholder="lang.labels.value.noEstimate" class="w-full" size="sm" />
               </div>
 
               <!-- Tags -->
               <div>
-                <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">Etiquetas</label>
+                <label class="text-[11px] font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">{{ lang.labels.value.tags }}</label>
                 <UInput v-model="editForm.tagsStr" placeholder="bug, frontend..." class="w-full" size="sm" />
               </div>
             </div>
@@ -164,8 +164,8 @@
 
         <!-- Footer -->
         <div class="flex items-center justify-end gap-3 px-6 py-3 border-t border-gray-100">
-          <UButton variant="ghost" @click="isOpen = false">Cerrar</UButton>
-          <UButton color="primary" :loading="saving" class="font-semibold" @click="handleSave">Guardar</UButton>
+          <UButton variant="ghost" @click="isOpen = false">{{ lang.labels.value.close }}</UButton>
+          <UButton color="primary" :loading="saving" class="font-semibold" @click="handleSave">{{ lang.labels.value.save }}</UButton>
         </div>
       </div>
     </template>
@@ -220,12 +220,12 @@ const editForm = reactive({
   figma_links: [] as FigmaLink[],
 })
 
-const priorityOptions = [
-  { label: 'Baja', value: 'low' },
-  { label: 'Media', value: 'medium' },
-  { label: 'Alta', value: 'high' },
-  { label: 'Crítica', value: 'critical' },
-]
+const priorityOptions = computed(() => [
+  { label: lang.labels.value.priorityLow, value: 'low' },
+  { label: lang.labels.value.priorityMedium, value: 'medium' },
+  { label: lang.labels.value.priorityHigh, value: 'high' },
+  { label: lang.labels.value.priorityCritical, value: 'critical' },
+])
 
 const columnOptions = computed(() =>
   props.columns.map(c => ({ label: c.title, value: c.id }))
@@ -252,6 +252,14 @@ watch(() => props.task, (t) => {
   editingTitle.value = false
   descLang.value = 'es'
 }, { immediate: true })
+
+// Auto-suggest estimated hours when deadline is set and no estimate exists
+watch(() => editForm.due_date, (newDate) => {
+  if (!newDate || editForm.estimated_hours) return
+  const daysUntilDue = Math.max(1, Math.ceil((new Date(newDate).getTime() - Date.now()) / 86400000))
+  const suggested = Math.min(daysUntilDue * 2, 40)
+  editForm.estimated_hours = String(Math.round(suggested * 2) / 2)
+})
 
 function toggleAssignee(userId: string) {
   const idx = editForm.assignees.indexOf(userId)
@@ -298,7 +306,7 @@ async function handleSave() {
 
 async function handleDelete() {
   if (!props.task) return
-  if (!confirm('¿Eliminar esta tarea?')) return
+  if (!confirm(lang.labels.value.deleteConfirm)) return
   try {
     await $fetch(`/api/workspaces/${props.workspaceId}/tasks/${props.task.id}`, { method: 'DELETE' })
     isOpen.value = false

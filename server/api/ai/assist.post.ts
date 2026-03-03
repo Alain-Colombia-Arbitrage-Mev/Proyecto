@@ -96,7 +96,10 @@ Genera exactamente 5 tareas sugeridas en formato JSON array. Cada tarea debe ten
 Prioriza tareas que reduzcan la procrastinación: empieza con las más pequeñas y concretas.
 Responde SOLO con el JSON array, sin markdown ni texto extra.`
       userPrompt = `Proyecto: ${String(context.projectName).slice(0, 2000)}\nDescripción: ${String(context.projectDescription || 'Sin descripción').slice(0, 5000)}`
-      if (context.workspaceId) resolvedWorkspaceId = String(context.workspaceId)
+      if (context.workspaceId) {
+        resolvedWorkspaceId = String(context.workspaceId)
+        await requirePermission(event, resolvedWorkspaceId, 'use_ai_basic')
+      }
       break
     }
 
@@ -111,7 +114,10 @@ Descompón la tarea en 3-6 subtareas/pasos concretos en formato JSON array. Cada
 
 Responde SOLO con el JSON array, sin markdown ni texto extra.`
       userPrompt = `Tarea: ${String(context.taskTitle).slice(0, 2000)}\nDescripción: ${String(context.taskDescription || 'Sin descripción').slice(0, 5000)}`
-      if (context.workspaceId) resolvedWorkspaceId = String(context.workspaceId)
+      if (context.workspaceId) {
+        resolvedWorkspaceId = String(context.workspaceId)
+        await requirePermission(event, resolvedWorkspaceId, 'use_ai_basic')
+      }
       break
     }
 
@@ -130,7 +136,10 @@ Responde en JSON con:
 
 Responde SOLO con el JSON object, sin markdown ni texto extra.`
       userPrompt = `Título: ${String(context.taskTitle).slice(0, 2000)}\nDescripción: ${String(context.taskDescription || 'Sin descripción').slice(0, 5000)}\nPrioridad actual: ${context.priority || 'medium'}`
-      if (context.workspaceId) resolvedWorkspaceId = String(context.workspaceId)
+      if (context.workspaceId) {
+        resolvedWorkspaceId = String(context.workspaceId)
+        await requirePermission(event, resolvedWorkspaceId, 'use_ai_basic')
+      }
       break
     }
 
@@ -140,7 +149,7 @@ Responde SOLO con el JSON object, sin markdown ni texto extra.`
       }
       // Verify workspace access via project
       const wsId = await getWorkspaceIdFromProject(supabase, context.projectId)
-      await requireWorkspaceMember(event, wsId)
+      await requirePermission(event, wsId, 'use_ai_basic')
       resolvedWorkspaceId = wsId
 
       const { data: tasks } = await supabase
@@ -169,7 +178,7 @@ Responde SOLO con el JSON object, sin markdown ni texto extra.`
       }
       // Derive workspace from project and verify access
       const docWsId = await getWorkspaceIdFromProject(supabase, context.projectId)
-      await requireWorkspaceMember(event, docWsId)
+      await requirePermission(event, docWsId, 'use_ai_basic')
       resolvedWorkspaceId = docWsId
 
       const { data: projects } = await supabase
@@ -232,7 +241,7 @@ Responde SOLO con el JSON object, sin markdown ni texto extra. No uses <think> t
       }
       // Verify workspace access via project
       const apWsId = await getWorkspaceIdFromProject(supabase, context.projectId)
-      await requireWorkspaceMember(event, apWsId)
+      await requirePermission(event, apWsId, 'use_ai_basic')
       resolvedWorkspaceId = apWsId
 
       const { data: tasks } = await supabase
@@ -265,7 +274,7 @@ Responde SOLO con el JSON object, sin markdown ni texto extra.`
 
       // Resolve workspaceId from project or directly from context
       if (context.workspaceId && typeof context.workspaceId === 'string' && !resolvedWorkspaceId) {
-        await requireWorkspaceMember(event, context.workspaceId)
+        await requirePermission(event, context.workspaceId, 'use_ai_basic')
         resolvedWorkspaceId = context.workspaceId
       }
 
@@ -324,8 +333,11 @@ Tareas actuales:\n${taskSummary || 'Sin tareas'}`
       // Build conversation history
       const history = Array.isArray(context.history) ? context.history.slice(-MAX_HISTORY_MESSAGES) : []
       const historyMessages = history
-        .filter((h: any) => h.role && h.text)
-        .map((h: any) => ({ role: h.role as string, content: String(h.text).slice(0, MAX_HISTORY_MSG_LENGTH) }))
+        .filter((h: any) => h.role && h.text && String(h.text).trim().length > 0)
+        .map((h: any) => ({
+          role: h.role === 'user' ? 'user' : 'assistant',
+          content: String(h.text).slice(0, MAX_HISTORY_MSG_LENGTH),
+        }))
 
       systemPrompt = `Eres un asistente de gestión de proyectos en FocusFlow.${projectContext}${memoryContext}
 
@@ -380,7 +392,7 @@ No uses <think> tags. No uses markdown.`
         }
 
         const docAgentWsId = await getWorkspaceIdFromProject(supabase, context.projectId)
-        await requireWorkspaceMember(event, docAgentWsId)
+        await requirePermission(event, docAgentWsId, 'use_ai_doc_agents')
         resolvedWorkspaceId = docAgentWsId
 
         // Gather workspace data
@@ -439,7 +451,7 @@ No uses <think> tags. No uses markdown.`
         }
 
         const taWsId = await getWorkspaceIdFromProject(supabase, context.projectId)
-        await requireWorkspaceMember(event, taWsId)
+        await requirePermission(event, taWsId, 'use_ai_basic')
         resolvedWorkspaceId = taWsId
 
         // Gather detailed project data (tasks with full info)
@@ -533,6 +545,12 @@ ${JSON.stringify((tasksFull || []).map((t: any) => ({
   }
   messages.push({ role: 'user', content: userPrompt })
 
+  // Ensure all messages have non-empty content (OpenRouter rejects empty content)
+  const validMessages = messages.filter(m => m.content && String(m.content).trim().length > 0)
+  if (validMessages.length === 0) {
+    throw createError({ statusCode: 400, message: 'No valid messages to send to AI' })
+  }
+
   // Check token limit before making AI call
   if (resolvedWorkspaceId) {
     const overLimit = await isTokenLimitExceeded({ supabase, workspaceId: resolvedWorkspaceId })
@@ -562,7 +580,7 @@ ${JSON.stringify((tasksFull || []).map((t: any) => ({
       },
       body: {
         model: primaryModel,
-        messages,
+        messages: validMessages,
         temperature: 0.7,
         max_tokens: maxTokens,
       },
@@ -584,7 +602,7 @@ ${JSON.stringify((tasksFull || []).map((t: any) => ({
         },
         body: {
           model: fallbackModel,
-          messages,
+          messages: validMessages,
           temperature: 0.7,
           max_tokens: maxTokens,
         },

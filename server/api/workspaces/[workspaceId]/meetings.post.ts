@@ -5,7 +5,7 @@ import { generateGoogleMeetLink } from '~~/server/utils/meetings'
 
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
-  const { user } = await requireWorkspaceMember(event, workspaceId)
+  const { user } = await requirePermission(event, workspaceId, 'create_meetings')
 
   const body = await readBody(event)
 

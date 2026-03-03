@@ -1,9 +1,9 @@
 <template>
   <div class="space-y-3">
     <div class="flex items-center justify-between">
-      <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Adjuntos</h4>
+      <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ t.attachments }}</h4>
       <button v-if="!readonly" type="button" class="text-xs text-focusflow-600 hover:text-focusflow-700 font-medium cursor-pointer" @click="triggerUpload">
-        + Agregar
+        {{ t.addAttachment }}
       </button>
     </div>
 
@@ -17,7 +17,7 @@
       @drop.prevent="handleDrop"
     >
       <UIcon name="i-heroicons-cloud-arrow-up" class="w-6 h-6 text-gray-400 mx-auto mb-1" />
-      <p class="text-[11px] text-gray-400">Arrastra archivos aquí o <button type="button" class="text-focusflow-600 underline cursor-pointer" @click="triggerUpload">selecciona</button></p>
+      <p class="text-[11px] text-gray-400">{{ t.dragFilesHere }} <button type="button" class="text-focusflow-600 underline cursor-pointer" @click="triggerUpload">{{ t.selectFiles }}</button></p>
     </div>
 
     <input ref="fileInput" type="file" multiple class="hidden" @change="handleFileSelect" />
@@ -25,7 +25,7 @@
     <!-- Uploading indicator -->
     <div v-if="uploading" class="flex items-center gap-2 text-xs text-gray-500">
       <UIcon name="i-heroicons-arrow-path" class="w-3.5 h-3.5 animate-spin" />
-      Subiendo...
+      {{ t.uploading }}
     </div>
 
     <!-- Attachment grid -->
@@ -53,6 +53,9 @@
 
 <script setup lang="ts">
 import type { TaskAttachment } from '~/types'
+
+const lang = useLanguage()
+const t = lang.labels
 
 const props = defineProps<{
   taskId: string
@@ -111,7 +114,7 @@ async function uploadFiles(files: File[]) {
 }
 
 async function handleDelete(att: TaskAttachment) {
-  if (!confirm(`¿Eliminar "${att.file_name}"?`)) return
+  if (!confirm(t.value.confirmDeleteFile.replace('{name}', att.file_name))) return
   try {
     await $fetch(`/api/workspaces/${props.workspaceId}/tasks/${props.taskId}/attachments/${att.id}`, {
       method: 'DELETE',

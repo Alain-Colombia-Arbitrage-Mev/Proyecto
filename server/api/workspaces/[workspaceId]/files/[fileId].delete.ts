@@ -3,7 +3,7 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
   const fileId = getRouterParam(event, 'fileId')!
-  await requireWorkspaceMember(event, workspaceId)
+  await requirePermission(event, workspaceId, 'delete_files')
 
   const supabase = serverSupabaseServiceRole(event)
 

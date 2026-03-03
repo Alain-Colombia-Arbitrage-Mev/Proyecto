@@ -2,17 +2,17 @@
   <div class="min-h-screen bg-white">
     <!-- Desktop Sidebar -->
     <aside
-      class="hidden md:flex fixed inset-y-0 left-0 z-30 flex-col bg-white border-r border-gray-100 transition-all duration-300 ease-out"
+      class="hidden md:flex fixed inset-y-0 left-0 z-30 flex-col bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 transition-all duration-300 ease-out"
       :class="collapsed ? 'w-[68px]' : 'w-[252px]'"
     >
       <!-- Logo + workspace -->
-      <div class="h-14 flex items-center gap-2.5 shrink-0 border-b border-gray-100" :class="collapsed ? 'px-4 justify-center' : 'px-4'">
-        <div class="w-8 h-8 rounded-lg bg-focusflow-600 flex items-center justify-center shrink-0">
+      <div class="h-14 flex items-center gap-2.5 shrink-0 border-b border-white/[0.06]" :class="collapsed ? 'px-4 justify-center' : 'px-4'">
+        <div class="w-8 h-8 rounded-lg bg-focusflow-500 flex items-center justify-center shrink-0 shadow-lg shadow-focusflow-500/20">
           <span class="text-white font-bold text-sm" style="font-family: 'Space Mono', monospace;">F</span>
         </div>
         <div v-if="!collapsed" class="min-w-0">
-          <p class="font-semibold text-[13px] text-gray-900 truncate leading-tight">{{ store.workspace?.name || 'FocusFlow' }}</p>
-          <p class="text-[10px] text-gray-400 truncate">{{ store.slug }}</p>
+          <p class="font-semibold text-[13px] text-white/90 truncate leading-tight">{{ store.workspace?.name || 'FocusFlow' }}</p>
+          <p class="text-[10px] text-white/40 truncate">{{ store.slug }}</p>
         </div>
       </div>
 
@@ -22,25 +22,25 @@
           v-for="item in mainNav"
           :key="item.to"
           :to="item.to"
-          class="group flex items-center gap-2.5 rounded-lg text-[13px] font-medium text-gray-500 hover:bg-focusflow-50 hover:text-gray-900 transition-all duration-150"
+          class="group flex items-center gap-2.5 rounded-lg text-[13px] font-medium text-white/50 hover:bg-white/[0.08] hover:text-white/90 transition-all duration-150"
           :class="collapsed ? 'px-0 py-2 justify-center' : 'px-2.5 py-2'"
-          active-class="!bg-focusflow-50 !text-focusflow-700 font-semibold"
+          active-class="!bg-focusflow-500/20 !text-focusflow-300 font-semibold"
         >
           <UIcon :name="item.icon" class="w-[18px] h-[18px] shrink-0" />
           <span v-if="!collapsed">{{ item.label }}</span>
         </NuxtLink>
       </nav>
 
-      <div class="mx-4 border-t border-gray-100" />
+      <div class="mx-4 border-t border-white/[0.06]" />
 
       <!-- Projects section -->
       <div class="flex-1 overflow-y-auto py-3" :class="collapsed ? 'px-2' : 'px-3'">
         <div v-if="!collapsed" class="flex items-center justify-between px-2.5 pb-2">
-          <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Proyectos</span>
+          <span class="text-[10px] font-bold uppercase tracking-widest text-white/30">{{ t.projects }}</span>
           <button
-            class="w-5 h-5 flex items-center justify-center rounded text-gray-400 hover:text-focusflow-600 hover:bg-focusflow-50 transition-all"
+            class="w-5 h-5 flex items-center justify-center rounded text-white/30 hover:text-focusflow-400 hover:bg-white/[0.08] transition-all"
             @click="$emit('create-project')"
-            title="Nuevo proyecto"
+            :title="t.newProject"
           >
             <UIcon name="i-heroicons-plus" class="w-3 h-3" />
           </button>
@@ -51,10 +51,10 @@
             v-for="project in store.projects"
             :key="project.id"
             :to="`/${store.slug}/projects/${project.id}/kanban`"
-            class="group flex items-center gap-2.5 rounded-lg text-[13px] text-gray-500 hover:bg-focusflow-50 hover:text-gray-900 transition-all duration-150"
+            class="group flex items-center gap-2.5 rounded-lg text-[13px] text-white/50 hover:bg-white/[0.08] hover:text-white/90 transition-all duration-150"
             :class="[
               collapsed ? 'px-0 py-2 justify-center' : 'px-2.5 py-1.5',
-              isActiveProject(project.id) ? '!bg-focusflow-50 !text-focusflow-700 font-semibold' : '',
+              isActiveProject(project.id) ? '!bg-focusflow-500/20 !text-focusflow-300 font-semibold' : '',
             ]"
           >
             <div class="w-2 h-2 rounded-full shrink-0" :style="{ backgroundColor: project.color }" />
@@ -62,45 +62,46 @@
           </NuxtLink>
 
           <div v-if="store.projects.length === 0 && !collapsed" class="px-2.5 py-3">
-            <p class="text-[11px] text-gray-400">Sin proyectos</p>
+            <p class="text-[11px] text-white/30">{{ t.noProjects }}</p>
           </div>
         </div>
       </div>
 
-      <!-- Notifications + user + collapse -->
-      <div class="border-t border-gray-100">
-        <div v-if="!collapsed" class="px-3 pt-2">
+      <!-- Language + Notifications + user + collapse -->
+      <div class="border-t border-white/[0.06]">
+        <div v-if="!collapsed" class="px-3 pt-2 flex items-center justify-between">
           <NotificationBell />
+          <LanguageToggle />
         </div>
-        <div v-else class="flex justify-center pt-2">
+        <div v-else class="flex flex-col items-center gap-2 pt-2">
           <NotificationBell />
         </div>
         <div class="flex items-center gap-2 p-2" :class="collapsed ? 'justify-center' : ''">
           <NuxtLink
             :to="`/${store.slug}/settings`"
-            class="flex items-center gap-2.5 flex-1 rounded-lg hover:bg-focusflow-50 transition-all duration-150"
+            class="flex items-center gap-2.5 flex-1 rounded-lg hover:bg-white/[0.08] transition-all duration-150"
             :class="collapsed ? 'p-1.5 justify-center' : 'px-2.5 py-2'"
           >
-            <div class="w-7 h-7 rounded-full bg-focusflow-100 text-focusflow-700 flex items-center justify-center text-[10px] font-bold shrink-0">
+            <div class="w-7 h-7 rounded-full bg-focusflow-500/20 text-focusflow-300 flex items-center justify-center text-[10px] font-bold shrink-0">
               {{ auth.userInitials }}
             </div>
             <div v-if="!collapsed" class="min-w-0">
-              <p class="text-xs font-medium text-gray-700 truncate">{{ auth.userEmail }}</p>
-              <p v-if="auth.isSuperadmin" class="text-[9px] font-bold text-focusflow-600 uppercase tracking-wider">Superadmin</p>
-              <p v-else-if="auth.isOwner" class="text-[9px] font-bold text-amber-600 uppercase tracking-wider">Owner</p>
-              <p v-else-if="auth.isAdmin" class="text-[9px] font-bold text-sky-600 uppercase tracking-wider">Admin</p>
+              <p class="text-xs font-medium text-white/70 truncate">{{ auth.userEmail }}</p>
+              <p v-if="auth.isSuperadmin" class="text-[9px] font-bold text-focusflow-400 uppercase tracking-wider">Superadmin</p>
+              <p v-else-if="auth.isOwner" class="text-[9px] font-bold text-amber-400 uppercase tracking-wider">Owner</p>
+              <p v-else-if="auth.isAdmin" class="text-[9px] font-bold text-sky-400 uppercase tracking-wider">Admin</p>
             </div>
           </NuxtLink>
           <button
             v-if="!collapsed"
-            class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-colors shrink-0"
+            class="w-7 h-7 flex items-center justify-center rounded-lg text-white/30 hover:text-white/60 hover:bg-white/[0.08] transition-colors shrink-0"
             @click="collapsed = true"
           >
             <UIcon name="i-heroicons-chevron-double-left-20-solid" class="w-3.5 h-3.5" />
           </button>
           <button
             v-if="collapsed"
-            class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-colors"
+            class="w-7 h-7 flex items-center justify-center rounded-lg text-white/30 hover:text-white/60 hover:bg-white/[0.08] transition-colors"
             @click="collapsed = false"
           >
             <UIcon name="i-heroicons-chevron-double-right-20-solid" class="w-3.5 h-3.5" />
@@ -128,7 +129,7 @@
         collapsed ? 'md:pl-[68px]' : 'md:pl-[252px]',
       ]"
     >
-      <div class="p-5 md:p-8 max-w-7xl">
+      <div class="p-4 md:p-8 max-w-7xl">
         <slot />
       </div>
     </main>
@@ -145,7 +146,7 @@
         <button
           class="w-6 h-6 rounded-full bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-500 flex items-center justify-center transition-colors"
           @click="pomodoro.togglePomodoro()"
-          title="Pausar"
+          :title="t.pause"
         >
           <UIcon name="i-heroicons-pause" class="w-3 h-3" />
         </button>
@@ -162,6 +163,7 @@
           v-for="item in mobileNav"
           :key="item.to"
           :to="item.to"
+          :prefetch="false"
           class="flex flex-col items-center justify-center gap-0.5 min-w-0 px-1 text-gray-400 transition-colors"
           active-class="!text-focusflow-600"
         >
@@ -179,6 +181,9 @@ const route = useRoute()
 const store = useWorkspaceStore()
 const auth = useAuthStore()
 const pomodoro = usePomodoroTimer()
+const { labels: tRef } = useLanguage()
+const t = tRef
+const { canUseAI, canManageMembers, canViewUsageStats } = usePermissions()
 
 const collapsed = ref(false)
 
@@ -198,22 +203,21 @@ watch(() => route.params.id as string, (id) => {
   store.setCurrentProject(id || null)
 }, { immediate: true })
 
-const mainNav = computed(() => [
-  { label: 'Dashboard', icon: 'i-heroicons-squares-2x2', to: `/${workspaceSlug.value}/dashboard` },
-  { label: 'Proyectos', icon: 'i-heroicons-folder-open', to: `/${workspaceSlug.value}/projects` },
-  { label: 'AI Agents', icon: 'i-heroicons-cpu-chip', to: `/${workspaceSlug.value}/agents` },
-  { label: 'Archivos', icon: 'i-heroicons-document-duplicate', to: `/${workspaceSlug.value}/files` },
-  { label: 'Equipo', icon: 'i-heroicons-user-group', to: `/${workspaceSlug.value}/team` },
-  { label: 'Ajustes', icon: 'i-heroicons-cog-6-tooth', to: `/${workspaceSlug.value}/settings` },
+const allNav = computed(() => [
+  { label: t.value.dashboard, icon: 'i-heroicons-squares-2x2', to: `/${workspaceSlug.value}/dashboard`, show: true },
+  { label: t.value.projects, icon: 'i-heroicons-folder-open', to: `/${workspaceSlug.value}/projects`, show: true },
+  { label: t.value.aiAgents, icon: 'i-heroicons-cpu-chip', to: `/${workspaceSlug.value}/agents`, show: canUseAI.value },
+  { label: t.value.files, icon: 'i-heroicons-document-duplicate', to: `/${workspaceSlug.value}/files`, show: true },
+  { label: t.value.team, icon: 'i-heroicons-user-group', to: `/${workspaceSlug.value}/team`, show: canManageMembers.value },
+  { label: t.value.settings, icon: 'i-heroicons-cog-6-tooth', to: `/${workspaceSlug.value}/settings`, show: true },
 ])
 
-const mobileNav = computed(() => [
-  { label: 'Home', icon: 'i-heroicons-squares-2x2', to: `/${workspaceSlug.value}/dashboard` },
-  { label: 'Proyectos', icon: 'i-heroicons-folder-open', to: `/${workspaceSlug.value}/projects` },
-  { label: 'AI Agents', icon: 'i-heroicons-cpu-chip', to: `/${workspaceSlug.value}/agents` },
-  { label: 'Archivos', icon: 'i-heroicons-document-duplicate', to: `/${workspaceSlug.value}/files` },
-  { label: 'Ajustes', icon: 'i-heroicons-cog-6-tooth', to: `/${workspaceSlug.value}/settings` },
-])
+const mainNav = computed(() => allNav.value.filter(i => i.show))
+
+const mobileNav = computed(() => allNav.value
+  .filter(i => i.show && i.label !== t.value.team)
+  .map(i => i.label === t.value.dashboard ? { ...i, label: t.value.home } : i)
+)
 
 function isActiveProject(projectId: string) {
   return route.params.id === projectId

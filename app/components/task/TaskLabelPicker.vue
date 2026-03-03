@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-2">
-    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Labels</h4>
+    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ t.labels }}</h4>
 
     <!-- Current labels -->
     <div class="flex flex-wrap gap-1.5">
@@ -29,7 +29,7 @@
       <input
         v-model="newLabelName"
         class="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-1 focus:ring-focusflow-300"
-        placeholder="Nombre del label"
+        :placeholder="t.labelName"
         @keydown.enter.prevent="createLabel"
       />
       <div class="flex gap-1">
@@ -49,12 +49,12 @@
       </button>
     </div>
     <button v-else type="button" class="text-[11px] text-focusflow-600 hover:text-focusflow-700 font-medium cursor-pointer" @click="showCreate = true">
-      + Crear label
+      {{ t.createLabel }}
     </button>
 
     <!-- Predefined suggestions -->
     <div v-if="allLabels.length === 0 && !showCreate" class="mt-1">
-      <p class="text-[10px] text-gray-400 mb-1.5">Sugerencias:</p>
+      <p class="text-[10px] text-gray-400 mb-1.5">{{ t.suggestionsLabel }}</p>
       <div class="flex flex-wrap gap-1">
         <button
           v-for="s in suggestions"
@@ -75,6 +75,9 @@
 <script setup lang="ts">
 import type { Label } from '~/types'
 
+const lang = useLanguage()
+const t = lang.labels
+
 const props = defineProps<{
   workspaceId: string
   taskId: string
@@ -92,12 +95,12 @@ const newLabelColor = ref('#EF4444')
 
 const presetColors = ['#EF4444', '#F97316', '#EAB308', '#22C55E', '#3B82F6', '#8B5CF6', '#EC4899']
 
-const suggestions = [
-  { name: 'Urgente', color: '#EF4444' },
-  { name: 'Alta', color: '#F97316' },
-  { name: 'Media', color: '#EAB308' },
-  { name: 'Baja', color: '#22C55E' },
-]
+const suggestions = computed(() => [
+  { name: t.value.urgent, color: '#EF4444' },
+  { name: t.value.priorityHigh, color: '#F97316' },
+  { name: t.value.priorityMedium, color: '#EAB308' },
+  { name: t.value.priorityLow, color: '#22C55E' },
+])
 
 function isSelected(labelId: string) {
   return props.selectedLabelIds.includes(labelId)

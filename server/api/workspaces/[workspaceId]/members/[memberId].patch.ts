@@ -8,9 +8,9 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const supabase = serverSupabaseServiceRole(event)
 
-  const validRoles = ['viewer', 'member', 'admin']
+  const validRoles = ['viewer', 'marketing', 'member', 'admin']
   if (!body.role || !validRoles.includes(body.role)) {
-    throw createError({ statusCode: 400, message: 'Invalid role. Allowed: viewer, member, admin' })
+    throw createError({ statusCode: 400, message: 'Invalid role. Allowed: viewer, marketing, member, admin' })
   }
 
   // Cannot change owner's role

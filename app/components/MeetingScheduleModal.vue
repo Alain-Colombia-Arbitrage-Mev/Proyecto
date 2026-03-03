@@ -8,61 +8,61 @@
             <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
               <UIcon name="i-heroicons-video-camera" class="w-4 h-4 text-blue-600" />
             </div>
-            <h2 class="text-lg font-bold text-gray-900">Programar reunión</h2>
+            <h2 class="text-lg font-bold text-gray-900">{{ t.scheduleMeetingTitle }}</h2>
           </div>
           <UButton variant="ghost" size="xs" icon="i-heroicons-x-mark" @click="isOpen = false" />
         </div>
 
         <!-- Body -->
         <div class="px-6 py-5 space-y-4">
-          <UFormField label="Título de la reunión">
-            <UInput v-model="form.title" placeholder="Ej: Sprint Review, Daily Standup..." required class="w-full" size="lg" autofocus />
+          <UFormField :label="t.meetingTitle">
+            <UInput v-model="form.title" :placeholder="t.meetingTitlePlaceholder" required class="w-full" size="lg" autofocus />
           </UFormField>
 
-          <UFormField label="Descripción (opcional)">
+          <UFormField :label="t.descriptionOptional">
             <textarea
               v-model="form.description"
               rows="2"
               class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-300"
-              placeholder="Agenda de la reunión..."
+              :placeholder="t.meetingAgenda"
             />
           </UFormField>
 
           <div class="grid grid-cols-2 gap-4">
-            <UFormField label="Fecha y hora">
+            <UFormField :label="t.dateTime">
               <UInput v-model="form.scheduled_at" type="datetime-local" class="w-full" required />
             </UFormField>
-            <UFormField label="Duración">
+            <UFormField :label="t.duration">
               <USelectMenu v-model="form.duration_minutes" :items="durationOptions" value-key="value" class="w-full" />
             </UFormField>
           </div>
 
           <!-- Project selector (optional) -->
-          <UFormField v-if="projects.length > 0" label="Proyecto (opcional)">
-            <USelectMenu v-model="form.project_id" :items="projectOptions" value-key="value" class="w-full" placeholder="Sin proyecto" />
+          <UFormField v-if="projects.length > 0" :label="t.projectOptional">
+            <USelectMenu v-model="form.project_id" :items="projectOptions" value-key="value" class="w-full" :placeholder="t.noProjectOption" />
           </UFormField>
 
           <!-- Attendees -->
           <div>
-            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">Participantes</label>
+            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1.5">{{ t.attendees }}</label>
             <div class="flex flex-wrap gap-1.5">
               <button
                 v-for="m in members"
                 :key="m.user_id"
                 type="button"
-                class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all cursor-pointer border"
+                class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer border"
                 :class="form.attendees.includes(m.user_id)
                   ? 'bg-blue-50 text-blue-700 border-blue-200'
                   : 'bg-white text-gray-500 border-gray-100 hover:border-gray-200'"
                 @click="toggleAttendee(m.user_id)"
               >
                 <div class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[8px] font-bold">
-                  {{ getInitials(m.email) }}
+                  {{ getInitials(m.email || m.user_id) }}
                 </div>
-                {{ m.email.split('@')[0] }}
+                {{ (m.email || m.user_id || '??').split('@')[0] }}
               </button>
             </div>
-            <p v-if="form.attendees.length > 0" class="text-[10px] text-gray-400 mt-1">{{ form.attendees.length }} participante(s) seleccionado(s) — recibirán email con enlace de Google Meet</p>
+            <p v-if="form.attendees.length > 0" class="text-[10px] text-gray-400 mt-1">{{ form.attendees.length }} {{ t.attendeesSelected }}</p>
           </div>
 
           <!-- Google Meet badge -->
@@ -73,7 +73,7 @@
             </svg>
             <div>
               <p class="text-xs font-semibold text-gray-700">Google Meet</p>
-              <p class="text-[10px] text-gray-400">Se generará automáticamente un enlace de Meet</p>
+              <p class="text-[10px] text-gray-400">{{ t.meetAutoGenerate }}</p>
             </div>
           </div>
 
@@ -81,27 +81,27 @@
 
           <!-- Success -->
           <div v-if="createdMeeting" class="bg-emerald-50 border border-emerald-100 rounded-lg px-4 py-3">
-            <p class="text-sm font-semibold text-emerald-700">Reunión programada</p>
+            <p class="text-sm font-semibold text-emerald-700">{{ t.meetingScheduled }}</p>
             <a :href="createdMeeting.meeting_url" target="_blank" class="text-xs text-blue-600 hover:underline break-all">
               {{ createdMeeting.meeting_url }}
             </a>
-            <p class="text-[10px] text-emerald-600 mt-1">Se enviaron invitaciones por email a {{ form.attendees.length }} participante(s)</p>
+            <p class="text-[10px] text-emerald-600 mt-1">{{ t.invitationsSent }} {{ form.attendees.length }} {{ t.attendees.toLowerCase() }}</p>
           </div>
         </div>
 
         <!-- Footer -->
-        <div class="flex items-center justify-end gap-3 px-6 py-3 border-t border-gray-100">
-          <UButton variant="ghost" @click="isOpen = false">{{ createdMeeting ? 'Cerrar' : 'Cancelar' }}</UButton>
+        <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 px-6 py-3 border-t border-gray-100">
+          <UButton variant="ghost" @click="isOpen = false" class="w-full sm:w-auto">{{ createdMeeting ? t.close : t.cancel }}</UButton>
           <UButton
             v-if="!createdMeeting"
             color="primary"
             :loading="creating"
             :disabled="!form.title.trim() || !form.scheduled_at"
-            class="font-semibold"
+            class="font-semibold w-full sm:w-auto"
             @click="handleCreate"
           >
             <UIcon name="i-heroicons-video-camera" class="w-4 h-4 mr-1" />
-            Programar
+            {{ t.schedule }}
           </UButton>
         </div>
       </div>
@@ -111,6 +111,9 @@
 
 <script setup lang="ts">
 import type { Meeting } from '~/types'
+
+const lang = useLanguage()
+const t = lang.labels
 
 const props = defineProps<{
   open: boolean
@@ -142,17 +145,17 @@ const form = reactive({
   attendees: [] as string[],
 })
 
-const durationOptions = [
+const durationOptions = computed(() => [
   { label: '15 min', value: '15' },
   { label: '30 min', value: '30' },
   { label: '45 min', value: '45' },
-  { label: '1 hora', value: '60' },
-  { label: '1.5 horas', value: '90' },
-  { label: '2 horas', value: '120' },
-]
+  { label: t.value.hour1, value: '60' },
+  { label: t.value.hours1_5, value: '90' },
+  { label: t.value.hours2, value: '120' },
+])
 
 const projectOptions = computed(() => [
-  { label: 'Sin proyecto', value: '' },
+  { label: t.value.noProjectOption, value: '' },
   ...props.projects.map(p => ({ label: p.name, value: p.id })),
 ])
 
@@ -162,7 +165,8 @@ function toggleAttendee(userId: string) {
   else form.attendees.push(userId)
 }
 
-function getInitials(email: string) {
+function getInitials(email: string | null | undefined) {
+  if (!email) return '??'
   if (email.includes('@')) return email.split('@')[0]!.slice(0, 2).toUpperCase()
   return email.slice(0, 2).toUpperCase()
 }
@@ -187,7 +191,7 @@ async function handleCreate() {
     createdMeeting.value = meeting
     emit('created', meeting)
   } catch (e: any) {
-    error.value = e.data?.message || 'Error al programar reunión'
+    error.value = e.data?.message || t.value.errorScheduling
   } finally {
     creating.value = false
   }

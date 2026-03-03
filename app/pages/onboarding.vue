@@ -12,10 +12,10 @@
           <span class="text-white font-bold text-xl" style="font-family: 'Space Mono', monospace;">F</span>
         </div>
         <h1 class="text-3xl font-bold text-gray-900 tracking-tight">
-          Configura tu espacio
+          {{ t.setupWorkspace }}
         </h1>
         <p class="mt-2 text-gray-500">
-          Solo necesitas un nombre para empezar
+          {{ t.justAName }}
         </p>
       </div>
 
@@ -33,28 +33,28 @@
       <div v-if="step === 1" class="animate-fade-up delay-200">
         <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-card">
           <label class="block text-sm font-semibold text-gray-900 mb-3">
-            Nombre de tu workspace
+            {{ t.workspaceName }}
           </label>
           <UInput
-            v-model="workspaceName"
-            placeholder="Ej: Mi Empresa, Equipo Dev..."
+            v-model="workspaceNameInput"
+            :placeholder="t.workspacePlaceholder"
             required
             class="w-full"
             size="xl"
             autofocus
-            @keydown.enter="workspaceName && (step = 2)"
+            @keydown.enter="workspaceNameInput && (step = 2)"
           />
-          <p class="text-xs text-gray-400 mt-2">Este será el nombre de tu espacio de trabajo</p>
+          <p class="text-xs text-gray-400 mt-2">{{ t.workspaceHint }}</p>
         </div>
         <UButton
           block
           size="xl"
           color="primary"
           class="mt-4 font-semibold"
-          :disabled="!workspaceName.trim()"
+          :disabled="!workspaceNameInput.trim()"
           @click="step = 2"
         >
-          Continuar
+          {{ t.continueBtn }}
         </UButton>
       </div>
 
@@ -62,23 +62,23 @@
       <div v-if="step === 2" class="animate-fade-up">
         <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-card">
           <label class="block text-sm font-semibold text-gray-900 mb-3">
-            Tu primer proyecto
+            {{ t.firstProject }}
           </label>
           <UInput
             v-model="projectName"
-            placeholder="Ej: App Mobile, API v2..."
+            :placeholder="t.projectPlaceholder"
             required
             class="w-full"
             size="xl"
             autofocus
             @keydown.enter="projectName && (step = 3)"
           />
-          <p class="text-xs text-gray-400 mt-2">Puedes crear más proyectos después</p>
+          <p class="text-xs text-gray-400 mt-2">{{ t.moreProjectsLater }}</p>
         </div>
         <div class="flex gap-3 mt-4">
-          <UButton block variant="ghost" size="lg" @click="step = 1">Atrás</UButton>
+          <UButton block variant="ghost" size="lg" @click="step = 1">{{ t.back }}</UButton>
           <UButton block size="lg" color="primary" class="font-semibold" :disabled="!projectName.trim()" @click="step = 3">
-            Continuar
+            {{ t.continueBtn }}
           </UButton>
         </div>
       </div>
@@ -87,7 +87,7 @@
       <div v-if="step === 3" class="animate-fade-up">
         <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-card">
           <label class="block text-sm font-semibold text-gray-900 mb-4">
-            Tipo de tablero Kanban
+            {{ t.kanbanType }}
           </label>
           <div class="space-y-1.5 max-h-[280px] overflow-y-auto pr-1">
             <button
@@ -101,7 +101,7 @@
             >
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-gray-900">{{ tpl.label }}</span>
-                <span class="text-[9px] font-semibold text-gray-400">{{ tpl.cols }} columnas</span>
+                <span class="text-[9px] font-semibold text-gray-400">{{ tpl.cols }} {{ t.columns }}</span>
               </div>
               <div class="flex gap-1 flex-wrap">
                 <span
@@ -115,9 +115,9 @@
           </div>
         </div>
         <div class="flex gap-3 mt-4">
-          <UButton block variant="ghost" size="lg" @click="step = 2">Atrás</UButton>
+          <UButton block variant="ghost" size="lg" @click="step = 2">{{ t.back }}</UButton>
           <UButton block size="lg" color="primary" class="font-semibold" :loading="creating" @click="handleCreate">
-            Crear workspace
+            {{ t.createWorkspace }}
           </UButton>
         </div>
         <p v-if="errorMsg" class="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-3 text-center">{{ errorMsg }}</p>
@@ -130,9 +130,10 @@
 definePageMeta({ layout: false })
 
 const router = useRouter()
+const { labels: t } = useLanguage()
 
 const step = ref(1)
-const workspaceName = ref('')
+const workspaceNameInput = ref('')
 const projectName = ref('')
 const template = ref('simple')
 const errorMsg = ref('')
@@ -218,15 +219,13 @@ const templateOptions = [
   },
 ]
 
-// On mount, check if user already has workspaces (they shouldn't be here)
 onMounted(async () => {
   try {
     const existing = await $fetch<any[]>('/api/user/workspaces')
     if (existing && existing.length > 0) {
-      console.log('[onboarding] User already has workspaces, redirecting...')
       await router.replace(`/${existing[0].slug}/projects`)
     }
-  } catch { /* user might not be authenticated yet */ }
+  } catch {}
 })
 
 async function handleCreate() {
@@ -234,31 +233,26 @@ async function handleCreate() {
   creating.value = true
 
   try {
-    // First check if user already has a workspace (prevent duplicates)
     let existingWorkspaces: any[] = []
     try {
       existingWorkspaces = await $fetch<any[]>('/api/user/workspaces')
-    } catch { /* ignore */ }
+    } catch {}
 
     let workspaceId: string
     let workspaceSlug: string
 
     if (existingWorkspaces.length > 0) {
-      // Use existing workspace instead of creating another
       workspaceId = existingWorkspaces[0].id || existingWorkspaces[0].workspace_id
       workspaceSlug = existingWorkspaces[0].slug
-      console.log('[onboarding] Using existing workspace:', workspaceSlug)
     } else {
-      // Create new workspace
       const workspace = await $fetch<any>('/api/workspaces', {
         method: 'POST',
-        body: { name: workspaceName.value },
+        body: { name: workspaceNameInput.value },
       })
       workspaceId = workspace.id
       workspaceSlug = workspace.slug
     }
 
-    // Create project in the workspace
     await $fetch(`/api/workspaces/${workspaceId}/projects`, {
       method: 'POST',
       body: {
@@ -269,8 +263,7 @@ async function handleCreate() {
 
     await router.push(`/${workspaceSlug}/projects`)
   } catch (e: any) {
-    errorMsg.value = e.data?.message || e.message || 'Error al crear el workspace'
-    console.error('[onboarding] Error:', e.data || e.message)
+    errorMsg.value = e.data?.message || e.message || t.value.errorCreatingWorkspace
   } finally {
     creating.value = false
   }

@@ -1,24 +1,30 @@
 <template>
   <div>
     <!-- Header -->
-    <div class="flex items-center justify-between mb-8 animate-fade-up">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-8 animate-fade-up">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Equipo</h1>
-        <p class="text-sm text-gray-500 mt-0.5">{{ members.length }} miembro{{ members.length !== 1 ? 's' : '' }} en el workspace</p>
+        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">{{ t.teamTitle }}</h1>
+        <p class="text-sm text-gray-500 mt-0.5">{{ members.length }} {{ members.length !== 1 ? t.membersCount : t.memberSingular }}</p>
       </div>
       <div class="flex items-center gap-2">
-        <UButton icon="i-heroicons-video-camera" variant="soft" size="md" class="font-semibold" @click="showMeetingModal = true">
-          Programar reunión
+        <UButton v-if="auth.isSuperadmin || auth.isOwner" icon="i-heroicons-shield-check" variant="outline" size="md" class="font-semibold hidden sm:inline-flex" @click="showPermEditor = true">
+          {{ lang.language.value === 'en' ? 'Permissions' : 'Permisos' }}
         </UButton>
-        <UButton v-if="isAdmin" icon="i-heroicons-user-plus" color="primary" size="md" class="font-semibold" @click="openInviteModal">
-          Invitar
+        <UButton v-if="auth.isSuperadmin || auth.isOwner" icon="i-heroicons-shield-check" variant="outline" size="md" class="sm:hidden" @click="showPermEditor = true" />
+        <UButton v-if="canCreateMeetings" icon="i-heroicons-video-camera" variant="soft" size="md" class="font-semibold hidden sm:inline-flex" @click="showMeetingModal = true">
+          {{ t.scheduleMeeting }}
         </UButton>
+        <UButton v-if="canCreateMeetings" icon="i-heroicons-video-camera" variant="soft" size="md" class="sm:hidden" @click="showMeetingModal = true" />
+        <UButton v-if="canManageMembers" icon="i-heroicons-user-plus" color="primary" size="md" class="font-semibold hidden sm:inline-flex" @click="openInviteModal">
+          {{ t.invite }}
+        </UButton>
+        <UButton v-if="canManageMembers" icon="i-heroicons-user-plus" color="primary" size="md" class="sm:hidden" @click="openInviteModal" />
       </div>
     </div>
 
     <!-- Upcoming meetings -->
     <div v-if="meetings.length > 0" class="mb-8 animate-fade-up">
-      <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">Próximas reuniones</h2>
+      <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">{{ t.upcomingMeetings }}</h2>
       <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         <div
           v-for="meeting in meetings"
@@ -38,12 +44,12 @@
                 <a
                   :href="meeting.meeting_url"
                   target="_blank"
-                  class="text-[10px] font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-lg transition-colors inline-flex items-center gap-1"
+                  class="text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg transition-colors inline-flex items-center gap-1.5"
                 >
-                  <UIcon name="i-heroicons-video-camera" class="w-3 h-3" />
-                  Unirse
+                  <UIcon name="i-heroicons-video-camera" class="w-3.5 h-3.5" />
+                  {{ t.join }}
                 </a>
-                <span class="text-[10px] text-gray-400">{{ (meeting.attendees || []).length }} participante(s)</span>
+                <span class="text-[10px] text-gray-400">{{ (meeting.attendees || []).length }} {{ t.participants }}</span>
               </div>
             </div>
           </div>
@@ -55,7 +61,7 @@
     <div v-if="loading" class="flex justify-center py-16">
       <div class="flex items-center gap-3 text-gray-400">
         <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 animate-spin" />
-        <span class="text-sm">Cargando equipo...</span>
+        <span class="text-sm">{{ t.loadingTeam }}</span>
       </div>
     </div>
 
@@ -66,7 +72,7 @@
         :key="member.id"
         class="bg-white rounded-2xl p-4 border border-gray-100 hover:border-focusflow-200 transition-all shadow-card group"
       >
-        <div class="flex items-center gap-4">
+        <div class="flex items-start sm:items-center gap-3 sm:gap-4 flex-wrap sm:flex-nowrap">
           <!-- Avatar -->
           <div
             class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0"
@@ -81,26 +87,26 @@
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
               <p class="font-semibold text-sm text-gray-900 truncate">
-                {{ member.email || (member.user_id ? member.user_id.slice(0, 12) + '...' : 'Sin email') }}
+                {{ member.email || (member.user_id ? member.user_id.slice(0, 12) + '...' : t.noEmail) }}
               </p>
-              <span v-if="member.isCurrentUser" class="text-[9px] font-bold text-focusflow-600 bg-focusflow-50 px-1.5 py-0.5 rounded-md uppercase">Tú</span>
+              <span v-if="member.isCurrentUser" class="text-[10px] font-bold text-focusflow-600 bg-focusflow-50 px-1.5 py-0.5 rounded-md uppercase">{{ t.you }}</span>
             </div>
             <p class="text-[11px] text-gray-400 mt-0.5">
-              Se unió {{ formatJoinDate(member.joined_at) }}
+              {{ t.joined }} {{ formatJoinDate(member.joined_at) }}
             </p>
             <!-- Project access chips -->
             <div class="flex flex-wrap gap-1 mt-1.5">
               <span
                 v-if="member.has_all_projects"
-                class="text-[9px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600"
+                class="text-[10px] font-semibold px-2 py-1 rounded-md bg-emerald-50 text-emerald-600"
               >
-                Todos los proyectos
+                {{ t.allProjects }}
               </span>
               <template v-else>
                 <span
                   v-for="pid in member.project_ids"
                   :key="pid"
-                  class="text-[9px] font-medium px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 inline-flex items-center gap-1"
+                  class="text-[10px] font-medium px-2 py-1 rounded-md bg-gray-100 text-gray-600 inline-flex items-center gap-1"
                 >
                   <span class="w-1.5 h-1.5 rounded-full shrink-0" :style="{ backgroundColor: projectColor(pid) }" />
                   {{ projectName(pid) }}
@@ -108,7 +114,7 @@
                     v-if="isAdmin && !member.isCurrentUser"
                     class="text-gray-400 hover:text-red-500 transition-colors cursor-pointer ml-0.5"
                     @click.stop="removeProjectFromMember(member, pid)"
-                    title="Quitar de este proyecto"
+                    :title="t.removeFromProject"
                   >
                     <UIcon name="i-heroicons-x-mark" class="w-2.5 h-2.5" />
                   </button>
@@ -117,7 +123,7 @@
                   v-if="member.project_ids.length === 0"
                   class="text-[9px] font-medium px-2 py-0.5 rounded-md bg-red-50 text-red-500"
                 >
-                  Sin acceso a proyectos
+                  {{ t.noProjectAccess }}
                 </span>
                 <!-- Quick add to project dropdown -->
                 <div v-if="isAdmin && !member.isCurrentUser" class="relative inline-block">
@@ -126,15 +132,15 @@
                     @click="toggleQuickAdd(member)"
                   >
                     <UIcon name="i-heroicons-plus" class="w-2.5 h-2.5" />
-                    Proyecto
+                    {{ t.project }}
                   </button>
                   <!-- Quick add dropdown -->
                   <div
                     v-if="quickAddMemberId === member.id"
-                    class="absolute left-0 top-full mt-1 z-20 bg-white rounded-xl shadow-lg border border-gray-100 py-1 min-w-[180px]"
+                    class="absolute left-0 sm:left-0 right-0 sm:right-auto top-full mt-1 z-20 bg-white rounded-xl shadow-lg border border-gray-100 py-1 min-w-[180px]"
                   >
                     <div class="px-2 py-1.5 border-b border-gray-50">
-                      <p class="text-[9px] font-bold uppercase tracking-widest text-gray-400">Añadir a proyecto</p>
+                      <p class="text-[9px] font-bold uppercase tracking-widest text-gray-400">{{ t.addToProject }}</p>
                     </div>
                     <div class="max-h-40 overflow-y-auto">
                       <button
@@ -147,7 +153,7 @@
                         {{ project.name }}
                       </button>
                       <p v-if="availableProjectsFor(member).length === 0" class="text-[10px] text-gray-400 text-center py-2 px-3">
-                        Ya tiene acceso a todos
+                        {{ t.alreadyHasAll }}
                       </p>
                     </div>
                     <div class="px-2 pt-1 border-t border-gray-50 mt-1">
@@ -155,7 +161,7 @@
                         class="w-full text-[10px] font-medium text-focusflow-600 hover:text-focusflow-700 py-1 cursor-pointer"
                         @click="openEditProjectsModal(member)"
                       >
-                        Gestionar todos los accesos
+                        {{ t.manageAccess }}
                       </button>
                     </div>
                   </div>
@@ -172,15 +178,18 @@
             >
               Owner
             </span>
-            <template v-else-if="isAdmin && !member.isCurrentUser">
+            <template v-else-if="canChangeRole(member)">
               <select
                 :value="member.role"
-                class="text-[11px] font-semibold px-2 py-1 rounded-lg border border-gray-200 bg-white text-gray-700 cursor-pointer focus:ring-1 focus:ring-focusflow-300 outline-none"
+                class="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 cursor-pointer focus:ring-1 focus:ring-focusflow-300 outline-none"
                 @change="handleRoleChange(member, ($event.target as HTMLSelectElement).value)"
               >
-                <option value="viewer">Viewer</option>
-                <option value="member">Miembro</option>
-                <option value="admin">Admin</option>
+                <option value="viewer">{{ t.viewer }}</option>
+                <option value="marketing">Marketing</option>
+                <option value="member">{{ t.member }}</option>
+                <option value="admin">{{ t.admin }}</option>
+                <option v-if="auth.isSuperadmin || auth.isOwner" value="owner">{{ t.owner }}</option>
+                <option v-if="auth.isSuperadmin" value="superadmin">{{ t.superadmin }}</option>
               </select>
             </template>
             <span
@@ -194,8 +203,8 @@
             <!-- Remove member button -->
             <button
               v-if="isAdmin && !member.isCurrentUser && member.role !== 'owner'"
-              class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
-              title="Remover del equipo"
+              class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer"
+              :title="t.removeFromTeam"
               @click="handleRemoveMember(member)"
             >
               <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
@@ -208,8 +217,8 @@
         <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
           <UIcon name="i-heroicons-user-group" class="w-8 h-8 text-gray-400" />
         </div>
-        <h3 class="text-lg font-semibold text-gray-900">Sin miembros</h3>
-        <p class="text-sm text-gray-500 mt-1">Invita a tu equipo para colaborar</p>
+        <h3 class="text-lg font-semibold text-gray-900">{{ t.noMembers }}</h3>
+        <p class="text-sm text-gray-500 mt-1">{{ t.inviteTeam }}</p>
       </div>
     </div>
 
@@ -217,20 +226,20 @@
     <UModal v-model:open="showInvite">
       <template #content>
         <div class="p-6">
-          <h2 class="text-lg font-bold text-gray-900 mb-1">Invitar miembro</h2>
-          <p class="text-sm text-gray-500 mb-5">El usuario debe tener una cuenta en FocusFlow</p>
+          <h2 class="text-lg font-bold text-gray-900 mb-1">{{ t.inviteMember }}</h2>
+          <p class="text-sm text-gray-500 mb-5">{{ t.inviteDesc }}</p>
 
           <form class="space-y-4" @submit.prevent="handleInvite">
-            <UFormField label="Email del usuario">
+            <UFormField :label="t.userEmail">
               <UInput v-model="inviteEmail" type="email" placeholder="usuario@email.com" required class="w-full" size="lg" autofocus />
             </UFormField>
 
-            <UFormField label="Rol">
+            <UFormField :label="t.role">
               <USelectMenu v-model="inviteRole" :items="roleOptions" value-key="value" class="w-full" />
             </UFormField>
 
             <!-- Project multi-select (disabled for admin+) -->
-            <UFormField v-if="!isInviteAdminPlus" label="Acceso a proyectos">
+            <UFormField v-if="!isInviteAdminPlus" :label="t.projectAccess">
               <div class="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
                 <label
                   v-for="project in allProjects"
@@ -245,19 +254,19 @@
                   />
                   <span class="text-sm text-gray-700">{{ project.name }}</span>
                 </label>
-                <p v-if="allProjects.length === 0" class="text-xs text-gray-400 text-center py-2">No hay proyectos</p>
+                <p v-if="allProjects.length === 0" class="text-xs text-gray-400 text-center py-2">{{ t.noProjects }}</p>
               </div>
             </UFormField>
             <p v-else class="text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2">
-              Los roles admin+ tienen acceso automático a todos los proyectos
+              {{ t.adminAutoAccess }}
             </p>
 
             <p v-if="inviteError" class="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{{ inviteError }}</p>
             <p v-if="inviteSuccess" class="text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">{{ inviteSuccess }}</p>
 
             <div class="flex justify-end gap-3 pt-2">
-              <UButton variant="ghost" @click="showInvite = false">Cancelar</UButton>
-              <UButton type="submit" color="primary" :loading="inviting" class="font-semibold">Invitar</UButton>
+              <UButton variant="ghost" @click="showInvite = false">{{ t.cancel }}</UButton>
+              <UButton type="submit" color="primary" :loading="inviting" class="font-semibold">{{ t.invite }}</UButton>
             </div>
           </form>
         </div>
@@ -268,8 +277,8 @@
     <UModal v-model:open="showEditProjects">
       <template #content>
         <div class="p-6">
-          <h2 class="text-lg font-bold text-gray-900 mb-1">Acceso a proyectos</h2>
-          <p class="text-sm text-gray-500 mb-5">{{ editingMember?.email || 'Miembro' }}</p>
+          <h2 class="text-lg font-bold text-gray-900 mb-1">{{ t.projectAccess }}</h2>
+          <p class="text-sm text-gray-500 mb-5">{{ editingMember?.email || t.member }}</p>
 
           <div class="space-y-2 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3">
             <label
@@ -288,7 +297,7 @@
                 <span class="text-sm text-gray-700">{{ project.name }}</span>
               </div>
             </label>
-            <p v-if="allProjects.length === 0" class="text-xs text-gray-400 text-center py-2">No hay proyectos</p>
+            <p v-if="allProjects.length === 0" class="text-xs text-gray-400 text-center py-2">{{ t.noProjects }}</p>
           </div>
 
           <div class="flex items-center justify-between pt-4">
@@ -296,11 +305,11 @@
               class="text-xs text-focusflow-600 hover:text-focusflow-700 font-medium cursor-pointer"
               @click="editProjectIds = allProjects.map(p => p.id)"
             >
-              Seleccionar todos
+              {{ t.selectAll }}
             </button>
             <div class="flex gap-3">
-              <UButton variant="ghost" @click="showEditProjects = false">Cancelar</UButton>
-              <UButton color="primary" :loading="savingProjects" class="font-semibold" @click="handleSaveProjects">Guardar</UButton>
+              <UButton variant="ghost" @click="showEditProjects = false">{{ t.cancel }}</UButton>
+              <UButton color="primary" :loading="savingProjects" class="font-semibold" @click="handleSaveProjects">{{ t.save }}</UButton>
             </div>
           </div>
         </div>
@@ -315,12 +324,18 @@
       :projects="allProjects"
       @created="onMeetingCreated"
     />
+
+    <!-- Role permission editor -->
+    <RolePermissionEditor
+      v-model:open="showPermEditor"
+      @saved="loadMembers"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { es, enUS } from 'date-fns/locale'
 import type { Project, Meeting } from '~/types'
 
 definePageMeta({ middleware: 'auth' })
@@ -328,12 +343,15 @@ definePageMeta({ middleware: 'auth' })
 const store = useWorkspaceStore()
 const auth = useAuthStore()
 const user = useSupabaseUser()
+const lang = useLanguage()
+const t = lang.labels
 
 const members = ref<any[]>([])
 const loading = ref(true)
 const allProjects = ref<Project[]>([])
 const meetings = ref<Meeting[]>([])
 const showMeetingModal = ref(false)
+const showPermEditor = ref(false)
 
 // Invite modal state
 const showInvite = ref(false)
@@ -351,16 +369,35 @@ const editProjectIds = ref<string[]>([])
 const savingProjects = ref(false)
 
 const isAdmin = computed(() => auth.isAdmin || auth.isOwner || auth.isSuperadmin)
+const { canManageMembers, canCreateMeetings } = usePermissions()
+
+function canChangeRole(member: any): boolean {
+  if (member.isCurrentUser) return false
+  if (auth.isSuperadmin) return true
+  if (auth.isOwner && member.role !== 'superadmin') return true
+  if (isAdmin.value && !['owner', 'superadmin'].includes(member.role)) return true
+  return false
+}
 
 const isInviteAdminPlus = computed(() =>
   ['admin', 'owner', 'superadmin'].includes(inviteRole.value),
 )
 
-const roleOptions = [
-  { label: 'Viewer', value: 'viewer' },
-  { label: 'Miembro', value: 'member' },
-  { label: 'Admin', value: 'admin' },
-]
+const roleOptions = computed(() => {
+  const options = [
+    { label: t.value.viewer, value: 'viewer' },
+    { label: 'Marketing', value: 'marketing' },
+    { label: t.value.member, value: 'member' },
+    { label: t.value.admin, value: 'admin' },
+  ]
+  if (auth.isOwner || auth.isSuperadmin) {
+    options.push({ label: t.value.owner, value: 'owner' })
+  }
+  if (auth.isSuperadmin) {
+    options.push({ label: t.value.superadmin, value: 'superadmin' })
+  }
+  return options
+})
 
 // Close quick-add dropdown on outside click
 function handleOutsideClick(e: MouseEvent) {
@@ -412,7 +449,7 @@ function onMeetingCreated(_meeting: Meeting) {
 }
 
 function formatMeetingDate(d: string) {
-  try { return format(new Date(d), "EEE d MMM, HH:mm", { locale: es }) } catch { return d }
+  try { return format(new Date(d), "EEE d MMM, HH:mm", { locale: lang.language.value === 'en' ? enUS : es }) } catch { return d }
 }
 
 async function loadMembers() {
@@ -455,12 +492,12 @@ async function handleInvite() {
         project_ids: isInviteAdminPlus.value ? [] : inviteProjectIds.value,
       },
     })
-    inviteSuccess.value = `${inviteEmail.value} agregado al equipo`
+    inviteSuccess.value = `${inviteEmail.value} ${t.value.addedToTeam}`
     inviteEmail.value = ''
     inviteProjectIds.value = []
     await loadMembers()
   } catch (e: any) {
-    inviteError.value = e.data?.message || 'Error al invitar'
+    inviteError.value = e.data?.message || t.value.errorInviting
   } finally {
     inviting.value = false
   }
@@ -476,21 +513,21 @@ async function handleRoleChange(member: any, newRole: string) {
     // Reload to get updated project_ids / has_all_projects
     await loadMembers()
   } catch (e: any) {
-    alert(e.data?.message || 'Error al cambiar rol')
+    alert(e.data?.message || t.value.errorChangingRole)
     await loadMembers()
   }
 }
 
 async function handleRemoveMember(member: any) {
   const label = member.email || member.user_id.slice(0, 12)
-  if (!confirm(`¿Remover a "${label}" del equipo?`)) return
+  if (!confirm(t.value.confirmRemoveMember.replace('{name}', label))) return
   try {
     await $fetch(`/api/workspaces/${store.workspace!.id}/members/${member.id}`, {
       method: 'DELETE',
     })
     members.value = members.value.filter(m => m.id !== member.id)
   } catch (e: any) {
-    alert(e.data?.message || 'Error al remover miembro')
+    alert(e.data?.message || t.value.errorRemovingMember)
   }
 }
 
@@ -514,7 +551,7 @@ async function addProjectToMember(member: any, projectId: string) {
     })
     await loadMembers()
   } catch (e: any) {
-    alert(e.data?.message || 'Error al añadir proyecto')
+    alert(e.data?.message || t.value.errorAddingProject)
   }
   quickAddMemberId.value = null
 }
@@ -528,7 +565,7 @@ async function removeProjectFromMember(member: any, projectId: string) {
     })
     await loadMembers()
   } catch (e: any) {
-    alert(e.data?.message || 'Error al quitar proyecto')
+    alert(e.data?.message || t.value.errorRemovingProject)
   }
 }
 
@@ -554,7 +591,7 @@ async function handleSaveProjects() {
     await loadMembers()
     showEditProjects.value = false
   } catch (e: any) {
-    alert(e.data?.message || 'Error al actualizar acceso')
+    alert(e.data?.message || t.value.errorUpdatingAccess)
   } finally {
     savingProjects.value = false
   }
@@ -570,7 +607,7 @@ function getInitials(str: string | null | undefined) {
 }
 
 function formatJoinDate(d: string) {
-  try { return format(new Date(d), "d MMM yyyy", { locale: es }) } catch { return d }
+  try { return format(new Date(d), "d MMM yyyy", { locale: lang.language.value === 'en' ? enUS : es }) } catch { return d }
 }
 
 function roleAvatarClass(role: string) {
@@ -594,7 +631,8 @@ function roleClasses(role: string) {
 }
 
 function roleLabel(role: string) {
-  return { owner: 'Owner', admin: 'Admin', member: 'Miembro', viewer: 'Viewer' }[role] || role
+  const map: Record<string, string> = { owner: t.value.owner, admin: t.value.admin, member: t.value.member, viewer: t.value.viewer, superadmin: t.value.superadmin }
+  return map[role] || role
 }
 
 onUnmounted(() => {

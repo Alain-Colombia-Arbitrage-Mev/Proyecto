@@ -10,6 +10,8 @@ export default defineEventHandler(async (event) => {
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (body.name !== undefined) updates.name = body.name
   if (body.color !== undefined) updates.color = body.color
+  if (body.ai_config !== undefined) updates.ai_config = body.ai_config
+  if (body.ai_enabled !== undefined) updates.ai_enabled = body.ai_enabled
 
   const { data, error } = await supabase
     .from('workspaces')
