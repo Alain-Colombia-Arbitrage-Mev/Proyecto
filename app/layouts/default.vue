@@ -72,13 +72,13 @@
         <div v-if="!collapsed" class="px-3 pt-2 flex items-center justify-between">
           <NotificationBell />
           <div class="flex items-center gap-1">
-            <DarkModeToggle sidebar-style />
+            <ClientOnly><DarkModeToggle sidebar-style /></ClientOnly>
             <LanguageToggle />
           </div>
         </div>
         <div v-else class="flex flex-col items-center gap-2 pt-2">
           <NotificationBell />
-          <DarkModeToggle sidebar-style />
+          <ClientOnly><DarkModeToggle sidebar-style /></ClientOnly>
         </div>
         <div class="flex items-center gap-2 p-2" :class="collapsed ? 'justify-center' : ''">
           <NuxtLink
@@ -157,6 +157,9 @@
       </div>
     </Transition>
 
+    <!-- Time Tracker Widget -->
+    <TimeTracker v-if="store.workspace?.id" :workspace-id="store.workspace.id" />
+
     <!-- Lofi Player -->
     <LofiPlayer />
 
@@ -187,7 +190,7 @@ const auth = useAuthStore()
 const pomodoro = usePomodoroTimer()
 const { labels: tRef } = useLanguage()
 const t = tRef
-const { canUseAI, canManageMembers, canViewUsageStats } = usePermissions()
+const { canUseAI, canManageMembers, canViewUsageStats, canViewTimesheets, canViewGoals, canViewRoadmap } = usePermissions()
 
 const collapsed = ref(false)
 
@@ -211,7 +214,10 @@ const allNav = computed(() => [
   { label: t.value.dashboard, icon: 'i-heroicons-squares-2x2', to: `/${workspaceSlug.value}/dashboard`, show: true },
   { label: t.value.projects, icon: 'i-heroicons-folder-open', to: `/${workspaceSlug.value}/projects`, show: true },
   { label: t.value.aiAgents, icon: 'i-heroicons-cpu-chip', to: `/${workspaceSlug.value}/agents`, show: canUseAI.value },
+  { label: t.value.timesheet, icon: 'i-heroicons-clock', to: `/${workspaceSlug.value}/timesheet`, show: canViewTimesheets.value },
   { label: t.value.files, icon: 'i-heroicons-document-duplicate', to: `/${workspaceSlug.value}/files`, show: true },
+  { label: t.value.goals, icon: 'i-heroicons-flag', to: `/${workspaceSlug.value}/goals`, show: canViewGoals.value },
+  { label: t.value.roadmap, icon: 'i-heroicons-map', to: `/${workspaceSlug.value}/roadmap`, show: canViewRoadmap.value },
   { label: t.value.team, icon: 'i-heroicons-user-group', to: `/${workspaceSlug.value}/team`, show: canManageMembers.value },
   { label: t.value.settings, icon: 'i-heroicons-cog-6-tooth', to: `/${workspaceSlug.value}/settings`, show: true },
 ])

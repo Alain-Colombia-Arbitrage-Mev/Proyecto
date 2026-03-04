@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen flex relative bg-white">
+  <div class="min-h-screen flex relative bg-white dark:bg-gray-950">
     <!-- Left panel — branding -->
-    <div class="hidden lg:flex lg:w-[480px] relative bg-focusflow-700 items-center justify-center p-12">
+    <div class="hidden lg:flex lg:w-[480px] relative bg-focusflow-700 dark:bg-focusflow-900 items-center justify-center p-12">
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.08),transparent_50%)]" />
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.05),transparent_50%)]" />
       <div class="relative z-10 max-w-sm">
@@ -35,7 +35,7 @@
           <div class="w-10 h-10 rounded-xl bg-focusflow-600 flex items-center justify-center">
             <span class="text-white font-bold text-lg" style="font-family: 'Space Mono', monospace;">F</span>
           </div>
-          <span class="text-xl font-bold text-gray-900 tracking-tight">FocusFlow</span>
+          <span class="text-xl font-bold text-gray-900 dark:text-white tracking-tight">FocusFlow</span>
         </div>
         <slot />
       </div>

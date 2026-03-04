@@ -5,7 +5,12 @@ export default defineEventHandler(async (event) => {
   await requirePermission(event, workspaceId, 'view_usage_stats')
 
   const supabase = serverSupabaseServiceRole(event)
-  const stats = await getWorkspaceTokenUsage({ supabase, workspaceId })
 
-  return stats
+  try {
+    const stats = await getWorkspaceTokenUsage({ supabase, workspaceId })
+    return stats
+  } catch (err: any) {
+    console.error('[usage.get] Error:', err.message || err)
+    throw createError({ statusCode: 500, message: 'Error fetching usage stats' })
+  }
 })

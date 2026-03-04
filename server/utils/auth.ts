@@ -32,6 +32,10 @@ export function isPlatformAdmin(email: string | undefined): boolean {
 export async function requireUser(event: H3Event) {
   const user = await serverSupabaseUser(event)
   if (!user) throw createError({ statusCode: 401, message: 'Not authenticated' })
+  // serverSupabaseUser may return a JWT payload (with `sub`) instead of a full User object (with `id`)
+  if (!user.id && (user as any).sub) {
+    (user as any).id = (user as any).sub
+  }
   return user
 }
 

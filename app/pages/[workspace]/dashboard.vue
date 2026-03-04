@@ -905,60 +905,21 @@ watch(() => store.workspace?.id, async (wsId) => {
   loadAssessment()
 
   try {
-    const supabase = useSupabaseClient()
-    const projectIds = store.projects.map(p => p.id)
-    if (projectIds.length === 0) return
+    const stats = await $fetch<any>(`/api/workspaces/${wsId}/dashboard-stats`)
+    taskCount.value = stats.taskCount || 0
+    completedTasks.value = stats.completedTasks || 0
 
-    const { count: total, error: totalErr } = await supabase
-      .from('tasks')
-      .select('*', { count: 'exact', head: true })
-      .in('project_id', projectIds)
-    if (!totalErr) taskCount.value = total || 0
-
-    // Get completed tasks (last column of each project)
-    const { data: cols, error: colsErr } = await supabase
-      .from('kanban_columns')
-      .select('id, project_id, position')
-      .in('project_id', projectIds)
-      .order('position', { ascending: false })
-
-    if (!colsErr && cols && cols.length > 0) {
-      const lastCols = new Map<string, string>()
-      for (const col of cols as any[]) {
-        if (!lastCols.has(col.project_id)) lastCols.set(col.project_id, col.id)
-      }
-      const lastColIds = Array.from(lastCols.values())
-      if (lastColIds.length > 0) {
-        const { count: done } = await supabase
-          .from('tasks')
-          .select('*', { count: 'exact', head: true })
-          .in('column_id', lastColIds)
-        completedTasks.value = done || 0
-      }
-    }
-
-    // Load recent tasks for the table
-    const { data: tasks } = await supabase
-      .from('tasks')
-      .select('id, title, priority, created_at, column_id, project_id, due_date')
-      .in('project_id', projectIds)
-      .order('created_at', { ascending: false })
-      .limit(20)
-
-    if (tasks) {
-      const projectMap = new Map(store.projects.map(p => [p.id, p.name]))
-      const lastColSet = new Set(cols ? Array.from(new Map(cols.map((c: any) => [c.project_id, c.id]) as any).values()) : [])
-
-      recentTasks.value = tasks.map((t: any) => {
+    if (stats.recentTasks) {
+      recentTasks.value = stats.recentTasks.map((t: any) => {
         const dlInfo = deadline.getDeadlineInfo(t.due_date)
         return {
           id: t.id,
           title: t.title,
           priority: t.priority || 'medium',
           projectId: t.project_id,
-          projectName: projectMap.get(t.project_id) || '—',
+          projectName: t.projectName || '—',
           dateShort: t.created_at ? format(new Date(t.created_at), 'MMM d', { locale: lang.language.value === 'en' ? enUS : es }) : '—',
-          isCompleted: lastColSet.has(t.column_id),
+          isCompleted: t.isCompleted,
           deadlineLabel: dlInfo?.label || null,
           deadlineColor: dlInfo?.colorClass || '',
           deadlineBg: dlInfo?.bgClass || '',

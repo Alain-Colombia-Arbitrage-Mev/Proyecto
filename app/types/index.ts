@@ -84,6 +84,13 @@ export interface Task {
   last_activity_at: string
   created_at: string
   updated_at: string
+  // Subtask fields
+  depth?: number
+  ancestry?: string[]
+  subtask_count?: number
+  completed_subtask_count?: number
+  // Sprint field (Phase 3)
+  sprint_id?: string
 }
 
 export interface TaskChecklist {
@@ -101,6 +108,10 @@ export interface TaskComment {
   content: string
   edited_at?: string
   created_at: string
+  assignee_id?: string
+  mentions?: string[]
+  is_action_item?: boolean
+  resolved?: boolean
 }
 
 export interface Label {
@@ -269,5 +280,143 @@ export interface ActivityLog {
   entity_id: string
   action: string
   metadata: Record<string, unknown>
+  created_at: string
+}
+
+// ── Phase 1: Time Tracking ──
+
+export type TimeEntrySource = 'manual' | 'timer' | 'pomodoro'
+
+export interface TimeEntry {
+  id: string
+  workspace_id: string
+  project_id?: string
+  task_id?: string
+  user_id: string
+  start_time: string
+  end_time?: string
+  duration_minutes?: number
+  description?: string
+  billable: boolean
+  source: TimeEntrySource
+  created_at: string
+  updated_at: string
+}
+
+export interface TimesheetRow {
+  date: string
+  entries: TimeEntry[]
+  total_minutes: number
+}
+
+// ── Phase 2: Relationships & Tracking ──
+
+export type RelationshipType = 'blocks' | 'relates_to' | 'duplicates'
+
+export interface TaskRelationship {
+  id: string
+  workspace_id: string
+  source_task_id: string
+  target_task_id: string
+  relationship_type: RelationshipType
+  created_by?: string
+  created_at: string
+}
+
+export interface TaskReassignment {
+  id: string
+  workspace_id: string
+  task_id: string
+  from_user_id?: string
+  to_user_id: string
+  reassigned_by: string
+  reason?: string
+  created_at: string
+}
+
+export interface ProjectMilestone {
+  id: string
+  project_id: string
+  workspace_id: string
+  title: string
+  title_en?: string
+  target_date?: string
+  completed: boolean
+  completed_at?: string
+  position: number
+  created_at: string
+}
+
+// ── Phase 3: Agile & Goals ──
+
+export type SprintStatus = 'planned' | 'active' | 'completed'
+export type GoalType = 'goal' | 'objective' | 'key_result'
+export type GoalStatus = 'active' | 'completed' | 'cancelled'
+
+export interface Sprint {
+  id: string
+  workspace_id: string
+  project_id: string
+  name: string
+  goal?: string
+  start_date: string
+  end_date: string
+  status: SprintStatus
+  created_at: string
+}
+
+export interface TaskColumnHistory {
+  id: string
+  task_id: string
+  column_id?: string
+  entered_at: string
+  exited_at?: string
+}
+
+export interface BurndownPoint {
+  date: string
+  remaining: number
+  ideal: number
+}
+
+export interface VelocityPoint {
+  sprint: string
+  points: number
+}
+
+export interface Goal {
+  id: string
+  workspace_id: string
+  parent_goal_id?: string
+  title: string
+  title_en?: string
+  description?: string
+  description_en?: string
+  goal_type: GoalType
+  target_value?: number
+  current_value: number
+  unit: string
+  period_start?: string
+  period_end?: string
+  status: GoalStatus
+  owner_id?: string
+  created_at: string
+}
+
+export interface GoalLink {
+  id: string
+  goal_id: string
+  entity_type: 'project' | 'task'
+  entity_id: string
+  created_at: string
+}
+
+export interface ProjectDependency {
+  id: string
+  workspace_id: string
+  source_project_id: string
+  target_project_id: string
+  dependency_type: string
+  created_by?: string
   created_at: string
 }

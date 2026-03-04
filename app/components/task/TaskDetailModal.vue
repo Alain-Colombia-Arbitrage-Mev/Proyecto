@@ -90,6 +90,26 @@
                 <p v-if="descLang === 'en' && !editForm.description_en" class="text-[10px] text-amber-500 mt-1">{{ lang.labels.value.noTranslation }}</p>
               </div>
 
+              <!-- Subtasks -->
+              <SubtaskList
+                :task-id="task.id"
+                :workspace-id="workspaceId"
+                :parent-depth="task.depth || 0"
+              />
+
+              <!-- Comments -->
+              <TaskComments
+                :task-id="task.id"
+                :workspace-id="workspaceId"
+                :members="workspaceMembers.map(m => ({ id: m.user_id, email: m.email }))"
+              />
+
+              <!-- Relationships -->
+              <TaskRelationships
+                :task-id="task.id"
+                :workspace-id="workspaceId"
+              />
+
               <!-- Attachments -->
               <TaskAttachments :task-id="task.id" :workspace-id="workspaceId" />
 
@@ -158,6 +178,26 @@
                 <label class="text-[11px] font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide block mb-1.5">{{ lang.labels.value.tags }}</label>
                 <UInput v-model="editForm.tagsStr" placeholder="bug, frontend..." class="w-full" size="sm" />
               </div>
+
+              <!-- Time tracking -->
+              <div>
+                <label class="text-[11px] font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide block mb-1.5">{{ lang.labels.value.timeTracking }}</label>
+                <button
+                  v-if="!timeTracker.isRunning.value || timeTracker.activeTaskId.value !== task.id"
+                  @click="timeTracker.startTimer({ workspaceId, taskId: task.id, taskTitle: task.title, projectId })"
+                  class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-focusflow-50 dark:bg-focusflow-950/30 text-focusflow-700 dark:text-focusflow-400 hover:bg-focusflow-100 dark:hover:bg-focusflow-900/30 transition-colors"
+                >
+                  <UIcon name="i-heroicons-play" class="w-3.5 h-3.5" />
+                  {{ lang.labels.value.startTimer }}
+                </button>
+                <div v-else class="flex items-center gap-2 text-xs">
+                  <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                  <span class="font-mono font-bold text-gray-900 dark:text-white">{{ timeTracker.elapsedDisplay.value }}</span>
+                  <button @click="timeTracker.stopTimer()" class="text-red-500 hover:text-red-600 ml-1">
+                    <UIcon name="i-heroicons-stop" class="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -177,6 +217,7 @@ import type { Task, FigmaLink, Label } from '~/types'
 import { plainTextToHtml } from '~/utils/richtext'
 
 const pomodoro = usePomodoroTimer()
+const timeTracker = useTimeTracker()
 const lang = useLanguage()
 const { language } = lang
 const descLang = ref<'es' | 'en'>('es')

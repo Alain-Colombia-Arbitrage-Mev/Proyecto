@@ -213,6 +213,91 @@
         </div>
       </div>
 
+      <!-- Procrastination Metrics Section -->
+      <div v-if="canSeeMetrics" class="mt-8 animate-fade-up delay-200">
+        <button
+          class="flex items-center gap-2 text-sm font-semibold text-gray-500 dark:text-[#99a0ae] hover:text-gray-700 dark:hover:text-gray-300 transition-colors cursor-pointer mb-4"
+          @click="toggleMetrics"
+        >
+          <UIcon :name="showProcMetrics ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-right'" class="w-4 h-4" />
+          <UIcon name="i-heroicons-chart-bar" class="w-4 h-4" />
+          {{ showProcMetrics ? t.hideMetrics : t.showMetrics }}
+        </button>
+
+        <div v-if="showProcMetrics">
+          <div v-if="loadingMetrics" class="flex items-center gap-3 text-gray-400 dark:text-gray-500 py-8 justify-center">
+            <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 animate-spin" />
+            <span class="text-sm">{{ t.loadingMetrics }}</span>
+          </div>
+
+          <div v-else>
+            <!-- Section header -->
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-8 h-8 rounded-lg bg-focusflow-50 dark:bg-focusflow-500/10 flex items-center justify-center">
+                <UIcon name="i-heroicons-chart-bar" class="w-4 h-4 text-focusflow-600 dark:text-focusflow-400" />
+              </div>
+              <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ t.procrastinationMetrics }}</h3>
+            </div>
+
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div
+                v-for="pm in procrastinationData"
+                :key="pm.user_id"
+                class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-4 border border-gray-100 dark:border-white/10 shadow-card"
+              >
+                <!-- Header: avatar + email + SVG ring -->
+                <div class="flex items-center gap-3 mb-3">
+                  <div
+                    class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0"
+                    :class="memberAvatarClass(pm.user_id)"
+                  >
+                    {{ getInitials(memberEmail(pm.user_id)) }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ memberEmail(pm.user_id) }}</p>
+                    <p class="text-[10px] text-gray-400 dark:text-gray-500">{{ pm.total_tasks }} {{ t.tasksTracked }}</p>
+                  </div>
+                  <!-- SVG circular progress ring -->
+                  <div v-if="pm.procrastination_index !== null" class="relative w-9 h-9 shrink-0" :title="t.procrastinationIndex + ': ' + pm.procrastination_index">
+                    <svg viewBox="0 0 36 36" class="w-9 h-9 -rotate-90">
+                      <circle cx="18" cy="18" r="15.5" fill="none" stroke-width="3" class="stroke-gray-100 dark:stroke-white/10" />
+                      <circle
+                        cx="18" cy="18" r="15.5" fill="none" stroke-width="3"
+                        stroke-linecap="round"
+                        :stroke="riskStrokeColor(pm.procrastination_index)"
+                        :stroke-dasharray="`${(pm.procrastination_index / 100) * 97.4} 97.4`"
+                        class="transition-all duration-700 ease-out"
+                      />
+                    </svg>
+                    <span class="absolute inset-0 flex items-center justify-center text-[9px] font-bold" :class="riskTextColor(pm.procrastination_index)">
+                      {{ pm.procrastination_index }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- No data state -->
+                <div v-if="pm.procrastination_index === null" class="text-center py-3">
+                  <p class="text-xs text-gray-400 dark:text-gray-500">{{ t.noTaskData }}</p>
+                </div>
+
+                <!-- Metric bars -->
+                <div v-else class="space-y-2.5">
+                  <div v-for="metric in getMetrics(pm)" :key="metric.label" :title="metric.desc">
+                    <div class="flex items-center justify-between mb-0.5">
+                      <span class="text-[10px] font-medium text-gray-500 dark:text-gray-400">{{ metric.label }}</span>
+                      <span class="text-[10px] font-bold" :class="riskTextColor(metric.value)">{{ metric.value }}%</span>
+                    </div>
+                    <div class="h-2 rounded-full bg-gray-100 dark:bg-white/10 overflow-hidden">
+                      <div class="h-full rounded-full transition-all duration-700 ease-out" :class="riskBarColor(metric.value)" :style="{ width: metric.value + '%' }" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div v-if="members.length === 0" class="text-center py-16">
         <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-white/10 flex items-center justify-center mx-auto mb-4">
           <UIcon name="i-heroicons-user-group" class="w-8 h-8 text-gray-400 dark:text-gray-500" />
@@ -368,7 +453,13 @@ const editingMember = ref<any>(null)
 const editProjectIds = ref<string[]>([])
 const savingProjects = ref(false)
 
+// Procrastination metrics state
+const procrastinationData = ref<any[]>([])
+const showProcMetrics = ref(false)
+const loadingMetrics = ref(false)
+
 const isAdmin = computed(() => auth.isAdmin || auth.isOwner || auth.isSuperadmin)
+const canSeeMetrics = computed(() => isAdmin.value)
 const { canManageMembers, canCreateMeetings } = usePermissions()
 
 function canChangeRole(member: any): boolean {
@@ -633,6 +724,74 @@ function roleClasses(role: string) {
 function roleLabel(role: string) {
   const map: Record<string, string> = { owner: t.value.owner, admin: t.value.admin, member: t.value.member, viewer: t.value.viewer, superadmin: t.value.superadmin }
   return map[role] || role
+}
+
+// ── Procrastination metrics ──
+async function loadProcrastination() {
+  if (!store.workspace?.id) return
+  loadingMetrics.value = true
+  try {
+    procrastinationData.value = await $fetch<any[]>(`/api/workspaces/${store.workspace.id}/procrastination`)
+  } catch {
+    procrastinationData.value = []
+  } finally {
+    loadingMetrics.value = false
+  }
+}
+
+function toggleMetrics() {
+  showProcMetrics.value = !showProcMetrics.value
+  if (showProcMetrics.value && procrastinationData.value.length === 0) {
+    loadProcrastination()
+  }
+}
+
+function memberEmail(userId: string): string {
+  const m = members.value.find(m => m.user_id === userId)
+  return m?.email || userId.slice(0, 12) + '...'
+}
+
+function memberAvatarClass(userId: string): string {
+  const m = members.value.find(m => m.user_id === userId)
+  if (m?.isCurrentUser) return 'bg-focusflow-100 dark:bg-focusflow-500/10 text-focusflow-700 dark:text-focusflow-400'
+  return roleAvatarClass(m?.role || 'member')
+}
+
+function riskBarColor(score: number | null): string {
+  if (score === null) return 'bg-gray-300 dark:bg-gray-600'
+  if (score <= 30) return 'bg-focusflow-500'
+  if (score <= 60) return 'bg-amber-400'
+  return 'bg-rose-500'
+}
+
+function riskTextColor(score: number | null): string {
+  if (score === null) return 'text-gray-400'
+  if (score <= 30) return 'text-focusflow-600 dark:text-focusflow-400'
+  if (score <= 60) return 'text-amber-600 dark:text-amber-400'
+  return 'text-rose-600 dark:text-rose-400'
+}
+
+function riskBadgeClass(score: number): string {
+  if (score <= 30) return 'bg-focusflow-50 dark:bg-focusflow-500/10 text-focusflow-700 dark:text-focusflow-400'
+  if (score <= 60) return 'bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400'
+  return 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400'
+}
+
+function riskStrokeColor(score: number | null): string {
+  if (score === null) return '#d1d5db'
+  if (score <= 30) return '#14b8a6' // focusflow-500
+  if (score <= 60) return '#fbbf24' // amber-400
+  return '#f43f5e' // rose-500
+}
+
+function getMetrics(pm: any) {
+  return [
+    { label: t.value.overdueRate, value: pm.overdue_rate, desc: t.value.overdueRateDesc },
+    { label: t.value.lateCompletionRate, value: pm.late_completion_rate, desc: t.value.lateCompletionRateDesc },
+    { label: t.value.stagnationScore, value: pm.stagnation_score, desc: t.value.stagnationScoreDesc },
+    { label: t.value.effortGap, value: pm.effort_gap, desc: t.value.effortGapDesc },
+    ...(pm.quiz_score !== null ? [{ label: t.value.quizScore, value: pm.quiz_score, desc: t.value.quizScoreDesc }] : []),
+  ]
 }
 
 onUnmounted(() => {

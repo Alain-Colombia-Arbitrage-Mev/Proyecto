@@ -13,14 +13,19 @@ export default defineEventHandler(async (event) => {
 
   const supabase = serverSupabaseServiceRole(event)
 
-  const results = await searchMemories({
-    supabase,
-    workspaceId,
-    query,
-    agentType: agentType || null,
-    limit: typeof limit === 'number' ? Math.min(limit, 20) : 5,
-    threshold: typeof threshold === 'number' ? threshold : 0.65,
-  })
+  try {
+    const results = await searchMemories({
+      supabase,
+      workspaceId,
+      query,
+      agentType: agentType || null,
+      limit: typeof limit === 'number' ? Math.min(limit, 20) : 5,
+      threshold: typeof threshold === 'number' ? threshold : 0.65,
+    })
 
-  return { results }
+    return { results }
+  } catch (err: any) {
+    console.error('[memory/search] Error:', err.message || err)
+    throw createError({ statusCode: 500, message: 'Error searching memories' })
+  }
 })

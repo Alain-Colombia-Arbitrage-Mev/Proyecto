@@ -16,16 +16,21 @@ export default defineEventHandler(async (event) => {
 
   const supabase = serverSupabaseServiceRole(event)
 
-  await storeMemory({
-    supabase,
-    workspaceId,
-    contentText,
-    agentType: validAgentTypes.includes(agentType) ? agentType : 'memory',
-    contentType: validContentTypes.includes(contentType) ? contentType : 'chat',
-    projectId: projectId || null,
-    metadata: metadata || {},
-    createdBy: user.id,
-  })
+  try {
+    await storeMemory({
+      supabase,
+      workspaceId,
+      contentText,
+      agentType: validAgentTypes.includes(agentType) ? agentType : 'memory',
+      contentType: validContentTypes.includes(contentType) ? contentType : 'chat',
+      projectId: projectId || null,
+      metadata: metadata || {},
+      createdBy: user.id,
+    })
 
-  return { success: true }
+    return { success: true }
+  } catch (err: any) {
+    console.error('[memory/store] Error:', err.message || err)
+    throw createError({ statusCode: 500, message: 'Error storing memory' })
+  }
 })

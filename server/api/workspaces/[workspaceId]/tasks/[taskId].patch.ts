@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
   // Verify task belongs to a project in this workspace
   const { data: task } = await supabase
     .from('tasks')
-    .select('id, title, project_id, assignees, projects!inner(workspace_id)')
+    .select('id, title, project_id, column_id, assignees, projects!inner(workspace_id)')
     .eq('id', taskId)
     .maybeSingle()
 
@@ -37,10 +37,18 @@ export default defineEventHandler(async (event) => {
   if (body.position !== undefined) updates.position = body.position
   if (body.figma_links !== undefined) updates.figma_links = body.figma_links
 
+  // Track old column for history
+  const oldColumnId = (task as any).column_id as string | null
+
   if (body.column_id !== undefined) {
     updates.column_id = body.column_id
     updates.column_entered_at = new Date().toISOString()
     updates.last_activity_at = new Date().toISOString()
+  }
+
+  // Sprint assignment
+  if (body.sprint_id !== undefined) {
+    updates.sprint_id = body.sprint_id
   }
 
   const { data: updated, error } = await supabase
@@ -53,6 +61,28 @@ export default defineEventHandler(async (event) => {
   if (error) {
     console.error('[tasks.patch] Supabase update error:', error.message, error.details, error.hint)
     throw createError({ statusCode: 500, message: 'Error updating task' })
+  }
+
+  // Record column transition history (fire-and-forget)
+  if (body.column_id !== undefined && body.column_id !== oldColumnId) {
+    const now = new Date().toISOString()
+    // Close previous column entry
+    if (oldColumnId) {
+      supabase
+        .from('task_column_history')
+        .update({ exited_at: now })
+        .eq('task_id', taskId)
+        .eq('column_id', oldColumnId)
+        .is('exited_at', null)
+        .then(() => {})
+        .catch((err: any) => console.error('[tasks.patch] Error closing column history:', err))
+    }
+    // Open new column entry
+    supabase
+      .from('task_column_history')
+      .insert({ task_id: taskId, column_id: body.column_id, entered_at: now })
+      .then(() => {})
+      .catch((err: any) => console.error('[tasks.patch] Error inserting column history:', err))
   }
 
   // Notify newly added assignees (fire-and-forget)

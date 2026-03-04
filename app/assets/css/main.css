@@ -120,6 +120,16 @@
 }
 
 /* TipTap / ProseMirror */
+/* Gantt bar hover */
+.gantt-bar {
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+.gantt-bar:hover {
+  opacity: 1 !important;
+  transform: scaleY(1.15);
+  z-index: 5;
+}
+
 .ProseMirror {
   min-height: 80px;
 }

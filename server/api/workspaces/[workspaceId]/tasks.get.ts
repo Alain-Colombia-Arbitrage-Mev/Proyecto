@@ -12,6 +12,10 @@ export default defineEventHandler(async (event) => {
   const priority = query.priority as string | undefined
   const assignee = query.assignee as string | undefined
   const search = query.search as string | undefined
+  // parent_task_id: return only direct children of this task
+  const parentTaskId = query.parent_task_id as string | undefined
+  // top_level=true: return only root tasks (no parent). Ignored when parent_task_id is set.
+  const topLevel = !parentTaskId && (query.top_level === 'true' || query.top_level === '1')
   const page = Math.max(1, parseInt(query.page as string) || 1)
   const limit = Math.min(MAX_PER_PAGE, Math.max(1, parseInt(query.limit as string) || 50))
   const offset = (page - 1) * limit
@@ -39,6 +43,12 @@ export default defineEventHandler(async (event) => {
   if (priority) q = q.eq('priority', priority)
   if (assignee) q = q.contains('assignees', [assignee])
   if (search) q = q.ilike('title', `%${search}%`)
+  // Subtask hierarchy filters
+  if (parentTaskId) {
+    q = q.eq('parent_task_id', parentTaskId)
+  } else if (topLevel) {
+    q = q.is('parent_task_id', null)
+  }
 
   const { data, error, count } = await q
 
