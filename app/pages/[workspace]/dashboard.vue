@@ -691,8 +691,12 @@ async function loadAssessment() {
       assessmentScore.value = data.score
       assessmentAnalysis.value = data.ai_analysis || ''
     } else {
-      // No assessment yet — show quiz after a short delay
-      setTimeout(() => { showQuiz.value = true }, 1500)
+      // Only show quiz automatically on fresh login, not every dashboard visit
+      const justLoggedIn = sessionStorage.getItem('focusflow_just_logged_in')
+      if (justLoggedIn) {
+        sessionStorage.removeItem('focusflow_just_logged_in')
+        setTimeout(() => { showQuiz.value = true }, 1500)
+      }
     }
   } catch { /* silent */ }
 }

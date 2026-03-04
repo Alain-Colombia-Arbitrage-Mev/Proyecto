@@ -61,6 +61,7 @@ async function handleLogin() {
   errorMsg.value = ''
   try {
     await signIn(email.value, password.value)
+    sessionStorage.setItem('focusflow_just_logged_in', '1')
     await new Promise(r => setTimeout(r, 500))
     await router.push('/')
   } catch (e: any) {

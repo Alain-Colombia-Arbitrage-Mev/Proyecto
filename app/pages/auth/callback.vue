@@ -6,4 +6,8 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: false })
+
+onMounted(() => {
+  sessionStorage.setItem('focusflow_just_logged_in', '1')
+})
 </script>
