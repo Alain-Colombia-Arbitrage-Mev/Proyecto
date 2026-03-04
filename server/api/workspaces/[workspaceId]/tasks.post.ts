@@ -123,6 +123,7 @@ export default defineEventHandler(async (event) => {
   if (body.figma_links !== undefined) {
     insertPayload.figma_links = body.figma_links
   }
+  if (body.color !== undefined) insertPayload.color = body.color
 
   const { data: task, error } = await supabase
     .from('tasks')

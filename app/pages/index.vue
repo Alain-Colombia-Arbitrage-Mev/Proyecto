@@ -31,7 +31,7 @@ async function redirectToWorkspace() {
   const workspaces = await fetchWorkspacesWithRetry()
 
   if (workspaces && workspaces.length > 0) {
-    await router.push(`/${workspaces[0].slug}/projects`)
+    await router.push(`/${workspaces[0].slug}/dashboard`)
   } else if (workspaces && workspaces.length === 0) {
     await router.push('/onboarding')
   } else {
@@ -41,7 +41,7 @@ async function redirectToWorkspace() {
     try {
       const data = await $fetch<any[]>('/api/user/workspaces')
       if (data && data.length > 0) {
-        await router.push(`/${data[0].slug}/projects`)
+        await router.push(`/${data[0].slug}/dashboard`)
         return
       }
     } catch { /* */ }

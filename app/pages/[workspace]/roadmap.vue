@@ -198,7 +198,7 @@ const taskRowIndex = computed(() => {
   return map
 })
 
-const ROW_HEIGHT = 40
+const ROW_HEIGHT = 44
 
 // Dependency SVG paths
 const dependencyPaths = computed(() => {
@@ -463,8 +463,8 @@ function onSidebarScroll() {
                 class="w-3.5 h-3.5 text-gray-400 shrink-0"
               />
               <div class="w-2.5 h-2.5 rounded-full shrink-0" :style="{ backgroundColor: project.color || '#14b8a6' }" />
-              <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">{{ project.name }}</span>
-              <span class="text-[9px] text-gray-400 dark:text-gray-500 ml-auto shrink-0">{{ (tasksByProject.get(project.id) || []).length }}</span>
+              <span class="text-[13px] font-semibold text-gray-800 dark:text-gray-200 truncate">{{ project.name }}</span>
+              <span class="text-[10px] text-gray-400 dark:text-gray-500 ml-auto shrink-0">{{ (tasksByProject.get(project.id) || []).length }}</span>
             </div>
 
             <!-- Task rows -->
@@ -475,7 +475,7 @@ function onSidebarScroll() {
                 class="h-10 flex items-center gap-2 pl-8 pr-3 border-b border-gray-50 dark:border-white/[0.04] hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors group/task"
               >
                 <div class="w-1.5 h-1.5 rounded-full shrink-0" :class="priorityDotColor(task.priority || 'medium')" />
-                <span class="text-[11px] text-gray-600 dark:text-gray-400 truncate flex-1">{{ task.title }}</span>
+                <span class="text-xs text-gray-600 dark:text-gray-400 truncate flex-1">{{ task.title }}</span>
                 <!-- Quick action buttons (visible on hover) -->
                 <div class="flex items-center gap-0.5 opacity-0 group-hover/task:opacity-100 transition-opacity">
                   <button class="w-5 h-5 flex items-center justify-center rounded text-gray-400 hover:text-focusflow-500 cursor-pointer" @click.stop="openEditDate(task)" :title="labels.dueDate">
@@ -521,7 +521,7 @@ function onSidebarScroll() {
           <div
             v-for="slot in timeSlots"
             :key="slot.label"
-            class="shrink-0 flex items-center justify-center text-[11px] font-medium text-gray-500 dark:text-gray-400 border-r border-gray-100 dark:border-white/[0.06]"
+            class="shrink-0 flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-400 border-r border-gray-100 dark:border-white/[0.06]"
             :style="{ width: colWidth + 'px' }"
           >
             {{ slot.label }}
@@ -560,7 +560,7 @@ function onSidebarScroll() {
               <template v-if="item.type === 'project'">
                 <div
                   v-if="projects.find(p => p.id === item.id)"
-                  class="absolute h-6 rounded-lg opacity-30 gantt-bar"
+                  class="absolute h-7 rounded-lg opacity-30 gantt-bar"
                   :style="{
                     ...getBarStyle(projects.find(p => p.id === item.id)!.start_date, projects.find(p => p.id === item.id)!.end_date, projects.find(p => p.id === item.id)!.created_at),
                     backgroundColor: projects.find(p => p.id === item.id)!.color || '#14b8a6',
@@ -572,7 +572,7 @@ function onSidebarScroll() {
               <template v-if="item.type === 'task'">
                 <div
                   v-if="tasks.find(t => t.id === item.id)"
-                  class="absolute h-5 rounded-md gantt-bar group/bar select-none"
+                  class="absolute h-6 rounded-md gantt-bar group/bar select-none"
                   :class="[
                     priorityBarColor(tasks.find(t => t.id === item.id)!.priority || 'medium'),
                     drag?.active && drag.taskId === item.id ? 'opacity-90 shadow-lg z-30' : 'z-[15]',
@@ -583,7 +583,7 @@ function onSidebarScroll() {
                   @mousedown="onBarMouseDown($event, tasks.find(t => t.id === item.id)!, 'move')"
                 >
                   <!-- Bar content -->
-                  <span class="text-[9px] font-medium text-white px-1.5 truncate block leading-5 pointer-events-none">
+                  <span class="text-[11px] font-medium text-white px-2 truncate block leading-6 pointer-events-none">
                     {{ tasks.find(t => t.id === item.id)!.title }}
                   </span>
                   <!-- Right resize handle -->

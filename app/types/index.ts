@@ -89,6 +89,8 @@ export interface Task {
   ancestry?: string[]
   subtask_count?: number
   completed_subtask_count?: number
+  // Card color
+  color?: string
   // Sprint field (Phase 3)
   sprint_id?: string
 }
@@ -408,6 +410,21 @@ export interface GoalLink {
   goal_id: string
   entity_type: 'project' | 'task'
   entity_id: string
+  created_at: string
+}
+
+// ── Reserved Dates (Agenda) ──
+
+export type ReservedDateType = 'vacation' | 'personal' | 'busy'
+
+export interface ReservedDate {
+  id: string
+  workspace_id: string
+  user_id: string
+  title: string
+  start_at: string
+  end_at: string
+  type: ReservedDateType
   created_at: string
 }
 

@@ -1,5 +1,22 @@
 <template>
   <div>
+    <!-- Motivational Toast -->
+    <Transition name="toast-slide">
+      <div v-if="showMotivationalToast"
+        class="fixed top-20 right-4 z-50 max-w-xs bg-gradient-to-r from-focusflow-500 to-teal-500 text-white rounded-xl px-4 py-3 shadow-lg shadow-focusflow-500/20">
+        <div class="flex items-start gap-2">
+          <span class="text-lg shrink-0">&#x1F4AA;</span>
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-wider opacity-80">{{ t.motivationalToast }}</p>
+            <p class="text-sm font-medium mt-0.5">{{ motivationalToastQuote }}</p>
+          </div>
+          <button @click="showMotivationalToast = false" class="text-white/60 hover:text-white shrink-0 ml-1">
+            <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Header -->
     <div class="flex items-center justify-between mb-6 animate-fade-up">
       <div>
@@ -114,6 +131,29 @@
                   <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider" :class="priorityClasses(project.priority)">
                     {{ priorityLabel(project.priority) }}
                   </span>
+                </div>
+
+                <!-- Task counts -->
+                <div v-if="projectTaskCounts[project.id]" class="mt-3 pt-3 border-t border-gray-100 dark:border-white/5">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-3 text-[11px]">
+                      <span class="text-gray-500 dark:text-gray-400">
+                        <span class="font-bold text-gray-700 dark:text-gray-200 tabular-nums">{{ projectTaskCounts[project.id].total }}</span> {{ t.tasks }}
+                      </span>
+                      <span class="text-emerald-600 dark:text-emerald-400">
+                        <span class="font-bold tabular-nums">{{ projectTaskCounts[project.id].completed }}</span> {{ t.completed.toLowerCase() }}
+                      </span>
+                    </div>
+                    <span class="text-[10px] font-bold tabular-nums"
+                      :class="projectProgress(project.id) === 100 ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-gray-500'">
+                      {{ projectProgress(project.id) }}%
+                    </span>
+                  </div>
+                  <div class="h-1.5 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-500"
+                      :class="projectProgress(project.id) === 100 ? 'bg-emerald-500' : 'bg-focusflow-500'"
+                      :style="{ width: `${projectProgress(project.id)}%` }" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -495,6 +535,7 @@ async function handleDeleteProject() {
 const totalTasks = ref(0)
 const completedTaskCount = ref(0)
 const dueTodayCount = ref(0)
+const projectTaskCounts = ref<Record<string, { total: number; completed: number }>>({})
 
 // Generate stable random bar heights (decorative mini charts)
 function generateBarHeights() {
@@ -515,12 +556,20 @@ watch(() => store.workspace?.id, async (wsId) => {
       totalTasks: number
       completedTasks: number
       dueTodayTasks: number
+      projectTaskCounts: Record<string, { total: number; completed: number }>
     }>(`/api/workspaces/${wsId}/stats`)
     totalTasks.value = stats.totalTasks
     completedTaskCount.value = stats.completedTasks
     dueTodayCount.value = stats.dueTodayTasks
+    projectTaskCounts.value = stats.projectTaskCounts || {}
   } catch { /* silent */ }
 }, { immediate: true })
+
+function projectProgress(projectId: string): number {
+  const counts = projectTaskCounts.value[projectId]
+  if (!counts || counts.total === 0) return 0
+  return Math.round((counts.completed / counts.total) * 100)
+}
 
 const priorityOptions = computed(() => [
   { label: t.value.priorityLow, value: 'low' },
@@ -716,4 +765,55 @@ function priorityLabel(p: string) {
   const en = lang.language.value === 'en'
   return { critical: en ? 'Critical' : 'Crítica', high: en ? 'High' : 'Alta', medium: en ? 'Medium' : 'Media', low: en ? 'Low' : 'Baja' }[p] || p
 }
+
+// ── Motivational Toast ──
+const showMotivationalToast = ref(false)
+const motivationalQuotesEs = [
+  '¿Listo para conquistar tus proyectos?',
+  'Cada tarea completada es un paso hacia tu meta.',
+  'Empieza por lo más pequeño, el momentum hará el resto.',
+  'Tu yo del futuro te agradecerá empezar hoy.',
+  'La disciplina es elegir entre lo que quieres ahora y lo que más quieres.',
+  'No esperes el momento perfecto. Toma el momento y hazlo perfecto.',
+  'El progreso, no la perfección, es lo que importa.',
+  'Pequeños pasos consistentes crean grandes resultados.',
+]
+const motivationalQuotesEn = [
+  'Ready to conquer your projects?',
+  'Every completed task is a step toward your goal.',
+  'Start with the smallest thing, momentum will do the rest.',
+  'Your future self will thank you for starting today.',
+  'Discipline is choosing between what you want now and what you want most.',
+  "Don't wait for the perfect moment. Take the moment and make it perfect.",
+  'Progress, not perfection, is what matters.',
+  'Small consistent steps create big results.',
+]
+const motivationalToastQuote = computed(() => {
+  const quotes = lang.language.value === 'en' ? motivationalQuotesEn : motivationalQuotesEs
+  return quotes[Math.floor(Math.random() * quotes.length)]
+})
+
+onMounted(() => {
+  const key = 'focusflow_projects_toast_shown'
+  if (!sessionStorage.getItem(key)) {
+    sessionStorage.setItem(key, '1')
+    setTimeout(() => { showMotivationalToast.value = true }, 800)
+    setTimeout(() => { showMotivationalToast.value = false }, 4800)
+  }
+})
 </script>
+
+<style scoped>
+.toast-slide-enter-active,
+.toast-slide-leave-active {
+  transition: all 0.4s ease;
+}
+.toast-slide-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+.toast-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+</style>

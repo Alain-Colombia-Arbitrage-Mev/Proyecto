@@ -14,6 +14,39 @@ export default defineEventHandler(async (event) => {
 
   const supabase = serverSupabaseServiceRole(event)
 
+  // Check for conflicts with reserved dates
+  const attendees: string[] = body.attendees || []
+  if (attendees.length > 0 && body.scheduled_at) {
+    const meetingEnd = new Date(new Date(body.scheduled_at).getTime() + (body.duration_minutes || 30) * 60000).toISOString()
+
+    const { data: conflicts } = await supabase
+      .from('reserved_dates')
+      .select('id, user_id, title, type, start_at, end_at')
+      .eq('workspace_id', workspaceId)
+      .in('user_id', attendees)
+      .lt('start_at', meetingEnd)
+      .gt('end_at', body.scheduled_at)
+
+    if (conflicts && conflicts.length > 0) {
+      // Get emails for conflicting users
+      const conflictDetails = []
+      for (const c of conflicts) {
+        let email = c.user_id
+        try {
+          const { data: profile } = await supabase.auth.admin.getUserById(c.user_id)
+          email = profile?.user?.email || c.user_id
+        } catch {}
+        conflictDetails.push({ user: email, title: c.title, type: c.type, start_at: c.start_at, end_at: c.end_at })
+      }
+
+      throw createError({
+        statusCode: 409,
+        message: `Conflict: ${conflictDetails.map(c => `${c.user} (${c.type}: ${c.title})`).join(', ')}`,
+        data: { conflicts: conflictDetails },
+      })
+    }
+  }
+
   // Generate Google Meet link
   const meetingUrl = body.meeting_url || generateGoogleMeetLink()
 
@@ -59,8 +92,8 @@ export default defineEventHandler(async (event) => {
   }
 
   // Send email invitations to all attendees (fire-and-forget)
-  const attendees: string[] = meeting.attendees || []
-  for (const attendeeId of attendees) {
+  const meetingAttendees: string[] = meeting.attendees || []
+  for (const attendeeId of meetingAttendees) {
     if (attendeeId === user.id) continue
 
     const emailHtml = meetingInvitationEmailHtml({

@@ -559,6 +559,31 @@ export function useLanguage() {
       addDependency: en ? 'Add dependency' : 'Agregar dependencia',
       dependsOn: en ? 'Depends on' : 'Depende de',
       noDependencies: en ? 'No dependencies' : 'Sin dependencias',
+
+      // ── Agenda ──
+      agenda: en ? 'Agenda' : 'Agenda',
+      teamAgenda: en ? 'Team Agenda' : 'Agenda del Equipo',
+      blockTime: en ? 'Block time' : 'Bloquear tiempo',
+      reserveTime: en ? 'Reserve time' : 'Reservar tiempo',
+      reservedDates: en ? 'Reserved dates' : 'Fechas reservadas',
+      vacation: en ? 'Vacation' : 'Vacaciones',
+      personal: en ? 'Personal' : 'Personal',
+      busy: en ? 'Busy' : 'Ocupado',
+      noEventsDay: en ? 'No events' : 'Sin eventos',
+      conflict: en ? 'Conflict' : 'Conflicto',
+      conflictDetected: en ? 'Conflict detected: attendee has reserved time' : 'Conflicto detectado: participante tiene tiempo reservado',
+      tasksLabel: en ? 'Tasks' : 'Tareas',
+      meetingsLabel: en ? 'Meetings' : 'Reuniones',
+      reservedLabel: en ? 'Reserved' : 'Reservado',
+      prevWeek: en ? 'Previous week' : 'Semana anterior',
+      nextWeek: en ? 'Next week' : 'Semana siguiente',
+      weekOf: en ? 'Week of' : 'Semana del',
+      errorCreatingReservedDate: en ? 'Error creating reserved date' : 'Error al crear fecha reservada',
+      reservedDateCreated: en ? 'Time blocked successfully' : 'Tiempo bloqueado exitosamente',
+      deleteReservedDate: en ? 'Delete reserved date' : 'Eliminar fecha reservada',
+
+      // ── Motivational ──
+      motivationalToast: en ? 'Tip of the day' : 'Tip del día',
     }
   })
 

@@ -213,8 +213,9 @@
             v-for="task in filteredTasksByColumn(column.id)"
             :key="task.id"
             draggable="true"
-            class="group/card bg-white dark:bg-[#1b1b1b] rounded-xl p-2.5 sm:p-3.5 cursor-grab active:cursor-grabbing border border-gray-100 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30 transition-all duration-200 shadow-card hover:shadow-card-hover active:scale-[0.98] relative"
+            class="group/card bg-white dark:bg-[#1b1b1b] rounded-xl p-2.5 sm:p-3.5 cursor-grab active:cursor-grabbing border border-gray-100 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30 transition-all duration-200 shadow-card hover:shadow-card-hover active:scale-[0.98] relative overflow-hidden"
             :class="taskAgingClass(task)"
+            :style="task.color ? { borderLeftWidth: '4px', borderLeftColor: task.color } : {}"
             @dragstart="onDragStart($event, task)"
             @click="openTaskDetail(task)"
           >

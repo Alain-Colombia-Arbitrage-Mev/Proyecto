@@ -457,6 +457,7 @@ const savingProjects = ref(false)
 const procrastinationData = ref<any[]>([])
 const showProcMetrics = ref(false)
 const loadingMetrics = ref(false)
+const metricsLoaded = ref(false)
 
 const isAdmin = computed(() => auth.isAdmin || auth.isOwner || auth.isSuperadmin)
 const canSeeMetrics = computed(() => isAdmin.value)
@@ -497,15 +498,19 @@ function handleOutsideClick(e: MouseEvent) {
   }
 }
 
-onMounted(async () => {
+onMounted(() => {
   document.addEventListener('click', handleOutsideClick)
+})
+
+watch(() => store.workspace?.id, async (id) => {
+  if (!id) return
+  loading.value = true
   try {
-    if (!store.workspace) return
     await Promise.all([loadMembers(), loadAllProjects(), loadMeetings()])
   } catch { } finally {
     loading.value = false
   }
-})
+}, { immediate: true })
 
 async function loadAllProjects() {
   if (!store.workspace?.id) return
@@ -736,12 +741,13 @@ async function loadProcrastination() {
     procrastinationData.value = []
   } finally {
     loadingMetrics.value = false
+    metricsLoaded.value = true
   }
 }
 
 function toggleMetrics() {
   showProcMetrics.value = !showProcMetrics.value
-  if (showProcMetrics.value && procrastinationData.value.length === 0) {
+  if (showProcMetrics.value && !metricsLoaded.value) {
     loadProcrastination()
   }
 }

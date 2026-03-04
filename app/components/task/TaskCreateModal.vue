@@ -57,6 +57,30 @@
             </div>
           </UFormField>
 
+          <!-- Card Color -->
+          <UFormField :label="language === 'en' ? 'Card Color' : 'Color de tarjeta'">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button
+                type="button"
+                class="w-6 h-6 rounded-full border-2 transition-all cursor-pointer flex items-center justify-center"
+                :class="!form.color ? 'border-gray-400 dark:border-white/40 scale-110' : 'border-transparent hover:scale-105'"
+                @click="form.color = ''"
+                :title="language === 'en' ? 'No color' : 'Sin color'"
+              >
+                <UIcon name="i-heroicons-x-mark" class="w-3 h-3 text-gray-400" />
+              </button>
+              <button
+                v-for="c in cardColors"
+                :key="c"
+                type="button"
+                class="w-6 h-6 rounded-full border-2 transition-all cursor-pointer"
+                :class="form.color === c ? 'border-gray-900 dark:border-white scale-110' : 'border-transparent hover:scale-105'"
+                :style="{ backgroundColor: c }"
+                @click="form.color = c"
+              />
+            </div>
+          </UFormField>
+
           <!-- Figma Links -->
           <TaskFigmaLinks v-model="form.figma_links" />
 
@@ -99,7 +123,10 @@ const isOpen = computed({
 })
 
 const lang = useLanguage()
+const { language } = lang
 const t = lang.labels
+
+const cardColors = ['#3B82F6', '#8B5CF6', '#F59E0B', '#10B981', '#F97316', '#EF4444', '#EC4899', '#14B8A6', '#6366F1', '#84CC16']
 
 const creating = ref(false)
 const error = ref('')
@@ -113,6 +140,7 @@ const form = reactive({
   estimated_hours: '',
   assignees: [] as string[],
   figma_links: [] as FigmaLink[],
+  color: '',
   tagsStr: '',
 })
 
@@ -132,7 +160,7 @@ watch(() => props.open, (val) => {
     Object.assign(form, {
       title: '', description: '', priority: 'medium', due_date: '',
       column_id: props.columnId, estimated_hours: '', assignees: [],
-      figma_links: [], tagsStr: '',
+      figma_links: [], color: '', tagsStr: '',
     })
     error.value = ''
   }
@@ -169,6 +197,7 @@ async function handleCreate() {
         tags,
         assignees: form.assignees,
         figma_links: form.figma_links,
+        color: form.color || null,
       },
     })
     isOpen.value = false

@@ -35,6 +35,8 @@ export type Permission =
   | 'view_goals'
   | 'manage_goals'
   | 'view_roadmap'
+  | 'view_agenda'
+  | 'manage_reserved_dates'
 
 export const ALL_PERMISSIONS: Permission[] = [
   'view_tasks', 'create_tasks', 'edit_tasks', 'delete_tasks', 'import_tasks',
@@ -45,6 +47,7 @@ export const ALL_PERMISSIONS: Permission[] = [
   'manage_members', 'view_usage_stats', 'manage_workspace',
   'manage_comments', 'view_timesheets', 'manage_timesheets',
   'view_reports', 'manage_sprints', 'view_goals', 'manage_goals', 'view_roadmap',
+  'view_agenda', 'manage_reserved_dates',
 ]
 
 export const ALL_ROLES = ['viewer', 'marketing', 'member', 'admin', 'owner', 'superadmin'] as const
@@ -89,6 +92,8 @@ export const DEFAULT_PERMISSION_MIN_ROLE: Record<Permission, number> = {
   view_goals: 0,
   manage_goals: 2,
   view_roadmap: 0,
+  view_agenda: 1,
+  manage_reserved_dates: 1,
 }
 
 /**
@@ -139,6 +144,8 @@ export const PERMISSION_LABELS: Record<Permission, { en: string; es: string }> =
   view_goals: { en: 'View goals', es: 'Ver objetivos' },
   manage_goals: { en: 'Manage goals', es: 'Gestionar objetivos' },
   view_roadmap: { en: 'View roadmap', es: 'Ver roadmap' },
+  view_agenda: { en: 'View agenda', es: 'Ver agenda' },
+  manage_reserved_dates: { en: 'Manage reserved dates', es: 'Gestionar fechas reservadas' },
 }
 
 /**

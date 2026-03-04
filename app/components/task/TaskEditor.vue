@@ -1,7 +1,7 @@
 <template>
   <div class="task-editor">
     <!-- Toolbar -->
-    <div v-if="editable && editor" class="flex items-center gap-0.5 px-2 py-1.5 border-b border-gray-100 bg-gray-50/50 rounded-t-lg flex-wrap">
+    <div v-if="editable && editor" class="flex items-center gap-0.5 px-2 py-1.5 border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-white/[0.03] rounded-t-lg flex-wrap">
       <button type="button" class="toolbar-btn" :class="{ active: editor.isActive('bold') }" @click="editor.chain().focus().toggleBold().run()" title="Negrita">
         <UIcon name="i-heroicons-bold" class="w-3.5 h-3.5" />
       </button>
@@ -12,7 +12,7 @@
         <UIcon name="i-heroicons-strikethrough" class="w-3.5 h-3.5" />
       </button>
 
-      <div class="w-px h-4 bg-gray-200 mx-1" />
+      <div class="w-px h-4 bg-gray-200 dark:bg-white/10 mx-1" />
 
       <button type="button" class="toolbar-btn" :class="{ active: editor.isActive('heading', { level: 2 }) }" @click="editor.chain().focus().toggleHeading({ level: 2 }).run()" title="H2">
         <span class="text-[10px] font-bold">H2</span>
@@ -21,7 +21,7 @@
         <span class="text-[10px] font-bold">H3</span>
       </button>
 
-      <div class="w-px h-4 bg-gray-200 mx-1" />
+      <div class="w-px h-4 bg-gray-200 dark:bg-white/10 mx-1" />
 
       <button type="button" class="toolbar-btn" :class="{ active: editor.isActive('bulletList') }" @click="editor.chain().focus().toggleBulletList().run()" title="Lista">
         <UIcon name="i-heroicons-list-bullet" class="w-3.5 h-3.5" />
@@ -30,7 +30,7 @@
         <UIcon name="i-heroicons-numbered-list" class="w-3.5 h-3.5" />
       </button>
 
-      <div class="w-px h-4 bg-gray-200 mx-1" />
+      <div class="w-px h-4 bg-gray-200 dark:bg-white/10 mx-1" />
 
       <button type="button" class="toolbar-btn" :class="{ active: editor.isActive('codeBlock') }" @click="editor.chain().focus().toggleCodeBlock().run()" title="Bloque de código">
         <UIcon name="i-heroicons-code-bracket" class="w-3.5 h-3.5" />
@@ -39,7 +39,7 @@
         <UIcon name="i-heroicons-chat-bubble-bottom-center-text" class="w-3.5 h-3.5" />
       </button>
 
-      <div class="w-px h-4 bg-gray-200 mx-1" />
+      <div class="w-px h-4 bg-gray-200 dark:bg-white/10 mx-1" />
 
       <button type="button" class="toolbar-btn" @click="triggerImageUpload" title="Insertar imagen">
         <UIcon name="i-heroicons-photo" class="w-3.5 h-3.5" />
@@ -193,6 +193,11 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
+:root.dark .task-editor {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: #1b1b1b;
+}
+
 .toolbar-btn {
   display: inline-flex;
   align-items: center;
@@ -210,8 +215,20 @@ onBeforeUnmount(() => {
   background: #e5e7eb;
   color: #111827;
 }
+:root.dark .toolbar-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e5e7eb;
+}
 .toolbar-btn.active {
   background: #0d9488;
   color: white;
+}
+
+/* Editor content dark mode */
+:root.dark .task-editor-content :deep(.ProseMirror) {
+  color: #e5e7eb;
+}
+:root.dark .task-editor-content :deep(.ProseMirror p.is-editor-empty:first-child::before) {
+  color: #6b7280;
 }
 </style>

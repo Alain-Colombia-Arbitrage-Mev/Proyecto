@@ -36,6 +36,7 @@ export default defineEventHandler(async (event) => {
   if (body.tags !== undefined) updates.tags = body.tags
   if (body.position !== undefined) updates.position = body.position
   if (body.figma_links !== undefined) updates.figma_links = body.figma_links
+  if (body.color !== undefined) updates.color = body.color
 
   // Track old column for history
   const oldColumnId = (task as any).column_id as string | null
@@ -74,15 +75,13 @@ export default defineEventHandler(async (event) => {
         .eq('task_id', taskId)
         .eq('column_id', oldColumnId)
         .is('exited_at', null)
-        .then(() => {})
-        .catch((err: any) => console.error('[tasks.patch] Error closing column history:', err))
+        .then(() => {}, (err: any) => console.error('[tasks.patch] Error closing column history:', err))
     }
     // Open new column entry
     supabase
       .from('task_column_history')
       .insert({ task_id: taskId, column_id: body.column_id, entered_at: now })
-      .then(() => {})
-      .catch((err: any) => console.error('[tasks.patch] Error inserting column history:', err))
+      .then(() => {}, (err: any) => console.error('[tasks.patch] Error inserting column history:', err))
   }
 
   // Notify newly added assignees (fire-and-forget)

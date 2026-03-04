@@ -90,7 +90,7 @@ export default defineEventHandler(async (event) => {
   for (const row of (historyRows || [])) {
     if (!columnSet.has(row.column_id)) continue
     if (!taskIntervals[row.task_id]) taskIntervals[row.task_id] = []
-    taskIntervals[row.task_id].push({
+    taskIntervals[row.task_id]!.push({
       column_id: row.column_id,
       entered_at: new Date(row.entered_at),
       exited_at: row.exited_at ? new Date(row.exited_at) : null,
@@ -127,7 +127,7 @@ export default defineEventHandler(async (event) => {
       }
 
       if (activeColumnId && colCountsByDate[dateStr]?.[activeColumnId] !== undefined) {
-        colCountsByDate[dateStr][activeColumnId]++
+        colCountsByDate[dateStr]![activeColumnId]++
       }
     }
   }

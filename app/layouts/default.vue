@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-white dark:bg-[#111] transition-colors">
     <!-- Desktop Sidebar -->
     <aside
-      class="hidden md:flex fixed inset-y-0 left-0 z-30 flex-col bg-gradient-to-b from-[#0d0d0d] via-[#111] to-[#0a0a0a] transition-all duration-300 ease-out"
+      class="hidden md:flex fixed inset-y-0 left-0 z-30 flex-col bg-[#0d0d0d]/80 backdrop-blur-xl border-r border-white/10 transition-all duration-300 ease-out"
       :class="collapsed ? 'w-[68px]' : 'w-[252px]'"
     >
       <!-- Logo + workspace -->
@@ -115,7 +115,7 @@
     </aside>
 
     <!-- Mobile Header -->
-    <header class="md:hidden fixed top-0 inset-x-0 z-30 h-14 flex items-center justify-between px-4 bg-white/95 dark:bg-[#111]/95 backdrop-blur-sm border-b border-gray-100 dark:border-white/10">
+    <header class="md:hidden fixed top-0 inset-x-0 z-30 h-14 flex items-center justify-between px-4 bg-white/80 dark:bg-[#111]/80 backdrop-blur-xl border-b border-gray-200 dark:border-white/10">
       <div class="flex items-center gap-2.5">
         <div class="w-7 h-7 rounded-lg bg-focusflow-600 flex items-center justify-center">
           <span class="text-white font-bold text-xs" style="font-family: 'Space Mono', monospace;">F</span>
@@ -142,7 +142,7 @@
     <Transition name="slide-up">
       <div
         v-if="pomodoro.activeTask.value && pomodoro.running.value"
-        class="fixed bottom-24 md:bottom-6 right-4 md:right-20 z-40 flex items-center gap-2 bg-white/95 dark:bg-[#1b1b1b]/95 backdrop-blur-sm border border-emerald-200 dark:border-[#75fc96]/20 rounded-full pl-3 pr-1.5 py-1.5 shadow-lg"
+        class="fixed bottom-24 md:bottom-6 right-4 md:right-20 z-40 flex items-center gap-2 bg-white/80 dark:bg-[#1b1b1b]/80 backdrop-blur-xl border border-emerald-200 dark:border-[#75fc96]/20 rounded-full pl-3 pr-1.5 py-1.5 shadow-lg shadow-emerald-500/10"
       >
         <span class="text-sm">&#x23F1;</span>
         <span class="text-[11px] font-medium text-gray-700 dark:text-gray-300 max-w-[120px] truncate">{{ pomodoro.activeTask.value.title }}</span>
@@ -164,7 +164,7 @@
     <LofiPlayer />
 
     <!-- Mobile Bottom Nav -->
-    <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 dark:bg-[#111]/95 backdrop-blur-sm border-t border-gray-100 dark:border-white/10">
+    <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/80 dark:bg-[#111]/80 backdrop-blur-xl border-t border-gray-200 dark:border-white/10">
       <div class="flex items-stretch justify-around h-14 px-1">
         <NuxtLink
           v-for="item in mobileNav"
@@ -190,11 +190,11 @@ const auth = useAuthStore()
 const pomodoro = usePomodoroTimer()
 const { labels: tRef } = useLanguage()
 const t = tRef
-const { canUseAI, canManageMembers, canViewUsageStats, canViewTimesheets, canViewGoals, canViewRoadmap } = usePermissions()
+const { canUseAI, canManageMembers, canViewUsageStats, canViewTimesheets, canViewGoals, canViewRoadmap, canViewAgenda } = usePermissions()
 
 const collapsed = ref(false)
 
-const workspaceSlug = computed(() => (route.params.workspace as string) || '')
+const workspaceSlug = computed(() => (route.params.workspace as string) || store.slug || '')
 
 watch(workspaceSlug, async (slug) => {
   if (slug) {
@@ -218,6 +218,7 @@ const allNav = computed(() => [
   { label: t.value.files, icon: 'i-heroicons-document-duplicate', to: `/${workspaceSlug.value}/files`, show: true },
   { label: t.value.goals, icon: 'i-heroicons-flag', to: `/${workspaceSlug.value}/goals`, show: canViewGoals.value },
   { label: t.value.roadmap, icon: 'i-heroicons-map', to: `/${workspaceSlug.value}/roadmap`, show: canViewRoadmap.value },
+  { label: t.value.agenda, icon: 'i-heroicons-calendar-days', to: `/${workspaceSlug.value}/agenda`, show: canViewAgenda.value },
   { label: t.value.team, icon: 'i-heroicons-user-group', to: `/${workspaceSlug.value}/team`, show: canManageMembers.value },
   { label: t.value.settings, icon: 'i-heroicons-cog-6-tooth', to: `/${workspaceSlug.value}/settings`, show: true },
 ])

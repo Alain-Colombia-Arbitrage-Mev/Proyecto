@@ -2,6 +2,7 @@ export default defineNuxtConfig({
   future: { compatibilityVersion: 4 },
   modules: ['@nuxt/ui', '@pinia/nuxt', '@nuxtjs/supabase'],
   components: [
+    { path: '~/components/inspira', prefix: 'Inspira', pathPrefix: false },
     { path: '~/components', pathPrefix: false },
   ],
   css: ['~/assets/css/main.css'],
@@ -61,5 +62,10 @@ export default defineNuxtConfig({
     },
   },
   colorMode: { preference: 'system', fallback: 'light', classSuffix: '' },
+  vite: {
+    optimizeDeps: {
+      exclude: ['@vueuse/core', '@vueuse/shared'],
+    },
+  },
   devtools: { enabled: true },
 })

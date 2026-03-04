@@ -65,12 +65,18 @@
                       class="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer flex items-center gap-0.5"
                       :class="descLang === 'es' ? 'bg-white dark:bg-white/15 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-400 dark:text-[#99a0ae]'"
                       @click="descLang = 'es'"
-                    ><span class="text-xs">🇪🇸</span>ES</button>
+                    >
+                      <svg class="w-3.5 h-2.5 rounded-[1px]" viewBox="0 0 640 480"><rect width="640" height="480" fill="#c60b1e"/><rect width="640" height="240" y="120" fill="#ffc400"/></svg>
+                      ES
+                    </button>
                     <button
                       class="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer flex items-center gap-0.5"
                       :class="descLang === 'en' ? 'bg-white dark:bg-white/15 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-400 dark:text-[#99a0ae]'"
                       @click="descLang = 'en'"
-                    ><span class="text-xs">🇺🇸</span>EN</button>
+                    >
+                      <svg class="w-3.5 h-2.5 rounded-[1px]" viewBox="0 0 640 480"><rect width="640" height="480" fill="#fff"/><g fill="#b22234"><rect width="640" height="37"/><rect width="640" height="37" y="74"/><rect width="640" height="37" y="148"/><rect width="640" height="37" y="222"/><rect width="640" height="37" y="296"/><rect width="640" height="37" y="370"/><rect width="640" height="37" y="444"/></g><rect width="256" height="259" fill="#3c3b6e"/></svg>
+                      EN
+                    </button>
                   </div>
                 </div>
                 <LazyTaskEditor
@@ -173,6 +179,31 @@
                 <UInput v-model="editForm.estimated_hours" type="number" step="0.5" :placeholder="lang.labels.value.noEstimate" class="w-full" size="sm" />
               </div>
 
+              <!-- Card Color -->
+              <div>
+                <label class="text-[11px] font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide block mb-1.5">{{ language === 'en' ? 'Card Color' : 'Color de tarjeta' }}</label>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <button
+                    type="button"
+                    class="w-6 h-6 rounded-full border-2 transition-all cursor-pointer flex items-center justify-center"
+                    :class="!editForm.color ? 'border-gray-400 dark:border-white/40 scale-110' : 'border-transparent hover:scale-105'"
+                    @click="editForm.color = ''"
+                    :title="language === 'en' ? 'No color' : 'Sin color'"
+                  >
+                    <UIcon name="i-heroicons-x-mark" class="w-3 h-3 text-gray-400" />
+                  </button>
+                  <button
+                    v-for="c in cardColors"
+                    :key="c"
+                    type="button"
+                    class="w-6 h-6 rounded-full border-2 transition-all cursor-pointer"
+                    :class="editForm.color === c ? 'border-gray-900 dark:border-white scale-110' : 'border-transparent hover:scale-105'"
+                    :style="{ backgroundColor: c }"
+                    @click="editForm.color = c"
+                  />
+                </div>
+              </div>
+
               <!-- Tags -->
               <div>
                 <label class="text-[11px] font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide block mb-1.5">{{ lang.labels.value.tags }}</label>
@@ -259,7 +290,10 @@ const editForm = reactive({
   tagsStr: '',
   assignees: [] as string[],
   figma_links: [] as FigmaLink[],
+  color: '',
 })
+
+const cardColors = ['#3B82F6', '#8B5CF6', '#F59E0B', '#10B981', '#F97316', '#EF4444', '#EC4899', '#14B8A6', '#6366F1', '#84CC16']
 
 const priorityOptions = computed(() => [
   { label: lang.labels.value.priorityLow, value: 'low' },
@@ -288,6 +322,7 @@ watch(() => props.task, (t) => {
     tagsStr: (t.tags || []).join(', '),
     assignees: [...(t.assignees || [])],
     figma_links: [...(t.figma_links || [])],
+    color: (t as any).color || '',
   })
   selectedLabelIds.value = (t.labels || []).map(l => l.id)
   editingTitle.value = false
@@ -329,6 +364,7 @@ async function handleSave() {
         tags,
         assignees: editForm.assignees,
         figma_links: editForm.figma_links,
+        color: editForm.color || null,
       },
     })
     isOpen.value = false

@@ -83,7 +83,7 @@ export default defineEventHandler(async (event) => {
     const hours = (exitedMs - enteredMs) / 3_600_000
 
     if (!hoursByColumn[row.column_id]) hoursByColumn[row.column_id] = []
-    hoursByColumn[row.column_id].push(hours)
+    hoursByColumn[row.column_id]!.push(hours)
 
     totalHoursAll += hours
     totalCountAll++
