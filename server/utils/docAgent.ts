@@ -94,113 +94,33 @@ export function createSessionId(): string {
 
 /** Build a specialized system prompt for a doc agent */
 export function buildDocAgentSystemPrompt(config: DocAgentConfig, extraContext?: string): string {
+  // Shared JSON schema for all doc agents
+  const JSON_SCHEMA = `JSON:{title,summary,sections:[{heading,content}],diagrams:[{type,description}],risks:[],recommendations:[]}`
+
   const basePrompts: Record<string, string> = {
-    doc_backend_architecture: `Eres un arquitecto backend senior con 15+ años de experiencia en sistemas distribuidos, APIs REST/GraphQL, microservicios y bases de datos.
-Analiza la estructura del workspace y genera un documento técnico exhaustivo de arquitectura backend en español.
+    doc_backend_architecture: `Arquitecto backend senior. Doc técnica ES.
+${JSON_SCHEMA}
+Secciones: 1.Arquitectura General(stack,patrones,carpetas) 2.APIs(REST,auth,rate limiting) 3.Modelo Datos(DB,relaciones,migraciones,RLS) 4.Auth(roles,permisos,JWT,OAuth) 5.Errores(HTTP codes,logging,retry) 6.Performance(caché,queries,pooling) 7.Testing(unit,integration,mocks) 8.Seguridad(OWASP,inputs,CORS,secrets)`,
 
-Responde en JSON con:
-- "title": string (título del documento)
-- "summary": string (resumen ejecutivo, 2-3 líneas)
-- "sections": array de { "heading": string, "content": string }
-  Incluye estas secciones:
-  1. Arquitectura General — stack tecnológico, patrones de diseño (MVC/Clean Architecture), estructura de carpetas
-  2. APIs & Endpoints — diseño de API REST, versionado, autenticación, rate limiting, documentación OpenAPI
-  3. Modelo de Datos — esquema de base de datos, relaciones, índices, migraciones, RLS
-  4. Autenticación & Autorización — flujos de auth, roles, permisos, JWT/sessions, OAuth
-  5. Manejo de Errores — estrategia de errores, códigos HTTP, logging, retry policies
-  6. Performance & Caching — estrategia de caché, query optimization, connection pooling
-  7. Testing — unit tests, integration tests, mocks, fixtures, cobertura
-  8. Seguridad — OWASP top 10, validación de inputs, CORS, CSP, secrets management
-- "diagrams": array de { "type": string, "description": string }
-- "risks": string[] (riesgos técnicos identificados)
-- "recommendations": string[] (mejoras priorizadas por impacto)`,
+    doc_aws_expert: `AWS Solutions Architect. Doc infra AWS ES.
+${JSON_SCHEMA}
+Secciones: 1.Visión General(servicios,regiones) 2.Compute(EC2/ECS/Lambda,scaling) 3.Networking(VPC,ALB,CloudFront) 4.Storage&DB(RDS,S3,ElastiCache) 5.Seguridad(IAM,KMS,WAF) 6.Monitoreo(CloudWatch,X-Ray,alertas) 7.CI/CD(CodePipeline,ECR) 8.Costos(Reserved,Savings) 9.DR(RPO/RTO,multi-AZ)`,
 
-    doc_aws_expert: `Eres un AWS Solutions Architect Professional con experiencia en Well-Architected Framework.
-Analiza el workspace y genera un documento de infraestructura AWS completo en español.
+    doc_frontend_design: `Frontend architect senior Vue/Nuxt/Tailwind. Doc diseño frontend ES.
+${JSON_SCHEMA}
+Secciones: 1.Stack(Vue3+Nuxt3+Tailwind+Pinia) 2.Componentes(árbol,composables,layouts) 3.Design System(tokens,colores,tipografía) 4.State(Pinia,reactivity) 5.Routing(pages,middleware,guards) 6.Performance(lazy load,code split,CWV) 7.Responsive&A11y(breakpoints,ARIA) 8.Testing(Vitest,vue/test-utils)`,
 
-Responde en JSON con:
-- "title": string
-- "summary": string
-- "sections": array de { "heading": string, "content": string }
-  Incluye:
-  1. Visión General AWS — servicios utilizados/recomendados, regiones, cuentas
-  2. Compute — EC2/ECS/Lambda, auto-scaling, spot instances, sizing
-  3. Networking — VPC, subnets, security groups, ALB/NLB, CloudFront, Route 53
-  4. Storage & Database — RDS/Aurora, DynamoDB, S3, ElastiCache, backups
-  5. Seguridad — IAM, KMS, Secrets Manager, WAF, GuardDuty, SCPs
-  6. Monitoreo — CloudWatch, X-Ray, CloudTrail, alertas, dashboards
-  7. CI/CD — CodePipeline, CodeBuild, ECR, deployment strategies
-  8. Costos — Cost Explorer, Reserved Instances, Savings Plans, tagging strategy
-  9. Disaster Recovery — RPO/RTO, multi-AZ, cross-region, backups
-- "diagrams": array de { "type": string, "description": string }
-- "risks": string[]
-- "recommendations": string[]`,
+    doc_marketing: `CMO marketing digital SaaS. Doc estrategia marketing ES.
+${JSON_SCHEMA}
+Secciones: 1.Mercado(TAM/SAM/SOM,competencia) 2.Personas(perfiles,pain points) 3.Contenido(blog,SEO,calendar) 4.Canales(orgánico,paid,referrals) 5.Funnel(awareness→conversion→retention) 6.KPIs(CAC,LTV,MRR,churn) 7.Email(onboarding,nurture) 8.Roadmap(fases growth,budget)`,
 
-    doc_frontend_design: `Eres un frontend architect senior especializado en Vue.js, Nuxt, Tailwind CSS y sistemas de diseño.
-Genera un documento de diseño frontend completo en español, usando la documentación real de las librerías proporcionada.
-
-Responde en JSON con:
-- "title": string
-- "summary": string
-- "sections": array de { "heading": string, "content": string }
-  Incluye:
-  1. Stack Frontend — Vue 3 + Nuxt 3 + Tailwind CSS + Pinia, justificación de cada elección
-  2. Estructura de Componentes — árbol de componentes, composables, layouts, páginas
-  3. Sistema de Diseño — design tokens, paleta de colores, tipografía, espaciado, componentes base
-  4. State Management — Pinia stores, composables, reactivity patterns
-  5. Routing & Navigation — páginas, layouts, middleware, guards
-  6. Performance — lazy loading, code splitting, image optimization, Core Web Vitals
-  7. Responsive & Accesibilidad — breakpoints, mobile-first, ARIA, a11y testing
-  8. Testing Frontend — component testing, Vitest, @vue/test-utils, snapshot testing
-- "diagrams": array de { "type": string, "description": string }
-- "risks": string[]
-- "recommendations": string[]`,
-
-    doc_marketing: `Eres un CMO y estratega de marketing digital con experiencia en SaaS B2B/B2C y growth hacking.
-Genera un documento de estrategia de marketing completo en español.
-
-Responde en JSON con:
-- "title": string
-- "summary": string
-- "sections": array de { "heading": string, "content": string }
-  Incluye:
-  1. Análisis de Mercado — TAM/SAM/SOM, competencia, diferenciadores, positioning
-  2. Buyer Personas — perfiles de usuario ideal, pain points, jobs-to-be-done
-  3. Estrategia de Contenido — blog, docs, tutorials, SEO, content calendar
-  4. Canales de Adquisición — orgánico, paid, referrals, partnerships, communities
-  5. Funnel & Conversión — awareness → consideration → conversion → retention
-  6. Métricas & KPIs — CAC, LTV, MRR, churn, NPS, activation rate
-  7. Email Marketing — onboarding sequences, nurture flows, re-engagement
-  8. Roadmap de Crecimiento — fases de growth, milestones, budget allocation
-- "diagrams": array de { "type": string, "description": string }
-- "risks": string[]
-- "recommendations": string[]`,
-
-    doc_ai_agents: `Eres un AI/ML engineer senior especializado en sistemas de agentes, RAG, embeddings y prompt engineering.
-Documenta el sistema de agentes AI del workspace en español.
-
-Responde en JSON con:
-- "title": string
-- "summary": string
-- "sections": array de { "heading": string, "content": string }
-  Incluye:
-  1. Arquitectura del Sistema AI — modelos, APIs, flujo de datos, arquitectura general
-  2. Agentes & Acciones — catálogo de agentes, acciones disponibles, inputs/outputs
-  3. Prompt Engineering — diseño de prompts, templates, variables, optimización
-  4. RAG & Memoria — embeddings, vector search, almacenamiento, retrieval strategies
-  5. Modelo de Tokens — tracking, límites, costos, optimización de consumo
-  6. Context7 & Documentación — integración con APIs externas de documentación
-  7. Post-procesamiento — generación de documentos, tareas, archivos .md
-  8. Mejoras & Roadmap — futuras mejoras, fine-tuning, evaluación de modelos
-- "diagrams": array de { "type": string, "description": string }
-- "risks": string[]
-- "recommendations": string[]`,
+    doc_ai_agents: `AI/ML engineer senior. Doc sistema agentes AI ES.
+${JSON_SCHEMA}
+Secciones: 1.Arquitectura AI(modelos,APIs,flujo) 2.Agentes(catálogo,acciones,I/O) 3.Prompts(diseño,templates,optimización) 4.RAG&Memoria(embeddings,vector search) 5.Tokens(tracking,límites,costos) 6.Context7(APIs externas) 7.Post-proceso(docs,tareas,.md) 8.Roadmap(mejoras,fine-tuning)`,
   }
 
   let prompt = basePrompts[config.action] || basePrompts.doc_backend_architecture!
-
-  prompt += `\n\nSé específico y técnico. Basa tus recomendaciones en los datos reales del workspace.
-Responde SOLO con el JSON object, sin markdown ni texto extra. No uses <think> tags.`
+  prompt += `\nEspecífico, basado en datos reales. Solo JSON.`
 
   if (extraContext) {
     prompt += `\n\nContexto adicional de librerías/frameworks:\n${extraContext}`
@@ -341,21 +261,11 @@ tags: [${config.tags.join(', ')}]
           messages: [
             {
               role: 'system',
-              content: `Eres un tech lead senior. Basándote en el documento generado por el agente "${config.name}", crea tareas accionables.
-
-Genera exactamente 6 tareas en formato JSON array. Cada tarea:
-- "title": string (acción concreta en español)
-- "description": string (2-3 líneas con pasos y criterios de aceptación)
-- "priority": "low" | "medium" | "high" | "critical"
-- "tags": string[] (2-3 tags relevantes de: ${config.tags.join(', ')})
-- "estimated_hours": number
-
-Las tareas deben ser específicas al área de ${config.name}.
-Responde SOLO con el JSON array, sin markdown, sin texto extra, sin <think> tags.`,
+              content: `Tech lead. 6 tareas JSON array del doc "${config.name}": [{title,description,priority,tags:[],estimated_hours}]. Tags: ${config.tags.join(',')}. ES. Solo JSON.`,
             },
             {
               role: 'user',
-              content: `Documento generado:\nTítulo: ${docTitle}\nResumen: ${docSummary || ''}\nSecciones: ${(docContent.sections as any[]).map((s: any) => s.heading).join(', ')}\nRiesgos: ${(docContent.risks as string[]).join(', ')}\nRecomendaciones: ${(docContent.recommendations as string[]).join(', ')}`,
+              content: `${docTitle}|${docSummary || ''}|S:${(docContent.sections as any[]).map((s: any) => s.heading).join(',')}`,
             },
           ],
           temperature: 0.7,
