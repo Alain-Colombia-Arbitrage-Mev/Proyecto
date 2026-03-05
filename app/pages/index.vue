@@ -15,7 +15,9 @@ async function fetchWorkspacesWithRetry(): Promise<any[] | null> {
       const data = await $fetch<any[]>('/api/user/workspaces')
       return data
     } catch (e: any) {
-      console.warn(`[index] Attempt ${attempt + 1} failed:`, e.statusCode || e.message)
+      const status = e.statusCode || e.status
+      if (status === 401) return null
+      console.warn(`[index] Attempt ${attempt + 1} failed:`, status || e.message)
       if (attempt < 3) {
         await new Promise(r => setTimeout(r, 600 * (attempt + 1)))
       }

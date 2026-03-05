@@ -794,7 +794,7 @@ const projectBars = computed(() => {
   const maxTasks = Math.max(...projects.map(p => (p as any)._taskCount || 1), 1)
   return projects.map(p => ({
     name: p.name,
-    height: Math.max(((p as any)._taskCount || Math.floor(Math.random() * 50 + 10)) / maxTasks * 100, 5),
+    height: Math.max(((p as any)._taskCount || 10) / maxTasks * 100, 5),
   }))
 })
 
@@ -869,8 +869,14 @@ const motivationalQuotesEn = [
   'Your only limit is your mind. Break the barriers.',
   'Consistency beats talent when talent is not consistent.',
 ]
-const currentQuoteIndex = ref(Math.floor(Math.random() * motivationalQuotesEs.length))
+const currentQuoteIndex = ref(0)
+const quoteReady = ref(false)
+onMounted(() => {
+  currentQuoteIndex.value = Math.floor(Math.random() * motivationalQuotesEs.length)
+  quoteReady.value = true
+})
 const motivationalQuote = computed(() => {
+  if (!quoteReady.value) return '\u00A0'
   const quotes = lang.language.value === 'en' ? motivationalQuotesEn : motivationalQuotesEs
   return quotes[currentQuoteIndex.value % quotes.length]
 })
@@ -894,17 +900,17 @@ const topActions = computed(() => {
   return Object.fromEntries(sorted)
 })
 
-const todayStr = new Date().toISOString().slice(0, 10)
-const yesterdayStr = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+const todayStr = computed(() => new Date().toISOString().slice(0, 10))
+const yesterdayStr = computed(() => new Date(Date.now() - 86400000).toISOString().slice(0, 10))
 
 const todayTokens = computed(() => {
   if (!tokenStats.value?.byDay) return 0
-  return tokenStats.value.byDay.find(d => d.date === todayStr)?.tokens || 0
+  return tokenStats.value.byDay.find(d => d.date === todayStr.value)?.tokens || 0
 })
 
 const yesterdayTokens = computed(() => {
   if (!tokenStats.value?.byDay) return 0
-  return tokenStats.value.byDay.find(d => d.date === yesterdayStr)?.tokens || 0
+  return tokenStats.value.byDay.find(d => d.date === yesterdayStr.value)?.tokens || 0
 })
 
 const last7Days = computed(() => {

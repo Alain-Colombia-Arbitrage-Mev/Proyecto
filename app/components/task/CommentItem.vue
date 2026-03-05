@@ -25,7 +25,11 @@ const authorInitial = computed(() => authorName.value[0]?.toUpperCase() || '?')
 
 const canModify = computed(() => props.comment.user_id === props.currentUserId || props.isAdmin)
 
+const mounted = ref(false)
+onMounted(() => { mounted.value = true })
+
 const timeAgo = computed(() => {
+  if (!mounted.value) return ''
   const diff = Date.now() - new Date(props.comment.created_at).getTime()
   const mins = Math.floor(diff / 60000)
   if (mins < 1) return labels.value.now

@@ -18,10 +18,13 @@ const saving = ref(false)
 
 const form = reactive({
   description: props.entry?.description || '',
-  start_time: props.entry?.start_time ? props.entry.start_time.slice(0, 16) : new Date().toISOString().slice(0, 16),
+  start_time: props.entry?.start_time ? props.entry.start_time.slice(0, 16) : '',
   end_time: props.entry?.end_time ? props.entry.end_time.slice(0, 16) : '',
   duration_minutes: props.entry?.duration_minutes || '',
   billable: props.entry?.billable ?? true,
+})
+onMounted(() => {
+  if (!form.start_time) form.start_time = new Date().toISOString().slice(0, 16)
 })
 
 async function save() {

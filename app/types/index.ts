@@ -403,6 +403,7 @@ export interface Goal {
   status: GoalStatus
   owner_id?: string
   created_at: string
+  goal_links?: GoalLink[]
 }
 
 export interface GoalLink {

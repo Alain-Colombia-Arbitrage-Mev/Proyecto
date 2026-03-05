@@ -537,15 +537,12 @@ const completedTaskCount = ref(0)
 const dueTodayCount = ref(0)
 const projectTaskCounts = ref<Record<string, { total: number; completed: number }>>({})
 
-// Generate stable random bar heights (decorative mini charts)
-function generateBarHeights() {
-  return Array.from({ length: 7 }, () => Math.round(20 + Math.random() * 80))
-}
+// Stable decorative mini chart heights (avoid Math.random in SSR)
 const barHeights = reactive({
-  projects: generateBarHeights(),
-  tasks: generateBarHeights(),
-  dueToday: generateBarHeights(),
-  completed: generateBarHeights(),
+  projects: [45, 72, 33, 88, 56, 67, 41],
+  tasks: [62, 38, 81, 50, 73, 29, 55],
+  dueToday: [34, 67, 52, 78, 43, 91, 60],
+  completed: [71, 45, 83, 37, 64, 52, 76],
 })
 
 // Load stats via server API to avoid RLS issues with direct client queries
@@ -788,9 +785,11 @@ const motivationalQuotesEn = [
   'Progress, not perfection, is what matters.',
   'Small consistent steps create big results.',
 ]
+const quoteIndex = ref(0)
+onMounted(() => { quoteIndex.value = Math.floor(Math.random() * motivationalQuotesEs.length) })
 const motivationalToastQuote = computed(() => {
   const quotes = lang.language.value === 'en' ? motivationalQuotesEn : motivationalQuotesEs
-  return quotes[Math.floor(Math.random() * quotes.length)]
+  return quotes[quoteIndex.value % quotes.length]
 })
 
 onMounted(() => {

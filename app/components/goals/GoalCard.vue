@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import type { Goal } from '~/types'
+import type { Goal, Project } from '~/types'
 
 const props = defineProps<{
   goal: Goal
+  projects?: Project[]
 }>()
 
 const emit = defineEmits<{
@@ -23,6 +24,12 @@ const statusColor = computed(() => {
     case 'cancelled': return 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500'
     default: return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
   }
+})
+
+const linkedProject = computed(() => {
+  const link = props.goal.goal_links?.find(l => l.entity_type === 'project')
+  if (!link || !props.projects) return null
+  return props.projects.find(p => p.id === link.entity_id) || null
 })
 
 const typeIcon = computed(() => {
@@ -46,9 +53,15 @@ const typeIcon = computed(() => {
           {{ localizedTitle(goal) }}
         </span>
       </div>
-      <span class="px-1.5 py-0.5 rounded text-xs font-medium" :class="statusColor">
-        {{ goal.status === 'completed' ? labels.goalCompleted : goal.status === 'cancelled' ? labels.goalCancelled : labels.goalActive }}
-      </span>
+      <div class="flex items-center gap-1.5">
+        <span v-if="linkedProject" class="flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+          <span class="w-2 h-2 rounded-full shrink-0" :style="{ backgroundColor: linkedProject.color }" />
+          {{ linkedProject.name }}
+        </span>
+        <span class="px-1.5 py-0.5 rounded text-xs font-medium" :class="statusColor">
+          {{ goal.status === 'completed' ? labels.goalCompleted : goal.status === 'cancelled' ? labels.goalCancelled : labels.goalActive }}
+        </span>
+      </div>
     </div>
 
     <p v-if="goal.description" class="text-xs text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">

@@ -32,7 +32,11 @@ function saveState(state: TimerState) {
   }
 }
 
-const timerState = ref<TimerState>(loadState())
+const timerState = ref<TimerState>({ running: false, startTime: null, taskId: null, taskTitle: null, projectId: null, workspaceId: null, description: null })
+
+if (import.meta.client) {
+  timerState.value = loadState()
+}
 const elapsedSeconds = ref(0)
 let intervalId: ReturnType<typeof setInterval> | null = null
 

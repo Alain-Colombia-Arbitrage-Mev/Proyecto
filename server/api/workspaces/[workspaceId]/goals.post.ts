@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
     title: body.title.trim(),
     goal_type: body.goal_type,
     status: body.status || 'active',
-    created_by: user.id,
+    owner_id: body.owner_id || user.id,
   }
 
   if (body.title_en !== undefined) payload.title_en = body.title_en?.trim() || null
@@ -42,7 +42,6 @@ export default defineEventHandler(async (event) => {
   if (body.period_start !== undefined) payload.period_start = body.period_start || null
   if (body.period_end !== undefined) payload.period_end = body.period_end || null
   if (body.parent_goal_id !== undefined) payload.parent_goal_id = body.parent_goal_id || null
-  if (body.owner_id !== undefined) payload.owner_id = body.owner_id || null
 
   const { data, error } = await supabase
     .from('goals')

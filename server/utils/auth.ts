@@ -36,6 +36,7 @@ export async function requireUser(event: H3Event) {
   if (!user.id && (user as any).sub) {
     (user as any).id = (user as any).sub
   }
+  if (!user.id) throw createError({ statusCode: 401, message: 'Not authenticated' })
   return user
 }
 

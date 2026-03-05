@@ -1,9 +1,14 @@
 export type AppLanguage = 'es' | 'en'
 
 /** Persisted language preference — shared across all components via module-level ref */
-const currentLanguage = ref<AppLanguage>(
-  (typeof localStorage !== 'undefined' ? localStorage.getItem('focusflow_lang') as AppLanguage : null) || 'es'
-)
+const currentLanguage = ref<AppLanguage>('es')
+const _langInitialized = ref(false)
+
+if (import.meta.client && !_langInitialized.value) {
+  _langInitialized.value = true
+  const saved = localStorage.getItem('focusflow_lang') as AppLanguage | null
+  if (saved) currentLanguage.value = saved
+}
 
 export function useLanguage() {
   function setLanguage(lang: AppLanguage) {
@@ -540,6 +545,10 @@ export function useLanguage() {
       linkProject: en ? 'Link project' : 'Vincular proyecto',
       linkTask: en ? 'Link task' : 'Vincular tarea',
       noGoals: en ? 'No goals yet' : 'Sin objetivos aún',
+      assignToProject: en ? 'Assign to project' : 'Asignar a proyecto',
+      noProjectAssigned: en ? 'No project' : 'Sin proyecto',
+      generalGoals: en ? 'General' : 'General',
+      filterByProject: en ? 'Filter by project' : 'Filtrar por proyecto',
       goalActive: en ? 'Active' : 'Activo',
       goalCompleted: en ? 'Completed' : 'Completado',
       goalCancelled: en ? 'Cancelled' : 'Cancelado',

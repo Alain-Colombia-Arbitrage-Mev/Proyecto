@@ -268,15 +268,18 @@ const memberColors = [
   'bg-fuchsia-100 dark:bg-fuchsia-500/15 text-fuchsia-700 dark:text-fuchsia-400',
 ]
 
+const clientNow = ref<Date | null>(null)
+onMounted(() => { clientNow.value = new Date() })
+
 const weekStart = computed(() => {
-  const now = new Date()
+  const now = clientNow.value || new Date(0)
   const start = startOfWeek(now, { weekStartsOn: 1 })
   return addWeeks(start, weekOffset.value)
 })
 
 const weekDays = computed(() => {
   const days = []
-  const todayStr = format(new Date(), 'yyyy-MM-dd')
+  const todayStr = clientNow.value ? format(clientNow.value, 'yyyy-MM-dd') : ''
   const dayNames = lang.language.value === 'en'
     ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     : ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']

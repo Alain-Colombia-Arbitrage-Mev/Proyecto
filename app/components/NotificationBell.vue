@@ -97,7 +97,7 @@ const workspaceId = computed(() => store.workspace?.id || '')
 
 // Position panel relative to bell button
 const panelStyle = computed(() => {
-  if (!bellRef.value) return { left: '16px', bottom: '60px' }
+  if (!import.meta.client || !bellRef.value) return { left: '16px', bottom: '60px' }
   const rect = bellRef.value.getBoundingClientRect()
   const isMobile = window.innerWidth < 768
 

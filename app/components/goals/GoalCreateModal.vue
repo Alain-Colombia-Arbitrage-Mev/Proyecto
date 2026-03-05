@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import type { Goal, GoalType } from '~/types'
+import type { Goal, GoalType, Project } from '~/types'
 
 const props = defineProps<{
   workspaceId: string
   parentGoalId?: string
+  projects?: Project[]
 }>()
 
 const emit = defineEmits<{
@@ -23,6 +24,7 @@ const form = reactive({
   unit: '%',
   period_start: '',
   period_end: '',
+  projectId: '',
 })
 
 const goalTypes: { value: GoalType; label: string }[] = [
@@ -51,6 +53,18 @@ async function create() {
       method: 'POST',
       body,
     })
+    // Link to project if selected
+    if (form.projectId) {
+      try {
+        const link = await $fetch(`/api/workspaces/${props.workspaceId}/goals/${goal.id}/links`, {
+          method: 'POST',
+          body: { entity_type: 'project', entity_id: form.projectId },
+        })
+        goal.goal_links = [link as any]
+      } catch (linkErr) {
+        console.error('[GoalCreateModal] link error:', linkErr)
+      }
+    }
     emit('created', goal)
   } catch (err) {
     console.error('[GoalCreateModal] error:', err)
@@ -105,6 +119,16 @@ async function create() {
           <label class="text-xs font-medium text-gray-600 dark:text-gray-400">{{ labels.description }}</label>
           <textarea v-model="form.description" rows="2"
             class="mt-1 w-full text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-focusflow-500" />
+        </div>
+
+        <div v-if="projects && projects.length">
+          <label class="text-xs font-medium text-gray-600 dark:text-gray-400">{{ labels.assignToProject }}</label>
+          <select v-model="form.projectId" class="mt-1 w-full text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2">
+            <option value="">{{ labels.noProjectAssigned }}</option>
+            <option v-for="p in projects" :key="p.id" :value="p.id">
+              {{ p.name }}
+            </option>
+          </select>
         </div>
 
         <div class="flex gap-2 pt-2">

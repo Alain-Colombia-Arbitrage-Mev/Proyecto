@@ -10,7 +10,8 @@ const { labels, language } = useLanguage()
 const loading = ref(true)
 const rows = ref<TimesheetRow[]>([])
 const weeklyTotal = ref(0)
-const weekStart = ref(getMonday(new Date()).toISOString().slice(0, 10))
+const weekStart = ref('')
+onMounted(() => { weekStart.value = getMonday(new Date()).toISOString().slice(0, 10) })
 const showEntryForm = ref(false)
 
 function getMonday(d: Date): Date {

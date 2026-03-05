@@ -597,8 +597,8 @@ export function useLofiPlayer() {
     if (!isPlaying.value) play()
   }
 
-  // Load saved state on first use
-  loadState()
+  // Load saved state on first use (client only)
+  if (import.meta.client) loadState()
 
   return {
     stations,

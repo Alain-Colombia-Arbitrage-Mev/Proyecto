@@ -20,8 +20,12 @@ const showCreate = ref(false)
 const form = reactive({
   name: '',
   goal: '',
-  start_date: new Date().toISOString().slice(0, 10),
-  end_date: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10),
+  start_date: '',
+  end_date: '',
+})
+onMounted(() => {
+  form.start_date = new Date().toISOString().slice(0, 10)
+  form.end_date = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10)
 })
 
 const activeSprint = computed(() => sprints.value.find(s => s.status === 'active') || null)
