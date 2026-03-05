@@ -1,4 +1,5 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
+import { generateTaskDocs } from '~~/server/utils/taskDocGenerator'
 
 const MAX_MESSAGE_LENGTH = 100_000
 const MAX_HISTORY_MESSAGES = 50
@@ -973,6 +974,17 @@ Description: objetivo + pasos implementación + archivos + criterios ✅ + notas
             }
           }
 
+          // Auto-generate implementation guide .md for created tasks (fire-and-forget)
+          if (createdTasks.length > 0) {
+            generateTaskDocs({
+              supabase,
+              workspaceId: taMeta.workspaceId,
+              projectId: taMeta.projectId,
+              userId: user.id,
+              tasks: createdTasks.map((t: any) => ({ id: t.id, title: t.title, description: t.description })),
+            }).catch(() => {})
+          }
+
           // Store memory (fire-and-forget)
           storeMemory({
             supabase,
@@ -998,6 +1010,22 @@ Description: objetivo + pasos implementación + archivos + criterios ✅ + notas
           return { type: 'json', data: { ...parsed, tasksCreated: 0, postError: postErr.message } }
         }
       }
+    }
+
+    // Auto-generate implementation guide .md for chat-created tasks (fire-and-forget)
+    const chatDocMeta = (event.context as any)._chatMemoryMeta
+    if (action === 'chat' && Array.isArray(parsed) && parsed.length > 0 && chatDocMeta?.workspaceId && chatDocMeta?.projectId) {
+      generateTaskDocs({
+        supabase,
+        workspaceId: chatDocMeta.workspaceId,
+        projectId: chatDocMeta.projectId,
+        userId: chatDocMeta.userId,
+        tasks: parsed.filter((t: any) => t.title).map((t: any) => ({
+          id: t.id || '',
+          title: t.title,
+          description: t.description || null,
+        })),
+      }).catch((err: any) => console.error('[chat] Task doc gen error:', err.message))
     }
 
     // Auto-store chat Q+A as memory (fire-and-forget)
