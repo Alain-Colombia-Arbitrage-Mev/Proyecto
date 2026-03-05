@@ -2,7 +2,6 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import { requirePermission } from '~~/server/utils/permissions'
 import { notifyUser } from '~~/server/utils/notifications'
 import { taskAssignedEmailHtml } from '~~/server/utils/email'
-import { translateTaskToEnglish } from '~~/server/utils/translate'
 import { storeMemory } from '~~/server/utils/embeddings'
 
 const MAX_DEPTH = 3
@@ -152,12 +151,16 @@ export default defineEventHandler(async (event) => {
   }
 
   // Auto-translate if no English title was provided
+  // Only for IT/dev templates (dev, devops, backend_senior_dev, frontend_design, app_development)
   if (!subtask.title_en && subtask.title) {
-    translateTaskToEnglish({
-      supabase,
-      taskId: subtask.id,
-      title: subtask.title,
-      description: subtask.description || null,
+    shouldTranslateProject(supabase, subtask.project_id).then((shouldTranslate) => {
+      if (!shouldTranslate) return
+      translateTaskToEnglish({
+        supabase,
+        taskId: subtask.id,
+        title: subtask.title,
+        description: subtask.description || null,
+      })
     }).catch(() => {})
   }
 

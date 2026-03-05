@@ -1,7 +1,6 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import { notifyUser } from '~~/server/utils/notifications'
 import { taskAssignedEmailHtml } from '~~/server/utils/email'
-import { translateTaskToAll } from '~~/server/utils/translate'
 
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
@@ -71,15 +70,19 @@ export default defineEventHandler(async (event) => {
   }
 
   // Auto-translate when title or description changes (fire-and-forget)
+  // Only for IT/dev templates (dev, devops, backend_senior_dev, frontend_design, app_development)
   const titleChanged = body.title !== undefined && body.title !== (task as any).title
   const descChanged = body.description !== undefined
   if (titleChanged || descChanged) {
-    translateTaskToAll({
-      supabase,
-      taskId: updated.id,
-      title: updated.title || (task as any).title,
-      description: updated.description || null,
-      sourceLang: 'es',
+    shouldTranslateProject(supabase, updated.project_id).then((shouldTranslate) => {
+      if (!shouldTranslate) return
+      translateTaskToAll({
+        supabase,
+        taskId: updated.id,
+        title: updated.title || (task as any).title,
+        description: updated.description || null,
+        sourceLang: 'es',
+      })
     }).catch((err: any) => console.error('[tasks.patch] Auto-translate error:', err.message))
   }
 

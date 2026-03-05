@@ -20,17 +20,111 @@ export interface LofiStation {
 // Self-hosted audio from Supabase storage can be added as primary URLs.
 // Format: set type='youtube' + youtubeId for YouTube, or url for direct stream.
 const stations: LofiStation[] = [
+  // === TOP PICKS ===
   {
     id: 'lofi-hiphop',
-    name: 'Lofi Hip Hop',
+    name: 'Work With Me',
     emoji: '🎧',
     url: '',
     color: '#8B5CF6',
     fallbackUrls: [],
     type: 'youtube',
-    youtubeId: 'jfKfPfyJRdk', // lofi girl - lofi hip hop radio
+    youtubeId: 'jfKfPfyJRdk', // lofi girl - most reliable 24/7 stream
     tracks: [
       { title: 'Lofi Hip Hop Radio', artist: 'Lofi Girl', duration: 'LIVE' },
+    ],
+  },
+  {
+    id: 'productividad',
+    name: 'Productividad',
+    emoji: '🚀',
+    url: '',
+    color: '#F59E0B',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: 'foB5El2jxFs',
+    tracks: [
+      { title: 'Aumenta tu productividad', artist: 'Focus Music', duration: 'LIVE' },
+    ],
+  },
+  {
+    id: 'jazz-cafe',
+    name: 'Jazz Cafe',
+    emoji: '🎷',
+    url: '',
+    color: '#10B981',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: 'MYPVQccHhAQ', // Cozy coffee shop jazz
+    tracks: [
+      { title: 'Smooth Piano Jazz', artist: 'Cozy Coffee Shop', duration: 'LIVE' },
+    ],
+  },
+  // === HIGH ENERGY ===
+  {
+    id: 'synthwave',
+    name: 'Synthwave',
+    emoji: '🌌',
+    url: '',
+    color: '#E040FB',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: '4xDzrJKXOOY',
+    tracks: [
+      { title: 'Synthwave Radio', artist: 'Lofi Girl', duration: 'LIVE' },
+    ],
+  },
+  {
+    id: 'chillsynth',
+    name: 'ChillSynth FM',
+    emoji: '🕹️',
+    url: '',
+    color: '#7C3AED',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: 'UedTcufyrHc',
+    tracks: [
+      { title: 'Lofi Synthwave Radio', artist: 'ChillSynth FM', duration: 'LIVE' },
+    ],
+  },
+  {
+    id: 'deep-focus',
+    name: 'Deep Focus',
+    emoji: '⚡',
+    url: '',
+    color: '#0EA5E9',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: 'oPVte6aMprI',
+    tracks: [
+      { title: 'Music for Concentration', artist: 'Deep Focus', duration: 'LIVE' },
+    ],
+  },
+  {
+    id: 'good-life',
+    name: 'House & Energy',
+    emoji: '🔥',
+    url: '',
+    color: '#F97316',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: '36YnV9STBqc',
+    tracks: [
+      { title: '24/7 House Radio', artist: 'The Good Life', duration: 'LIVE' },
+    ],
+  },
+  // === FOCUS / STUDY ===
+  {
+    id: 'late-night',
+    name: '1AM Study',
+    emoji: '🌙',
+    url: '',
+    color: '#6366F1',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: 'lTRiuFIWV54',
+    tracks: [
+      { title: '1 A.M Study Session', artist: 'Lofi Girl', duration: 'LIVE' },
     ],
   },
   {
@@ -41,35 +135,23 @@ const stations: LofiStation[] = [
     color: '#F59E0B',
     fallbackUrls: [],
     type: 'youtube',
-    youtubeId: '5yx6BWlEVcY', // chillhop raccoon
+    youtubeId: '5yx6BWlEVcY',
     tracks: [
       { title: 'Chillhop Radio', artist: 'Chillhop Music', duration: 'LIVE' },
     ],
   },
+  // === CLASSICAL / AMBIENT ===
   {
-    id: 'ambient',
-    name: 'Ambient Deep',
-    emoji: '🌊',
-    url: 'https://live.musopen.org:8085/streamvbr0',
-    color: '#3B82F6',
-    fallbackUrls: [
-      'https://uk2.internet-radio.com:8024/stream',
-    ],
-    tracks: [
-      { title: 'Classical & Ambient', artist: 'Musopen Radio', duration: 'LIVE' },
-    ],
-  },
-  {
-    id: 'jazz-study',
-    name: 'Jazz Study',
-    emoji: '🎷',
+    id: 'classical',
+    name: 'Classical',
+    emoji: '🎻',
     url: '',
-    color: '#10B981',
+    color: '#B45309',
     fallbackUrls: [],
     type: 'youtube',
-    youtubeId: 'Dx5qFachd3A', // coffee shop jazz
+    youtubeId: 'mIYzp5rcTvU',
     tracks: [
-      { title: 'Coffee Shop Jazz', artist: 'Jazz Radio', duration: 'LIVE' },
+      { title: 'Classical for Reading', artist: 'Mozart, Chopin, Debussy', duration: 'LIVE' },
     ],
   },
   {
@@ -80,7 +162,7 @@ const stations: LofiStation[] = [
     color: '#059669',
     fallbackUrls: [],
     type: 'youtube',
-    youtubeId: 'eKFTSSKCzWA', // rain sounds
+    youtubeId: 'eKFTSSKCzWA',
     tracks: [
       { title: 'Rain & Thunder', artist: 'Nature Sounds', duration: 'LIVE' },
     ],
@@ -93,100 +175,9 @@ const stations: LofiStation[] = [
     color: '#6B7280',
     fallbackUrls: [],
     type: 'youtube',
-    youtubeId: 'nMfPqeZjc2c', // white noise
+    youtubeId: 'nMfPqeZjc2c',
     tracks: [
       { title: 'White Noise', artist: 'Deep Focus', duration: 'LIVE' },
-    ],
-  },
-  {
-    id: 'afrobeat',
-    name: 'Slow Afrobeat',
-    emoji: '🌍',
-    url: '',
-    color: '#E67E22',
-    fallbackUrls: [],
-    type: 'youtube',
-    youtubeId: '_0TycJED0V0',
-    tracks: [
-      { title: 'Slow & Emotional Afrobeat', artist: 'Afrobeat Mix', duration: 'LIVE' },
-    ],
-  },
-  {
-    id: 'jazz-hiphop',
-    name: 'Jazz Hip Hop',
-    emoji: '🎺',
-    url: '',
-    color: '#D97706',
-    fallbackUrls: [],
-    type: 'youtube',
-    youtubeId: 'bnOeeZdHNKk',
-    tracks: [
-      { title: 'Hip Hop Groove Jazz Hop', artist: 'Jazz Hip Hop', duration: 'LIVE' },
-    ],
-  },
-  {
-    id: 'lofi-cafe',
-    name: 'Lofi Café',
-    emoji: '☕',
-    url: '',
-    color: '#92400E',
-    fallbackUrls: [],
-    type: 'youtube',
-    youtubeId: 'zo7QtFTLssQ',
-    tracks: [
-      { title: 'Lofi Cafe Vibes', artist: 'Hip Hop Beats', duration: 'LIVE' },
-    ],
-  },
-  {
-    id: 'funky-mix',
-    name: 'Funky Mix',
-    emoji: '🎸',
-    url: '',
-    color: '#DC2626',
-    fallbackUrls: [],
-    type: 'youtube',
-    youtubeId: 'SFyYCHdhdJM',
-    tracks: [
-      { title: 'Funky Music Mix Radio', artist: 'Funky Radio 24/7', duration: 'LIVE' },
-    ],
-  },
-  {
-    id: 'rnb-soul',
-    name: 'R&B Soul',
-    emoji: '💜',
-    url: '',
-    color: '#7C3AED',
-    fallbackUrls: [],
-    type: 'youtube',
-    youtubeId: '0UiOhZmywQc',
-    tracks: [
-      { title: 'Heartfelt Melodies', artist: 'Midnight Soul Balance', duration: 'LIVE' },
-    ],
-  },
-  {
-    id: 'deep-work',
-    name: 'Deep Work',
-    emoji: '🧠',
-    url: '',
-    color: '#0EA5E9',
-    fallbackUrls: [],
-    type: 'youtube',
-    youtubeId: 'C9XJUnfxDZU',
-    tracks: [
-      { title: 'Música para Trabajo Profundo', artist: 'Deep Focus', duration: 'LIVE' },
-    ],
-  },
-  {
-    id: 'work-with-me',
-    name: 'Work With Me',
-    emoji: '💻',
-    url: '',
-    color: '#0D9488',
-    fallbackUrls: [],
-    type: 'youtube',
-    youtubeId: 'IFZk-nZH_d8',
-    tracks: [
-      { title: 'Work With Me', artist: 'Study Session', duration: 'LIVE' },
     ],
   },
 ]
@@ -305,8 +296,22 @@ function createYTPlayer(videoId: string, vol: number): Promise<void> {
         onError: () => {
           isLoading.value = false
           isPlaying.value = false
+          // Auto-skip to next station on error
+          const idx = stations.findIndex(s => s.id === currentStationId.value)
+          const next = stations[(idx + 1) % stations.length]!
+          console.warn(`[lofi] Station "${currentStationId.value}" failed, skipping to "${next.id}"`)
           hasError.value = true
-          errorMessage.value = 'YouTube: no se pudo reproducir.'
+          errorMessage.value = 'Saltando a siguiente estación...'
+          setTimeout(() => {
+            hasError.value = false
+            errorMessage.value = ''
+            // Switch station and replay via module-level state
+            currentStationId.value = next.id
+            currentTrackIndex.value = 0
+            if (next.type === 'youtube' && next.youtubeId) {
+              createYTPlayer(next.youtubeId, volume.value).catch(() => {})
+            }
+          }, 1500)
         },
       },
     })
@@ -530,8 +535,6 @@ export function useLofiPlayer() {
   }
 
   function setStation(stationId: string) {
-    const wasPlaying = isPlaying.value
-
     // Stop current playback
     if (audio) { audio.pause(); audio.src = '' }
     destroyYTPlayer()
@@ -544,7 +547,7 @@ export function useLofiPlayer() {
     fallbackIndex = 0
     saveState()
     rotateQuote()
-    if (wasPlaying) play()
+    play()
   }
 
   function setVolume(v: number) {

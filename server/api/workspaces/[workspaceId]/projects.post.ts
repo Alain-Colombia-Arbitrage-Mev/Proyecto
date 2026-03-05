@@ -96,6 +96,16 @@ const TEMPLATES: Record<string, { title: string; color: string; wip_limit?: numb
     { title: 'Integración', color: '#14B8A6' },
     { title: 'Publicado', color: '#10B981' },
   ],
+  app_development: [
+    { title: 'Backlog', color: '#6B7280' },
+    { title: 'Diseño UX/UI', color: '#EC4899' },
+    { title: 'Desarrollo', color: '#3B82F6', wip_limit: 4 },
+    { title: 'Code Review', color: '#6366F1', wip_limit: 3 },
+    { title: 'QA / Testing', color: '#F59E0B', wip_limit: 3 },
+    { title: 'Beta', color: '#F97316' },
+    { title: 'Release', color: '#10B981' },
+    { title: 'Post-Launch', color: '#14B8A6' },
+  ],
 }
 
 export default defineEventHandler(async (event) => {
@@ -162,6 +172,7 @@ export default defineEventHandler(async (event) => {
     scrum: ['/sprints', '/sprints/retrospectivas'],
     marketing: ['/marketing', '/marketing/assets', '/marketing/campañas'],
     ai_agents: ['/agents', '/agents/prompts', '/agents/evaluaciones'],
+    app_development: ['/app', '/app/design', '/app/releases', '/app/tests'],
   }
 
   const projectSlug = body.name.replace(/[^a-zA-Z0-9 _-]/g, '').replace(/\s+/g, '_').slice(0, 50).toLowerCase()

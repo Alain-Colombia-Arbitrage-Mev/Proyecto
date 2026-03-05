@@ -49,7 +49,9 @@ export default defineNuxtConfig({
     cronSecret: '',
     context7Key: '',
     firebaseServiceAccountJson: '',
+    appUrl: process.env.NUXT_APP_URL || '',
     public: {
+      appUrl: process.env.NUXT_PUBLIC_APP_URL || '',
       firebase: {
         apiKey: '',
         authDomain: '',

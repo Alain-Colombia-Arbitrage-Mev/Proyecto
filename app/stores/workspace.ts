@@ -20,6 +20,10 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     try {
       const ws = await $fetch<Workspace>(`/api/workspaces/by-slug/${workspaceSlug}`)
       workspace.value = ws
+      // Persist slug in cookie for server-side redirect of bare routes
+      if (import.meta.client && ws?.slug) {
+        document.cookie = `focusflow_workspace_slug=${ws.slug};path=/;max-age=${60 * 60 * 24 * 365};samesite=lax`
+      }
       await loadProjects()
       return ws
     } catch {

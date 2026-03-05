@@ -3,13 +3,13 @@
 
       <!-- ═══════ HERO / WELCOME ═══════ -->
       <InspiraBlurReveal :delay="0" :duration="800">
-        <div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#0d0d0d] via-[#1a1a2e] to-[#16213e] p-6 sm:p-8">
+        <div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#0d0d0d] via-[#1a1a2e] to-[#16213e] p-4 sm:p-6 md:p-8">
           <InspiraMeteors :number="12" />
           <div class="relative z-10">
             <Transition name="quote-fade" mode="out-in">
               <p :key="currentQuoteIndex" class="text-sm sm:text-base text-white/80">{{ motivationalQuote }}</p>
             </Transition>
-            <h1 class="text-2xl sm:text-[42px] font-bold text-white leading-tight mt-1" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2px;">
+            <h1 class="text-xl sm:text-2xl md:text-[42px] font-bold text-white leading-tight mt-1" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -1px;">
               {{ greeting }}, {{ userName }} &#x1F44B;
             </h1>
           </div>
@@ -17,18 +17,18 @@
       </InspiraBlurReveal>
 
       <!-- ═══════ BENTO GRID ═══════ -->
-      <InspiraBentoGrid class="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 auto-rows-[160px] sm:auto-rows-[180px]">
+      <InspiraBentoGrid class="grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 auto-rows-[140px] sm:auto-rows-[160px] md:auto-rows-[180px]">
 
         <!-- ── Stat: Total Tasks ── -->
         <InspiraBlurReveal :delay="100" class="col-span-1">
-          <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 p-5 overflow-hidden group hover:border-emerald-200 dark:hover:border-emerald-500/30 transition-all duration-300 shadow-card hover:shadow-card-hover">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs text-gray-600 dark:text-gray-300 font-medium">{{ t.totalTasks }}</span>
-              <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
-                <UIcon name="i-heroicons-clipboard-document-list" class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 p-3.5 sm:p-5 overflow-hidden group hover:border-emerald-200 dark:hover:border-emerald-500/30 transition-all duration-300 shadow-card hover:shadow-card-hover">
+            <div class="flex items-center justify-between mb-1.5 sm:mb-2">
+              <span class="text-[10px] sm:text-xs text-gray-600 dark:text-gray-300 font-medium">{{ t.totalTasks }}</span>
+              <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
+                <UIcon name="i-heroicons-clipboard-document-list" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 dark:text-emerald-400" />
               </div>
             </div>
-            <InspiraNumberTicker :value="taskCount" :duration="1200" class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2px;" />
+            <InspiraNumberTicker :value="taskCount" :duration="1200" class="text-2xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2px;" />
             <div class="flex items-end gap-[3px] h-[40px] mt-2">
               <div v-for="i in 7" :key="'t-'+i" class="w-[6px] rounded-sm transition-all duration-500"
                 :class="i % 2 === 0 ? 'bg-emerald-500' : 'bg-gray-100 dark:bg-white/10'"
@@ -39,14 +39,14 @@
 
         <!-- ── Stat: In Progress ── -->
         <InspiraBlurReveal :delay="200" class="col-span-1">
-          <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 p-5 overflow-hidden group hover:border-amber-200 dark:hover:border-amber-500/30 transition-all duration-300 shadow-card hover:shadow-card-hover">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs text-gray-600 dark:text-gray-300 font-medium">{{ t.inProgress }}</span>
-              <div class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center">
-                <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 text-amber-600 dark:text-amber-400" />
+          <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 p-3.5 sm:p-5 overflow-hidden group hover:border-amber-200 dark:hover:border-amber-500/30 transition-all duration-300 shadow-card hover:shadow-card-hover">
+            <div class="flex items-center justify-between mb-1.5 sm:mb-2">
+              <span class="text-[10px] sm:text-xs text-gray-600 dark:text-gray-300 font-medium">{{ t.inProgress }}</span>
+              <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center">
+                <UIcon name="i-heroicons-arrow-path" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600 dark:text-amber-400" />
               </div>
             </div>
-            <InspiraNumberTicker :value="inProgressTasks" :duration="1200" :delay="200" class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2px;" />
+            <InspiraNumberTicker :value="inProgressTasks" :duration="1200" :delay="200" class="text-2xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2px;" />
             <div class="flex items-end gap-[3px] h-[40px] mt-2">
               <div v-for="i in 7" :key="'p-'+i" class="w-[6px] rounded-sm transition-all duration-500"
                 :class="i % 3 === 0 ? 'bg-amber-500' : 'bg-gray-100 dark:bg-white/10'"
@@ -57,14 +57,14 @@
 
         <!-- ── Stat: Completed ── -->
         <InspiraBlurReveal :delay="300" class="col-span-1">
-          <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 p-5 overflow-hidden group hover:border-blue-200 dark:hover:border-blue-500/30 transition-all duration-300 shadow-card hover:shadow-card-hover">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs text-gray-600 dark:text-gray-300 font-medium">{{ t.completed }}</span>
-              <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center">
-                <UIcon name="i-heroicons-check-circle" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 p-3.5 sm:p-5 overflow-hidden group hover:border-blue-200 dark:hover:border-blue-500/30 transition-all duration-300 shadow-card hover:shadow-card-hover">
+            <div class="flex items-center justify-between mb-1.5 sm:mb-2">
+              <span class="text-[10px] sm:text-xs text-gray-600 dark:text-gray-300 font-medium">{{ t.completed }}</span>
+              <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center">
+                <UIcon name="i-heroicons-check-circle" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
-            <InspiraNumberTicker :value="completedTasks" :duration="1200" :delay="400" class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2px;" />
+            <InspiraNumberTicker :value="completedTasks" :duration="1200" :delay="400" class="text-2xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -2px;" />
             <div class="flex items-end gap-[3px] h-[40px] mt-2">
               <div v-for="i in 7" :key="'c-'+i" class="w-[6px] rounded-sm transition-all duration-500"
                 :class="i <= 4 ? 'bg-blue-500' : 'bg-gray-100 dark:bg-white/10'"
@@ -122,7 +122,7 @@
         </InspiraBlurReveal>
 
         <!-- ── Project Summary Chart (spans 2 cols) ── -->
-        <InspiraBlurReveal :delay="200" class="col-span-1 sm:col-span-2 row-span-2">
+        <InspiraBlurReveal :delay="200" class="col-span-2 sm:col-span-2 row-span-2">
           <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 shadow-card p-5 overflow-hidden">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100" style="letter-spacing: -0.32px;">{{ t.projectSummary }}</h3>
@@ -244,11 +244,11 @@
         </InspiraBlurReveal>
 
         <!-- ── Task List (spans 2 cols, 2 rows) ── -->
-        <InspiraBlurReveal :delay="200" class="col-span-1 sm:col-span-2 lg:col-span-3 row-span-2">
+        <InspiraBlurReveal :delay="200" class="col-span-2 sm:col-span-2 md:col-span-3 lg:col-span-3 row-span-2">
           <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 shadow-card overflow-hidden">
-            <div class="flex items-center justify-between p-4 pb-2">
-              <div class="flex items-center gap-3">
-                <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100" style="letter-spacing: -0.32px;">{{ t.board }}</h3>
+            <div class="flex flex-wrap items-center justify-between gap-2 p-3 sm:p-4 pb-2">
+              <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+                <h3 class="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100" style="letter-spacing: -0.32px;">{{ t.board }}</h3>
                 <select v-model="filterProjectId"
                   class="text-[11px] font-medium text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-white/10 rounded-full px-3 py-1 border-0 outline-none cursor-pointer hover:bg-gray-200 dark:hover:bg-white/10 transition-colors appearance-none pr-6"
                   style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%237A7A7A%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 8px center; background-size: 14px;">
@@ -295,8 +295,9 @@
               <span class="hidden md:block">{{ t.deadline }}</span>
             </div>
             <div v-if="filteredTasks.length > 0" class="max-h-[280px] overflow-y-auto">
-              <div v-for="task in filteredTasks" :key="task.id"
-                class="grid grid-cols-[2fr_1fr_1fr] md:grid-cols-[1.5fr_1fr_0.8fr_0.8fr_0.8fr_0.8fr] px-4 py-2.5 text-[11px] border-b border-gray-200 dark:border-white/10 last:border-0 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+              <NuxtLink v-for="task in filteredTasks" :key="task.id"
+                :to="task.projectId ? `/${store.slug}/projects/${task.projectId}/kanban` : `/${store.slug}/projects`"
+                class="grid grid-cols-[2fr_1fr_1fr] md:grid-cols-[1.5fr_1fr_0.8fr_0.8fr_0.8fr_0.8fr] px-4 py-2.5 text-[11px] border-b border-gray-200 dark:border-white/10 last:border-0 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors cursor-pointer">
                 <div class="flex items-center gap-2 min-w-0">
                   <div class="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center shrink-0">
                     <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-400">{{ task.title?.charAt(0)?.toUpperCase() }}</span>
@@ -328,7 +329,7 @@
                   </span>
                   <span v-else class="text-[10px] text-gray-600 dark:text-gray-300">—</span>
                 </span>
-              </div>
+              </NuxtLink>
             </div>
             <div v-else class="flex flex-col items-center justify-center py-10 text-gray-600 dark:text-gray-300">
               <UIcon name="i-heroicons-clipboard-document-list" class="w-8 h-8 text-gray-600 dark:text-gray-300 mb-2" />
@@ -340,7 +341,7 @@
       </InspiraBentoGrid>
 
       <!-- ═══════ SECOND SECTION: Coach + Rankings + AI Details ═══════ -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
         <!-- ── Coach Anti-Procrastinación ── -->
         <InspiraBlurReveal :delay="100" class="lg:col-span-1">
@@ -560,61 +561,84 @@
             </template>
           </div>
 
-          <!-- Lo-fi Player -->
-          <div class="bg-gradient-to-br from-[#0d0d0d] to-[#1a1a2e] rounded-2xl border border-white/5 overflow-hidden">
+          <!-- Lo-fi Player — WidgetPod black -->
+          <div class="bg-[#111113] rounded-2xl border border-white/[0.06] overflow-hidden">
             <div class="p-4">
+              <!-- Now Playing -->
               <div class="flex items-center gap-3">
-                <button @click="lofi.toggle()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all cursor-pointer shrink-0">
-                  <span v-if="lofi.isLoading.value" class="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                  <UIcon v-else :name="lofi.isPlaying.value ? 'i-heroicons-pause-solid' : 'i-heroicons-play-solid'" class="w-4 h-4 text-white" />
-                </button>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2">
-                    <span class="text-xs font-semibold text-white truncate">{{ lofi.currentStation.value.emoji }} {{ lofi.currentStation.value.name }}</span>
-                    <span v-if="lofi.isPlaying.value" class="flex gap-[2px] items-end h-3 shrink-0">
-                      <span v-for="i in 3" :key="i" class="w-[2px] bg-emerald-400 rounded-full animate-pulse" :style="{ height: `${6 + (i * 3)}px`, animationDelay: `${i * 0.15}s` }" />
-                    </span>
-                  </div>
-                  <p class="text-[10px] text-white/80 truncate">{{ lofi.currentQuote.value }}</p>
+                <div class="w-11 h-11 rounded-[12px] bg-[#1c1c1e] flex items-center justify-center text-lg shrink-0">
+                  {{ lofi.currentStation.value.emoji }}
                 </div>
-                <button @click="lofi.skip()" class="text-white/80 hover:text-white transition-colors cursor-pointer shrink-0" :title="lang.language.value === 'en' ? 'Next station' : 'Siguiente estacion'">
-                  <UIcon name="i-heroicons-forward" class="w-4 h-4" />
+                <div class="flex-1 min-w-0">
+                  <p class="text-[13px] font-bold text-white truncate leading-tight">{{ lofi.currentTrack.value.title }}</p>
+                  <p class="text-[10px] text-white/40 truncate mt-0.5">{{ lofi.currentTrack.value.artist }} · {{ lofi.currentStation.value.name }}</p>
+                  <div class="flex items-center gap-1 mt-0.5">
+                    <span v-if="lofi.isPlaying.value" class="flex items-center gap-1">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#30d158] animate-pulse" />
+                      <span class="text-[9px] text-[#30d158] font-semibold">LIVE</span>
+                    </span>
+                    <span v-else-if="lofi.isLoading.value" class="text-[9px] text-[#ffd60a] font-semibold">Conectando...</span>
+                    <span v-else class="text-[9px] text-white/25 font-medium">Pausado</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Transport Controls -->
+              <div class="flex items-center justify-center gap-4 mt-3">
+                <button @click="lofi.skip()" class="w-8 h-8 flex items-center justify-center text-white/40 hover:text-white transition-colors cursor-pointer">
+                  <UIcon name="i-heroicons-backward" class="w-4.5 h-4.5" />
                 </button>
-                <button @click="showStationList = !showStationList" class="text-white/80 hover:text-white transition-colors cursor-pointer shrink-0" :title="lang.language.value === 'en' ? 'Station list' : 'Lista de estaciones'">
-                  <UIcon :name="showStationList ? 'i-heroicons-chevron-up' : 'i-heroicons-queue-list'" class="w-4 h-4" />
+                <button @click="lofi.toggle()" class="w-11 h-11 rounded-full bg-white flex items-center justify-center text-black transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-lg shadow-white/10">
+                  <span v-if="lofi.isLoading.value" class="w-4 h-4 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
+                  <UIcon v-else-if="lofi.isPlaying.value" name="i-heroicons-pause" class="w-5 h-5" />
+                  <UIcon v-else name="i-heroicons-play" class="w-5 h-5 ml-0.5" />
+                </button>
+                <button @click="lofi.skip()" class="w-8 h-8 flex items-center justify-center text-white/40 hover:text-white transition-colors cursor-pointer">
+                  <UIcon name="i-heroicons-forward" class="w-4.5 h-4.5" />
                 </button>
               </div>
-              <div class="flex items-center gap-3 mt-2.5">
-                <div class="flex-1 h-[3px] bg-white/10 rounded-full overflow-hidden">
-                  <div class="h-full bg-emerald-400 rounded-full transition-all duration-1000"
-                    :style="{ width: lofi.isPlaying.value ? '60%' : '0%' }" />
+
+              <!-- Volume -->
+              <div class="flex items-center gap-2.5 mt-3">
+                <UIcon name="i-heroicons-speaker-x-mark" class="w-3 h-3 text-white/25 shrink-0" />
+                <div class="flex-1 relative h-6 flex items-center group">
+                  <div class="absolute inset-x-0 h-[3px] rounded-full bg-white/[0.08]" />
+                  <div class="absolute left-0 h-[3px] rounded-full bg-white/50 transition-all" :style="{ width: (lofi.volume.value * 100) + '%' }" />
+                  <input type="range" min="0" max="100" :value="lofi.volume.value * 100"
+                    @input="lofi.setVolume(($event.target as HTMLInputElement).valueAsNumber / 100)"
+                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                 </div>
-                <input type="range" min="0" max="100" :value="lofi.volume.value * 100"
-                  @input="lofi.setVolume(($event.target as HTMLInputElement).valueAsNumber / 100)"
-                  class="w-16 h-1 accent-emerald-400 cursor-pointer shrink-0" />
+                <UIcon name="i-heroicons-speaker-wave" class="w-3 h-3 text-white/25 shrink-0" />
               </div>
             </div>
 
-            <!-- Collapsible station list -->
+            <!-- Station List Toggle -->
+            <button
+              class="w-full px-4 py-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest border-t border-white/[0.04] cursor-pointer transition-colors"
+              :class="showStationList ? 'text-white/50' : 'text-white/20 hover:text-white/40'"
+              @click="showStationList = !showStationList">
+              <span>{{ lofi.stations.length }} {{ lang.language.value === 'en' ? 'stations' : 'estaciones' }}</span>
+              <UIcon :name="showStationList ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'" class="w-3.5 h-3.5" />
+            </button>
+
+            <!-- Station List -->
             <Transition name="slide-up">
-              <div v-if="showStationList" class="border-t border-white/5 max-h-[240px] overflow-y-auto">
+              <div v-if="showStationList" class="border-t border-white/[0.04] max-h-[220px] overflow-y-auto">
                 <button
                   v-for="station in lofi.stations" :key="station.id"
-                  class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors cursor-pointer"
-                  :class="lofi.currentStationId.value === station.id ? 'bg-white/10' : ''"
+                  class="w-full flex items-center gap-3 px-4 py-2.5 transition-colors cursor-pointer"
+                  :class="lofi.currentStationId.value === station.id ? 'bg-white/[0.06] text-white' : 'text-white/40 hover:bg-white/[0.03] hover:text-white/70'"
                   @click="lofi.setStation(station.id); showStationList = false"
                 >
-                  <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-sm" :style="{ backgroundColor: station.color + '25' }">
-                    {{ station.emoji }}
-                  </div>
+                  <span class="text-base shrink-0">{{ station.emoji }}</span>
                   <div class="flex-1 min-w-0 text-left">
-                    <p class="text-xs font-medium text-white/90 truncate">{{ station.name }}</p>
-                    <p class="text-[10px] text-white/40 truncate">{{ station.tracks[0]?.artist || 'Live Stream' }}</p>
+                    <p class="text-[12px] font-medium truncate">{{ station.name }}</p>
+                    <p class="text-[10px] text-white/20 truncate">{{ station.tracks[0]?.title }}</p>
                   </div>
                   <div v-if="lofi.currentStationId.value === station.id && lofi.isPlaying.value" class="flex gap-[2px] items-end h-3 shrink-0">
-                    <span v-for="i in 3" :key="i" class="w-[2px] rounded-full animate-pulse" :style="{ height: `${4 + (i * 2)}px`, animationDelay: `${i * 0.15}s`, backgroundColor: station.color }" />
+                    <span v-for="i in 3" :key="i" class="w-[2px] bg-white rounded-full animate-pulse" :style="{ height: `${4 + (i * 2)}px`, animationDelay: `${i * 0.15}s` }" />
                   </div>
-                  <UIcon v-else-if="lofi.currentStationId.value === station.id" name="i-heroicons-check" class="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <div v-else-if="lofi.currentStationId.value === station.id" class="w-2 h-2 rounded-full bg-white shrink-0" />
                 </button>
               </div>
             </Transition>
@@ -731,6 +755,8 @@ async function loadAssessment() {
     sessionStorage.removeItem('focusflow_just_logged_in')
     // Always show quiz on fresh login
     setTimeout(() => { showQuiz.value = true }, 1500)
+    // Process any pending workspace invitations for this user
+    $fetch('/api/auth/process-invitations', { method: 'POST' }).catch(() => {})
   }
   try {
     const data = await $fetch<any>(`/api/workspaces/${store.workspace.id}/assessment`)

@@ -3,7 +3,15 @@
     <NuxtLayout name="auth">
       <div class="animate-fade-up">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">{{ t.createYourAccount }}</h2>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">{{ t.startManaging }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ t.startManaging }}</p>
+
+        <!-- Invitation banner -->
+        <div v-if="inviteId" class="mb-6 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl px-4 py-3">
+          <div class="flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
+            <UIcon name="i-heroicons-envelope" class="w-5 h-5 shrink-0" />
+            <p class="text-sm font-medium">{{ lang.language.value === 'en' ? 'You have a workspace invitation! Create your account to join.' : 'Tienes una invitacion a un workspace. Crea tu cuenta para unirte.' }}</p>
+          </div>
+        </div>
 
         <form class="space-y-5" @submit.prevent="handleRegister">
           <UFormField :label="t.email">
@@ -60,12 +68,15 @@ definePageMeta({ layout: false })
 const { signUp, signInWithGoogle, loading: authLoading } = useAuth()
 const { signInWithWallet, hasWallet, loading: walletLoadingRef } = useWeb3Auth()
 const router = useRouter()
-const { labels: t } = useLanguage()
+const lang = useLanguage()
+const t = lang.labels
 
-const email = ref('')
+const route = useRoute()
+const email = ref((route.query.email as string) || '')
 const password = ref('')
 const confirmPassword = ref('')
 const errorMsg = ref('')
+const inviteId = computed(() => (route.query.invite as string) || '')
 const loading = computed(() => authLoading.value)
 const walletLoading = computed(() => walletLoadingRef.value)
 

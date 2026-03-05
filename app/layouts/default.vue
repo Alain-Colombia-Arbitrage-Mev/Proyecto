@@ -31,40 +31,12 @@
         </NuxtLink>
       </nav>
 
-      <div class="mx-4 border-t border-white/[0.06]" />
+      <!-- Spacer -->
+      <div class="flex-1" />
 
-      <!-- Projects section -->
-      <div class="flex-1 overflow-y-auto py-3" :class="collapsed ? 'px-2' : 'px-3'">
-        <div v-if="!collapsed" class="flex items-center justify-between px-2.5 pb-2">
-          <span class="text-[10px] font-bold uppercase tracking-widest text-white/30">{{ t.projects }}</span>
-          <button
-            class="w-5 h-5 flex items-center justify-center rounded text-white/30 hover:text-[#75fc96] hover:bg-white/[0.08] transition-all"
-            @click="$emit('create-project')"
-            :title="t.newProject"
-          >
-            <UIcon name="i-heroicons-plus" class="w-3 h-3" />
-          </button>
-        </div>
-
-        <div class="space-y-0.5">
-          <NuxtLink
-            v-for="project in store.projects"
-            :key="project.id"
-            :to="`/${store.slug}/projects/${project.id}/kanban`"
-            class="group flex items-center gap-2.5 rounded-lg text-[13px] text-white/50 hover:bg-white/[0.08] hover:text-white/90 transition-all duration-150"
-            :class="[
-              collapsed ? 'px-0 py-2 justify-center' : 'px-2.5 py-1.5',
-              isActiveProject(project.id) ? '!bg-[#75fc96]/10 !text-[#75fc96] font-semibold' : '',
-            ]"
-          >
-            <div class="w-2 h-2 rounded-full shrink-0" :style="{ backgroundColor: project.color }" />
-            <span v-if="!collapsed" class="truncate">{{ project.name }}</span>
-          </NuxtLink>
-
-          <div v-if="store.projects.length === 0 && !collapsed" class="px-2.5 py-3">
-            <p class="text-[11px] text-white/30">{{ t.noProjects }}</p>
-          </div>
-        </div>
+      <!-- Lofi Player (sidebar mini) -->
+      <div class="shrink-0">
+        <LofiPlayer sidebar :collapsed="collapsed" />
       </div>
 
       <!-- Language + Notifications + user + collapse -->
@@ -98,42 +70,47 @@
           </NuxtLink>
           <button
             v-if="!collapsed"
-            class="w-7 h-7 flex items-center justify-center rounded-lg text-white/30 hover:text-white/60 hover:bg-white/[0.08] transition-colors shrink-0"
+            class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/[0.06] text-white/40 hover:text-white/80 hover:bg-white/[0.12] transition-all shrink-0 border border-white/[0.06]"
             @click="collapsed = true"
           >
-            <UIcon name="i-heroicons-chevron-double-left-20-solid" class="w-3.5 h-3.5" />
+            <UIcon name="i-heroicons-chevron-double-left-20-solid" class="w-4 h-4" />
           </button>
           <button
             v-if="collapsed"
-            class="w-7 h-7 flex items-center justify-center rounded-lg text-white/30 hover:text-white/60 hover:bg-white/[0.08] transition-colors"
+            class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/[0.06] text-white/40 hover:text-white/80 hover:bg-white/[0.12] transition-all border border-white/[0.06]"
             @click="collapsed = false"
           >
-            <UIcon name="i-heroicons-chevron-double-right-20-solid" class="w-3.5 h-3.5" />
+            <UIcon name="i-heroicons-chevron-double-right-20-solid" class="w-4 h-4" />
           </button>
         </div>
       </div>
     </aside>
 
     <!-- Mobile Header -->
-    <header class="md:hidden fixed top-0 inset-x-0 z-30 h-14 flex items-center justify-between px-4 bg-white/80 dark:bg-[#111]/80 backdrop-blur-xl border-b border-gray-200 dark:border-white/10">
+    <header class="md:hidden fixed top-0 inset-x-0 z-30 h-14 flex items-center justify-between px-4 bg-white/90 dark:bg-[#111]/90 backdrop-blur-xl border-b border-gray-200/60 dark:border-white/10">
       <div class="flex items-center gap-2.5">
-        <div class="w-7 h-7 rounded-lg bg-focusflow-600 flex items-center justify-center">
-          <span class="text-white font-bold text-xs" style="font-family: 'Space Mono', monospace;">F</span>
+        <div class="w-8 h-8 rounded-lg bg-[#75fc96] flex items-center justify-center shadow-sm shadow-[#75fc96]/20">
+          <span class="text-[#17191c] font-bold text-sm" style="font-family: 'Space Mono', monospace;">F</span>
         </div>
-        <span class="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">{{ store.workspace?.name || 'FocusFlow' }}</span>
+        <div class="min-w-0">
+          <p class="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate leading-tight">{{ store.workspace?.name || 'FocusFlow' }}</p>
+        </div>
       </div>
-      <NotificationBell />
+      <div class="flex items-center gap-1.5">
+        <ClientOnly><DarkModeToggle sidebar-style /></ClientOnly>
+        <NotificationBell />
+      </div>
     </header>
 
     <!-- Main Content -->
     <main
       class="transition-all duration-300 ease-out"
       :class="[
-        'md:pt-0 pt-14 pb-20 md:pb-0',
+        'md:pt-0 pt-14 pb-24 md:pb-0',
         collapsed ? 'md:pl-[68px]' : 'md:pl-[252px]',
       ]"
     >
-      <div class="p-4 md:p-8 max-w-7xl">
+      <div class="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto">
         <slot />
       </div>
     </main>
@@ -142,7 +119,7 @@
     <Transition name="slide-up">
       <div
         v-if="pomodoro.activeTask.value && pomodoro.running.value"
-        class="fixed bottom-24 md:bottom-6 right-4 md:right-20 z-40 flex items-center gap-2 bg-white/80 dark:bg-[#1b1b1b]/80 backdrop-blur-xl border border-emerald-200 dark:border-[#75fc96]/20 rounded-full pl-3 pr-1.5 py-1.5 shadow-lg shadow-emerald-500/10"
+        class="fixed bottom-[6.5rem] md:bottom-6 right-4 md:right-20 z-40 flex items-center gap-2 bg-white/80 dark:bg-[#1b1b1b]/80 backdrop-blur-xl border border-emerald-200 dark:border-[#75fc96]/20 rounded-full pl-3 pr-1.5 py-1.5 shadow-lg shadow-emerald-500/10"
       >
         <span class="text-sm">&#x23F1;</span>
         <span class="text-[11px] font-medium text-gray-700 dark:text-gray-300 max-w-[120px] truncate">{{ pomodoro.activeTask.value.title }}</span>
@@ -160,26 +137,69 @@
     <!-- Time Tracker Widget -->
     <TimeTracker v-if="store.workspace?.id" :workspace-id="store.workspace.id" />
 
-    <!-- Lofi Player -->
-    <LofiPlayer />
+    <!-- Lofi Player (mobile only — desktop is in sidebar) -->
+    <div class="md:hidden">
+      <LofiPlayer />
+    </div>
 
     <!-- Mobile Bottom Nav -->
     <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/80 dark:bg-[#111]/80 backdrop-blur-xl border-t border-gray-200 dark:border-white/10">
-      <div class="flex items-stretch justify-around h-14 px-1">
+      <div class="flex items-stretch justify-around h-16 px-2">
         <NuxtLink
-          v-for="item in mobileNav"
+          v-for="item in mobileNavPrimary"
           :key="item.to"
           :to="item.to"
           :prefetch="false"
-          class="flex flex-col items-center justify-center gap-0.5 min-w-0 px-1 text-gray-400 transition-colors"
-          active-class="!text-focusflow-600"
+          class="flex flex-col items-center justify-center gap-0.5 min-w-0 px-2 py-1 text-gray-400 dark:text-gray-500 transition-colors"
+          active-class="!text-focusflow-600 dark:!text-[#75fc96]"
         >
-          <UIcon :name="item.icon" class="w-5 h-5" />
-          <span class="text-[9px] font-semibold truncate">{{ item.label }}</span>
+          <UIcon :name="item.icon" class="w-6 h-6" />
+          <span class="text-[10px] font-semibold truncate">{{ item.label }}</span>
         </NuxtLink>
+        <!-- More button -->
+        <button
+          class="flex flex-col items-center justify-center gap-0.5 min-w-0 px-2 py-1 transition-colors cursor-pointer"
+          :class="showMobileMore ? 'text-focusflow-600 dark:text-[#75fc96]' : 'text-gray-400 dark:text-gray-500'"
+          @click="showMobileMore = !showMobileMore"
+        >
+          <UIcon name="i-heroicons-ellipsis-horizontal-circle" class="w-6 h-6" />
+          <span class="text-[10px] font-semibold">{{ t.more || 'Mas' }}</span>
+        </button>
       </div>
       <div class="h-[env(safe-area-inset-bottom)]" />
     </nav>
+
+    <!-- Mobile More Menu -->
+    <Transition name="slide-up">
+      <div
+        v-if="showMobileMore"
+        class="md:hidden fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-3 right-3 z-40 bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200 dark:border-white/10 shadow-xl shadow-black/10 dark:shadow-black/40 overflow-hidden"
+      >
+        <div class="grid grid-cols-4 gap-1 p-3">
+          <NuxtLink
+            v-for="item in mobileNavSecondary"
+            :key="item.to"
+            :to="item.to"
+            :prefetch="false"
+            class="flex flex-col items-center justify-center gap-1 py-3 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+            active-class="!text-focusflow-600 dark:!text-[#75fc96] !bg-focusflow-50 dark:!bg-[#75fc96]/10"
+            @click="showMobileMore = false"
+          >
+            <UIcon :name="item.icon" class="w-6 h-6" />
+            <span class="text-[10px] font-medium text-center leading-tight">{{ item.label }}</span>
+          </NuxtLink>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Mobile More Backdrop -->
+    <Transition name="fade">
+      <div
+        v-if="showMobileMore"
+        class="md:hidden fixed inset-0 z-35 bg-black/20 dark:bg-black/40"
+        @click="showMobileMore = false"
+      />
+    </Transition>
   </div>
 </template>
 
@@ -193,6 +213,7 @@ const t = tRef
 const { canUseAI, canManageMembers, canManageWorkspace, canViewUsageStats, canViewTimesheets, canViewGoals, canViewRoadmap, canViewAgenda } = usePermissions()
 
 const collapsed = ref(false)
+const showMobileMore = ref(false)
 
 const workspaceSlug = computed(() => (route.params.workspace as string) || store.slug || '')
 
@@ -227,14 +248,30 @@ const allNav = computed(() => [
 
 const mainNav = computed(() => allNav.value.filter(i => i.show))
 
-const mobileNav = computed(() => allNav.value
-  .filter(i => i.show && i.label !== t.value.team)
+// Mobile nav: 4 primary items + "More" button for the rest
+const primaryPaths = computed(() => new Set([
+  `/${workspaceSlug.value}/dashboard`,
+  `/${workspaceSlug.value}/projects`,
+  `/${workspaceSlug.value}/agenda`,
+  `/${workspaceSlug.value}/files`,
+]))
+
+const mobileNavAll = computed(() => allNav.value
+  .filter(i => i.show)
   .map(i => i.label === t.value.dashboard ? { ...i, label: t.value.home } : i)
 )
 
-function isActiveProject(projectId: string) {
-  return route.params.id === projectId
-}
+const mobileNavPrimary = computed(() =>
+  mobileNavAll.value.filter(i => primaryPaths.value.has(i.to)).slice(0, 4)
+)
+
+const mobileNavSecondary = computed(() =>
+  mobileNavAll.value.filter(i => !primaryPaths.value.has(i.to))
+)
+
+// Close mobile more menu on route change
+watch(() => route.fullPath, () => { showMobileMore.value = false })
+
 </script>
 
 <style scoped>
@@ -246,5 +283,13 @@ function isActiveProject(projectId: string) {
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(12px);
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

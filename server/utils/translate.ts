@@ -5,6 +5,15 @@
 
 const TRANSLATE_MODEL = 'qwen/qwen3-coder-next'
 
+/** Only these project templates get auto-translated */
+const TRANSLATABLE_TEMPLATES = new Set([
+  'dev',
+  'devops',
+  'backend_senior_dev',
+  'frontend_design',
+  'app_development',
+])
+
 function stripThinkTags(text: string): string {
   return text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim()
 }
@@ -31,6 +40,21 @@ function tryParseJson(raw: string): any {
   const match = cleaned.match(/\{[\s\S]*\}/)
   if (match) try { return JSON.parse(match[0]) } catch {}
   return null
+}
+
+// ── Check if project template supports translation ────────────────────
+
+export async function shouldTranslateProject(supabase: any, projectId: string): Promise<boolean> {
+  try {
+    const { data } = await supabase
+      .from('projects')
+      .select('kanban_template')
+      .eq('id', projectId)
+      .maybeSingle()
+    return TRANSLATABLE_TEMPLATES.has(data?.kanban_template || '')
+  } catch {
+    return false
+  }
 }
 
 // ── Single task translation (used on create/edit) ─────────────────────

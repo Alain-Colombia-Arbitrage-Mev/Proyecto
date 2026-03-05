@@ -93,6 +93,17 @@
           </button>
         </div>
         <LanguageToggle />
+        <!-- Bulk delete -->
+        <button
+          v-if="canDeleteTasks && tasks.length > 0"
+          class="text-xs font-medium px-3.5 py-2 rounded-full transition-all cursor-pointer text-red-500 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20"
+          @click="handleDeleteAllTasks"
+        >
+          <span class="flex items-center gap-1.5">
+            <UIcon name="i-heroicons-trash" class="w-3.5 h-3.5" />
+            {{ language === 'en' ? 'Delete all' : 'Borrar todo' }}
+          </span>
+        </button>
         <!-- Kanban filter -->
         <button
           class="text-xs font-medium px-3.5 py-2 rounded-full transition-all cursor-pointer"
@@ -152,7 +163,7 @@
     </div>
 
     <!-- Kanban Board (Columns View) -->
-    <div v-else-if="viewMode === 'columns'" class="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:-mx-8 md:px-8 min-h-[65vh] animate-fade-up delay-100 snap-x snap-mandatory md:snap-none">
+    <div v-else-if="viewMode === 'columns'" class="kanban-scroll flex gap-4 overflow-x-auto pb-6 -mx-4 px-4 md:-mx-8 md:px-8 min-h-[50vh] animate-fade-up delay-100 snap-x snap-mandatory md:snap-none">
       <div
         v-for="column in columns"
         :key="column.id"
@@ -176,6 +187,14 @@
             </span>
           </div>
           <div class="flex items-center gap-0.5">
+            <button
+              v-if="canDeleteTasks && filteredTasksByColumn(column.id).length > 0"
+              class="w-7 h-7 flex items-center justify-center rounded-md text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-all sm:opacity-0 sm:group-hover/col:opacity-100"
+              @click="handleClearColumn(column)"
+              :title="language === 'en' ? 'Clear all tasks in column' : 'Vaciar tareas de la columna'"
+            >
+              <UIcon name="i-heroicons-archive-box-x-mark" class="w-3.5 h-3.5" />
+            </button>
             <button
               class="w-7 h-7 flex items-center justify-center rounded-md text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-all sm:opacity-0 sm:group-hover/col:opacity-100"
               @click="openEditColumn(column)"
@@ -203,7 +222,7 @@
 
         <!-- Tasks list -->
         <div
-          class="flex-1 space-y-2 bg-gray-50/80 dark:bg-white/5 rounded-xl p-2 min-h-[200px] transition-colors"
+          class="flex-1 space-y-2 bg-gray-50/80 dark:bg-white/5 rounded-xl p-2 min-h-[120px] transition-colors"
           :class="dragOverColumn === column.id ? 'ring-2 ring-focusflow-300 bg-focusflow-50/50' : ''"
           @dragover.prevent="dragOverColumn = column.id"
           @dragleave="dragOverColumn = ''"
@@ -219,17 +238,27 @@
             @dragstart="onDragStart($event, task)"
             @click="openTaskDetail(task)"
           >
-            <!-- Pomodoro quick-start button -->
-            <button
-              class="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-all z-10"
-              :class="pomodoro.activeTask.value?.id === task.id
-                ? 'bg-emerald-100 text-emerald-600 opacity-100'
-                : 'bg-gray-100 dark:bg-white/10 text-gray-400 hover:bg-focusflow-100 dark:hover:bg-focusflow-500/20 hover:text-focusflow-600 sm:opacity-0 sm:group-hover/card:opacity-100'"
-              :title="pomodoro.activeTask.value?.id === task.id ? `Pomodoro: ${pomodoro.display.value}` : t.startPomodoro"
-              @click.stop="pomodoro.startForTask({ id: task.id, title: task.title }, workspaceId)"
-            >
-              <UIcon name="i-heroicons-clock" class="w-3.5 h-3.5" />
-            </button>
+            <!-- Card quick actions -->
+            <div class="absolute top-2 right-2 flex items-center gap-1 z-10">
+              <button
+                v-if="canDeleteTasks"
+                class="w-7 h-7 rounded-full flex items-center justify-center transition-all bg-gray-100 dark:bg-white/10 text-gray-400 hover:bg-red-100 dark:hover:bg-red-500/20 hover:text-red-500 sm:opacity-0 sm:group-hover/card:opacity-100"
+                :title="t.deleteTask"
+                @click.stop="handleDeleteTask(task)"
+              >
+                <UIcon name="i-heroicons-trash" class="w-3 h-3" />
+              </button>
+              <button
+                class="w-7 h-7 rounded-full flex items-center justify-center transition-all"
+                :class="pomodoro.activeTask.value?.id === task.id
+                  ? 'bg-emerald-100 text-emerald-600 opacity-100'
+                  : 'bg-gray-100 dark:bg-white/10 text-gray-400 hover:bg-focusflow-100 dark:hover:bg-focusflow-500/20 hover:text-focusflow-600 sm:opacity-0 sm:group-hover/card:opacity-100'"
+                :title="pomodoro.activeTask.value?.id === task.id ? `Pomodoro: ${pomodoro.display.value}` : t.startPomodoro"
+                @click.stop="pomodoro.startForTask({ id: task.id, title: task.title }, workspaceId)"
+              >
+                <UIcon name="i-heroicons-clock" class="w-3 h-3" />
+              </button>
+            </div>
             <!-- Labels row -->
             <div v-if="task.labels?.length" class="flex flex-wrap gap-1 mb-1.5">
               <span
@@ -396,13 +425,14 @@
     <div v-if="!loading && viewMode === 'list'" class="animate-fade-up delay-100">
       <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-100 dark:border-white/10 overflow-hidden">
         <!-- Table header -->
-        <div class="grid grid-cols-[2fr_1fr_1fr] md:grid-cols-[2fr_1fr_0.8fr_0.8fr_0.8fr_0.6fr] px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-white/5">
+        <div class="grid grid-cols-[2fr_1fr_1fr_auto] md:grid-cols-[2fr_1fr_0.8fr_0.8fr_0.8fr_0.6fr_auto] px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-white/5">
           <span>{{ language === 'en' ? 'Task' : 'Tarea' }}</span>
           <span class="hidden md:block">{{ t.column }}</span>
           <span>{{ t.deadline }}</span>
           <span>{{ t.priority }}</span>
           <span class="hidden md:block">{{ t.tags }}</span>
           <span class="hidden md:block">{{ t.assigned }}</span>
+          <span class="w-8" />
         </div>
         <!-- Rows grouped by column -->
         <template v-for="column in columns" :key="'list-'+column.id">
@@ -419,7 +449,7 @@
           <div
             v-for="task in filteredTasksByColumn(column.id)"
             :key="'lt-'+task.id"
-            class="grid grid-cols-[2fr_1fr_1fr] md:grid-cols-[2fr_1fr_0.8fr_0.8fr_0.8fr_0.6fr] px-4 py-2.5 text-[12px] border-b border-gray-50 dark:border-white/5 last:border-0 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+            class="grid grid-cols-[2fr_1fr_1fr_auto] md:grid-cols-[2fr_1fr_0.8fr_0.8fr_0.8fr_0.6fr_auto] px-4 py-2.5 text-[12px] border-b border-gray-50 dark:border-white/5 last:border-0 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors cursor-pointer group"
             draggable="true"
             @dragstart="onDragStart($event, task)"
             @click="openTaskDetail(task)"
@@ -503,6 +533,17 @@
               </div>
               <span v-if="(task.assignees || []).length > 3" class="text-[9px] text-gray-400 ml-1">+{{ task.assignees!.length - 3 }}</span>
               <span v-if="!(task.assignees || []).length" class="text-[10px] text-gray-300">—</span>
+            </div>
+            <!-- Delete -->
+            <div class="flex items-center justify-center w-8">
+              <button
+                v-if="canDeleteTasks"
+                class="w-6 h-6 rounded-full flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
+                :title="t.deleteTask"
+                @click.stop="handleDeleteTask(task)"
+              >
+                <UIcon name="i-heroicons-trash" class="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
         </template>
@@ -971,12 +1012,13 @@ const pomodoro = usePomodoroTimer()
 
 const route = useRoute()
 const store = useWorkspaceStore()
-const { canCreateTasks, canUseAI, canImportTasks } = usePermissions()
+const { canCreateTasks, canDeleteTasks, canUseAI, canImportTasks } = usePermissions()
 
 const project = ref<Project | null>(null)
 const columns = ref<KanbanColumn[]>([])
 const tasks = ref<Task[]>([])
 const loading = ref(true)
+
 
 const workspaceId = computed(() => store.workspace?.id || '')
 
@@ -1309,15 +1351,24 @@ async function handleUpdateColumn() {
 async function handleDeleteColumn(column: KanbanColumn) {
   const tasksInColumn = tasksByColumn(column.id).length
   if (tasksInColumn > 0) {
-    alert(language.value === 'en'
-      ? `Cannot delete "${column.title}" because it has ${tasksInColumn} task(s). Move the tasks first.`
-      : `No puedes eliminar "${column.title}" porque tiene ${tasksInColumn} tarea(s). Mueve las tareas primero.`)
-    return
+    const msg = language.value === 'en'
+      ? `"${column.title}" has ${tasksInColumn} task(s). Delete the column and all its tasks?`
+      : `"${column.title}" tiene ${tasksInColumn} tarea(s). ¿Eliminar la columna y todas sus tareas?`
+    if (!confirm(msg)) return
+    // Clear tasks first, then delete column
+    try {
+      await $fetch(`/api/workspaces/${workspaceId.value}/tasks/batch-delete`, {
+        method: 'POST',
+        body: { column_id: column.id },
+      })
+    } catch { return }
+  } else {
+    if (!confirm(language.value === 'en' ? `Delete column "${column.title}"?` : `¿Eliminar la columna "${column.title}"?`)) return
   }
-  if (!confirm(language.value === 'en' ? `Delete column "${column.title}"?` : `¿Eliminar la columna "${column.title}"?`)) return
   try {
     await $fetch(`/api/workspaces/${workspaceId.value}/columns/${column.id}`, { method: 'DELETE' })
     columns.value = columns.value.filter(c => c.id !== column.id)
+    await loadTasks()
   } catch { /* */ }
 }
 
@@ -1353,6 +1404,53 @@ function openAddTask(columnId: string) {
 function openTaskDetail(task: Task) {
   selectedTask.value = task
   showTaskDetail.value = true
+}
+
+async function handleDeleteTask(task: Task) {
+  const msg = language.value === 'en' ? `Delete "${task.title}"?` : `¿Eliminar "${task.title}"?`
+  if (!confirm(msg)) return
+  try {
+    await $fetch(`/api/workspaces/${workspaceId.value}/tasks/${task.id}`, { method: 'DELETE' })
+    await loadTasks()
+  } catch { /* */ }
+}
+
+async function handleClearColumn(column: KanbanColumn) {
+  const count = tasksByColumn(column.id).length
+  if (count === 0) return
+  const msg = language.value === 'en'
+    ? `Delete all ${count} task(s) in "${column.title}"? This cannot be undone.`
+    : `¿Eliminar las ${count} tarea(s) de "${column.title}"? Esta acción no se puede deshacer.`
+  if (!confirm(msg)) return
+  try {
+    await $fetch(`/api/workspaces/${workspaceId.value}/tasks/batch-delete`, {
+      method: 'POST',
+      body: { column_id: column.id },
+    })
+    await loadTasks()
+  } catch { /* */ }
+}
+
+async function handleDeleteAllTasks() {
+  const count = tasks.value.length
+  if (count === 0) return
+  const msg = language.value === 'en'
+    ? `DELETE ALL ${count} TASKS in this project? This cannot be undone.`
+    : `¿ELIMINAR TODAS las ${count} tareas de este proyecto? Esta acción no se puede deshacer.`
+  if (!confirm(msg)) return
+  // Double confirmation for safety
+  const msg2 = language.value === 'en'
+    ? `Are you absolutely sure? Type YES to confirm.`
+    : `¿Estás completamente seguro? Escribe SI para confirmar.`
+  const answer = prompt(msg2)
+  if (answer !== 'YES' && answer !== 'SI' && answer !== 'Si' && answer !== 'si' && answer !== 'yes') return
+  try {
+    await $fetch(`/api/workspaces/${workspaceId.value}/tasks/batch-delete`, {
+      method: 'POST',
+      body: { project_id: route.params.id },
+    })
+    await loadTasks()
+  } catch { /* */ }
 }
 
 // --- AI Functions ---
@@ -1717,15 +1815,41 @@ async function retryAsTaskSuggestions(originalText: string) {
   transform: translateY(16px) scale(0.95);
 }
 
-/* Kanban horizontal scroll - hide scrollbar on mobile for cleaner look */
+/* Kanban horizontal scroll */
 @media (max-width: 767px) {
-  .snap-x::-webkit-scrollbar {
+  .kanban-scroll::-webkit-scrollbar {
     height: 0;
     display: none;
   }
-  .snap-x {
+  .kanban-scroll {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
 }
+@media (min-width: 768px) {
+  .kanban-scroll::-webkit-scrollbar {
+    height: 8px;
+  }
+  .kanban-scroll::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+  }
+  .kanban-scroll::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.18);
+    border-radius: 4px;
+  }
+  .kanban-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+  :is(.dark) .kanban-scroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  :is(.dark) .kanban-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+  }
+  :is(.dark) .kanban-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
 </style>

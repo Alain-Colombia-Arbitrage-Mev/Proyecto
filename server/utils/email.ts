@@ -211,6 +211,62 @@ export function meetingInvitationEmailHtml(opts: {
 </html>`
 }
 
+export function pendingInvitationEmailHtml(opts: {
+  workspaceName: string
+  invitedByName: string
+  role: string
+  registerUrl: string
+}): string {
+  const safeWorkspace = escapeHtml(opts.workspaceName)
+  const safeName = escapeHtml(opts.invitedByName)
+  const safeRole = escapeHtml(opts.role)
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f6f6f6; padding: 32px; margin: 0;">
+  <div style="max-width: 520px; margin: 0 auto; background: white; border-radius: 16px; padding: 40px 32px; border: 1px solid #e5e7eb; box-shadow: 0 4px 24px rgba(0,0,0,0.06);">
+    <div style="text-align: center; margin-bottom: 28px;">
+      <div style="display: inline-block; width: 48px; height: 48px; background: #75fc96; border-radius: 12px; line-height: 48px; color: #17191c; font-weight: bold; font-size: 20px; font-family: 'Space Mono', monospace;">F</div>
+    </div>
+    <h2 style="margin: 0 0 8px; font-size: 22px; color: #0D0D0D; text-align: center; font-weight: 700;">Te han invitado a FocusFlow</h2>
+    <p style="margin: 0 0 24px; color: #7A7A7A; font-size: 15px; text-align: center; line-height: 1.5;">
+      <strong style="color: #0D0D0D;">${safeName}</strong> te invit&oacute; a colaborar en el workspace <strong style="color: #0D0D0D;">${safeWorkspace}</strong>
+    </p>
+    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 16px 20px; border-radius: 12px; margin-bottom: 24px;">
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 4px 0; color: #6b7280; font-size: 13px;">Workspace</td>
+          <td style="padding: 4px 0; color: #0D0D0D; font-size: 13px; font-weight: 600; text-align: right;">${safeWorkspace}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; color: #6b7280; font-size: 13px;">Rol asignado</td>
+          <td style="padding: 4px 0; color: #0D0D0D; font-size: 13px; font-weight: 600; text-align: right;">${safeRole}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; color: #6b7280; font-size: 13px;">Invitado por</td>
+          <td style="padding: 4px 0; color: #0D0D0D; font-size: 13px; font-weight: 600; text-align: right;">${safeName}</td>
+        </tr>
+      </table>
+    </div>
+    <div style="text-align: center; margin-bottom: 24px;">
+      <a href="${escapeHtml(opts.registerUrl)}"
+         style="display: inline-block; background: #0D0D0D; color: white; text-decoration: none; font-weight: 600; font-size: 15px; padding: 14px 36px; border-radius: 10px; letter-spacing: 0.3px;">
+        Crear cuenta y unirme
+      </a>
+    </div>
+    <p style="margin: 0 0 8px; color: #9ca3af; font-size: 12px; text-align: center; line-height: 1.5;">
+      Al registrarte, ser&aacute;s a&ntilde;adido autom&aacute;ticamente al workspace con tu rol asignado.
+    </p>
+    <hr style="border: none; border-top: 1px solid #f3f4f6; margin: 20px 0;" />
+    <p style="margin: 0; color: #d1d5db; font-size: 11px; text-align: center;">
+      FocusFlow &mdash; Plataforma de gesti&oacute;n de proyectos con IA
+    </p>
+  </div>
+</body>
+</html>`
+}
+
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, '&amp;')

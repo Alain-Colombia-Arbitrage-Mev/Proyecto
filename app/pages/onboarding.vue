@@ -217,6 +217,19 @@ const templateOptions = [
       { title: 'Archivado', color: '#9CA3AF' },
     ],
   },
+  {
+    label: 'App Development', value: 'app_development', cols: 8,
+    columns: [
+      { title: 'Backlog', color: '#6B7280' },
+      { title: 'Diseño UX/UI', color: '#EC4899' },
+      { title: 'Desarrollo', color: '#3B82F6' },
+      { title: 'Code Review', color: '#6366F1' },
+      { title: 'QA / Testing', color: '#F59E0B' },
+      { title: 'Beta', color: '#F97316' },
+      { title: 'Release', color: '#10B981' },
+      { title: 'Post-Launch', color: '#14B8A6' },
+    ],
+  },
 ]
 
 onMounted(async () => {

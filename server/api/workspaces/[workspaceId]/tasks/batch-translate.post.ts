@@ -19,8 +19,9 @@ export default defineEventHandler(async (event) => {
 
   const { data: tasks, error } = await supabase
     .from('tasks')
-    .select('id, title, description, title_en, description_en, translations, projects!inner(workspace_id)')
+    .select('id, title, description, title_en, description_en, translations, projects!inner(workspace_id, kanban_template)')
     .eq('projects.workspace_id', workspaceId)
+    .in('projects.kanban_template', ['dev', 'devops', 'backend_senior_dev', 'frontend_design', 'app_development'])
     .or('title_en.is.null,title_en.eq.,description_en.is.null')
     .not('title', 'is', null)
     .limit(limit)
@@ -52,8 +53,9 @@ export default defineEventHandler(async (event) => {
 
   const { count } = await supabase
     .from('tasks')
-    .select('id, projects!inner(workspace_id)', { count: 'exact', head: true })
+    .select('id, projects!inner(workspace_id, kanban_template)', { count: 'exact', head: true })
     .eq('projects.workspace_id', workspaceId)
+    .in('projects.kanban_template', ['dev', 'devops', 'backend_senior_dev', 'frontend_design', 'app_development'])
     .or('title_en.is.null,title_en.eq.,description_en.is.null')
 
   return { translated, remaining: Math.max((count || 0) - translated, 0) }

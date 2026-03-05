@@ -59,7 +59,7 @@ const DEFAULT_PERMISSION_MIN_ROLE: Record<Permission, number> = {
   view_tasks: 0,
   create_tasks: 1,
   edit_tasks: 1,
-  delete_tasks: 1,
+  delete_tasks: 2,
   import_tasks: 2,
   view_files: 0,
   upload_files: 1,

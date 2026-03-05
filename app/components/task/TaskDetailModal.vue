@@ -324,8 +324,7 @@ const columnOptions = computed(() =>
   props.columns.map(c => ({ label: c.title, value: c.id }))
 )
 
-watch(() => props.task, (t) => {
-  if (!t) return
+function populateForm(t: Task) {
   const desc = t.description ? plainTextToHtml(t.description) : ''
   const descEn = t.description_en ? plainTextToHtml(t.description_en) : ''
   const descUr = t.translations?.ur?.description ? plainTextToHtml(t.translations.ur.description) : ''
@@ -345,9 +344,36 @@ watch(() => props.task, (t) => {
     color: (t as any).color || '',
   })
   selectedLabelIds.value = (t.labels || []).map(l => l.id)
+}
+
+let translationRefetchTimer: ReturnType<typeof setTimeout> | null = null
+
+watch(() => props.task, (t) => {
+  if (!t) return
+  populateForm(t)
   editingTitle.value = false
   descLang.value = 'es'
+
+  // If translations are missing, refetch after a delay to pick up fire-and-forget translations
+  if (translationRefetchTimer) clearTimeout(translationRefetchTimer)
+  if (!t.title_en && t.title) {
+    translationRefetchTimer = setTimeout(async () => {
+      try {
+        const res = await $fetch<{ task: Task }>(`/api/workspaces/${props.workspaceId}/tasks/${t.id}`)
+        const fresh = res.task
+        if (fresh.title_en || fresh.translations?.ur?.description) {
+          editForm.title_en = fresh.title_en || ''
+          editForm.description_en = fresh.description_en ? plainTextToHtml(fresh.description_en) : ''
+          editForm.description_ur = fresh.translations?.ur?.description ? plainTextToHtml(fresh.translations.ur.description) : ''
+        }
+      } catch { /* ignore */ }
+    }, 4000)
+  }
 }, { immediate: true })
+
+onUnmounted(() => {
+  if (translationRefetchTimer) clearTimeout(translationRefetchTimer)
+})
 
 
 function toggleAssignee(userId: string) {

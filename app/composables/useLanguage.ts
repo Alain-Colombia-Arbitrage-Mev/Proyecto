@@ -172,6 +172,7 @@ export function useLanguage() {
       billing: t('Facturacion', 'Billing', 'بلنگ'),
       settings: t('Ajustes', 'Settings', 'ترتیبات'),
       home: t('Home', 'Home', 'ہوم'),
+      more: t('Mas', 'More', 'مزید'),
 
       // ── Team page ──
       teamTitle: t('Equipo', 'Team', 'ٹیم'),
@@ -280,7 +281,7 @@ export function useLanguage() {
       bottlenecks: t('Cuellos de botella', 'Bottlenecks', 'رکاوٹیں'),
       recommendations: t('Recomendaciones', 'Recommendations', 'سفارشات'),
       sections: t('Secciones', 'Sections', 'حصے'),
-      more: t('más...', 'more...', 'مزید...'),
+      moreEllipsis: t('más...', 'more...', 'مزید...'),
       savedMd: t('.md guardado', '.md saved', '.md محفوظ ہو گیا'),
 
       // ── Projects page ──

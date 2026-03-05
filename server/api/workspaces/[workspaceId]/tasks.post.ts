@@ -94,13 +94,24 @@ export default defineEventHandler(async (event) => {
   // figma_links only gets included when explicitly provided by the caller —
   // this keeps the endpoint compatible with databases where migration 014
   // (ADD COLUMN figma_links) has not yet been applied.
+  // Auto-assign unassigned tasks to project owner or task creator
+  let finalAssignees: string[] = body.assignees || []
+  if (finalAssignees.length === 0) {
+    const { data: proj } = await supabase
+      .from('projects')
+      .select('owner_id')
+      .eq('id', resolvedProjectId)
+      .maybeSingle()
+    finalAssignees = [proj?.owner_id || user.id]
+  }
+
   const insertPayload: Record<string, unknown> = {
     project_id: resolvedProjectId,
     column_id: resolvedColumnId,
     title: body.title,
     description: body.description || null,
     priority: body.priority || 'medium',
-    assignees: body.assignees || [],
+    assignees: finalAssignees,
     reporter_id: user.id,
     due_date: body.due_date || null,
     estimated_hours: body.estimated_hours || null,
@@ -165,12 +176,16 @@ export default defineEventHandler(async (event) => {
   }
 
   // Auto-translate to English if no English title was provided (fire-and-forget)
+  // Only for IT/dev templates (dev, devops, backend_senior_dev, frontend_design, app_development)
   if (!task.title_en && task.title) {
-    translateTaskToEnglish({
-      supabase,
-      taskId: task.id,
-      title: task.title,
-      description: task.description || null,
+    shouldTranslateProject(supabase, resolvedProjectId).then((shouldTranslate) => {
+      if (!shouldTranslate) return
+      translateTaskToEnglish({
+        supabase,
+        taskId: task.id,
+        title: task.title,
+        description: task.description || null,
+      })
     }).catch(() => {})
   }
 

@@ -1,6 +1,6 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import { notifyUser } from '~~/server/utils/notifications'
-import { workspaceInvitationEmailHtml } from '~~/server/utils/email'
+import { workspaceInvitationEmailHtml, pendingInvitationEmailHtml, sendEmail } from '~~/server/utils/email'
 
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
   if (!body.email || typeof body.email !== 'string') throw createError({ statusCode: 400, message: 'Email is required' })
 
   const normalizedEmail = body.email.trim().toLowerCase()
+  const assignedRole = body.role || 'viewer'
 
   // Find user by email — paginate to handle large user bases
   let targetUser: any = null
@@ -31,9 +32,77 @@ export default defineEventHandler(async (event) => {
     page++
     if (page > 20) break // Safety limit
   }
+
+  // Get workspace info and inviter name (needed for both paths)
+  const { data: ws } = await supabase.from('workspaces').select('name, slug').eq('id', workspaceId).maybeSingle()
+  const workspaceName = ws?.name || 'Workspace'
+
+  let inviterName = 'Alguien'
+  try {
+    const { data: profile } = await supabase.auth.admin.getUserById(user.id)
+    inviterName = profile?.user?.user_metadata?.full_name || profile?.user?.email || 'Alguien'
+  } catch {}
+
+  // ── User NOT found — send pending invitation ──
   if (!targetUser) {
-    throw createError({ statusCode: 404, message: 'No se encontró un usuario con ese email. Debe registrarse primero.' })
+    // Check if there's already a pending invitation
+    const { data: existingInvite } = await supabase
+      .from('workspace_invitations')
+      .select('id')
+      .eq('workspace_id', workspaceId)
+      .eq('email', normalizedEmail)
+      .eq('status', 'pending')
+      .maybeSingle()
+
+    if (existingInvite) {
+      throw createError({ statusCode: 409, message: 'Ya existe una invitación pendiente para este email' })
+    }
+
+    // Store the pending invitation
+    const { data: invitation, error: invErr } = await supabase
+      .from('workspace_invitations')
+      .insert({
+        workspace_id: workspaceId,
+        email: normalizedEmail,
+        role: assignedRole,
+        invited_by: user.id,
+        status: 'pending',
+        project_ids: body.project_ids || [],
+      })
+      .select()
+      .single()
+
+    if (invErr) {
+      console.error('[members.post] Error creating invitation:', invErr.message)
+      throw createError({ statusCode: 500, message: 'Error creating invitation' })
+    }
+
+    // Build registration URL with invitation context
+    const config = useRuntimeConfig()
+    const baseUrl = config.appUrl || config.public?.appUrl || 'https://focusflow.app'
+    const registerUrl = `${baseUrl}/auth/register?invite=${invitation.id}&email=${encodeURIComponent(normalizedEmail)}`
+
+    // Send invitation email
+    sendEmail({
+      to: normalizedEmail,
+      subject: `${inviterName} te invitó a ${workspaceName} en FocusFlow`,
+      html: pendingInvitationEmailHtml({
+        workspaceName,
+        invitedByName: inviterName,
+        role: assignedRole,
+        registerUrl,
+      }),
+    }).catch(() => {})
+
+    return {
+      pending: true,
+      email: normalizedEmail,
+      role: assignedRole,
+      message: `Invitación enviada a ${normalizedEmail}. Se unirá automáticamente al registrarse.`,
+    }
   }
+
+  // ── User found — add directly ──
 
   // Check if already a member
   const { data: existing } = await supabase
@@ -46,8 +115,6 @@ export default defineEventHandler(async (event) => {
   if (existing) {
     throw createError({ statusCode: 409, message: 'Este usuario ya es miembro del workspace' })
   }
-
-  const assignedRole = body.role || 'viewer'
 
   const { data: member, error } = await supabase
     .from('workspace_members')
@@ -76,15 +143,6 @@ export default defineEventHandler(async (event) => {
   }
 
   // Notify the invited user (fire-and-forget)
-  const { data: ws } = await supabase.from('workspaces').select('name').eq('id', workspaceId).maybeSingle()
-  const workspaceName = ws?.name || 'Workspace'
-
-  let inviterName = 'Alguien'
-  try {
-    const { data: profile } = await supabase.auth.admin.getUserById(user.id)
-    inviterName = profile?.user?.user_metadata?.full_name || profile?.user?.email || 'Alguien'
-  } catch {}
-
   notifyUser({
     event,
     userId: targetUser.id,

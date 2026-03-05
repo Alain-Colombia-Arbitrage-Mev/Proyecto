@@ -2,7 +2,7 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
-  await requireWorkspaceRole(event, workspaceId, 'member')
+  await requirePermission(event, workspaceId, 'delete_tasks')
 
   const taskId = getRouterParam(event, 'taskId')
   const supabase = serverSupabaseServiceRole(event)

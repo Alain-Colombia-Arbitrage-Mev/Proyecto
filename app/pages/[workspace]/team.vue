@@ -580,7 +580,7 @@ async function handleInvite() {
   inviteSuccess.value = ''
   inviting.value = true
   try {
-    await $fetch(`/api/workspaces/${store.workspace!.id}/members`, {
+    const result = await $fetch<any>(`/api/workspaces/${store.workspace!.id}/members`, {
       method: 'POST',
       body: {
         email: inviteEmail.value,
@@ -588,10 +588,14 @@ async function handleInvite() {
         project_ids: isInviteAdminPlus.value ? [] : inviteProjectIds.value,
       },
     })
-    inviteSuccess.value = `${inviteEmail.value} ${t.value.addedToTeam}`
+    if (result.pending) {
+      inviteSuccess.value = result.message || `Invitacion enviada a ${inviteEmail.value}`
+    } else {
+      inviteSuccess.value = `${inviteEmail.value} ${t.value.addedToTeam}`
+      await loadMembers()
+    }
     inviteEmail.value = ''
     inviteProjectIds.value = []
-    await loadMembers()
   } catch (e: any) {
     inviteError.value = e.data?.message || t.value.errorInviting
   } finally {
