@@ -222,7 +222,9 @@ async function loadData() {
       currentSub.value = subData.subscription
       usage.value = subData.usage
     }
-  } catch { } finally {
+  } catch (e: any) {
+    console.error('[billing] load error:', e)
+  } finally {
     loading.value = false
   }
 }

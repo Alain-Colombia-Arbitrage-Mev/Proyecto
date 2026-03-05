@@ -6,9 +6,13 @@ export default defineEventHandler(async (event) => {
   await requireWorkspaceMember(event, workspaceId)
 
   const supabase = serverSupabaseServiceRole(event)
-  const subscription = await getWorkspaceSubscription(supabase, workspaceId)
 
-  // Also get current usage counts
+  let subscription = null
+  try {
+    subscription = await getWorkspaceSubscription(supabase, workspaceId)
+  } catch { /* table may not exist yet */ }
+
+  // Get current usage counts
   const [{ count: projectCount }, { count: memberCount }] = await Promise.all([
     supabase.from('projects').select('id', { count: 'exact', head: true }).eq('workspace_id', workspaceId),
     supabase.from('workspace_members').select('id', { count: 'exact', head: true }).eq('workspace_id', workspaceId),
