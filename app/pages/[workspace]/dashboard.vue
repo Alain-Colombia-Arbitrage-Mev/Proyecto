@@ -696,17 +696,17 @@ const assessmentAnalysis = ref('')
 
 async function loadAssessment() {
   if (!store.workspace?.id) return
+  const justLoggedIn = sessionStorage.getItem('focusflow_just_logged_in')
+  if (justLoggedIn) {
+    sessionStorage.removeItem('focusflow_just_logged_in')
+    // Always show quiz on fresh login
+    setTimeout(() => { showQuiz.value = true }, 1500)
+  }
   try {
     const data = await $fetch<any>(`/api/workspaces/${store.workspace.id}/assessment`)
     if (data) {
       assessmentScore.value = data.score
       assessmentAnalysis.value = data.ai_analysis || ''
-    } else {
-      const justLoggedIn = sessionStorage.getItem('focusflow_just_logged_in')
-      if (justLoggedIn) {
-        sessionStorage.removeItem('focusflow_just_logged_in')
-        setTimeout(() => { showQuiz.value = true }, 1500)
-      }
     }
   } catch { /* silent */ }
 }

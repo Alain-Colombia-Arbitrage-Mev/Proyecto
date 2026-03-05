@@ -83,6 +83,7 @@ async function handleRegister() {
 
   try {
     await signUp(email.value, password.value)
+    sessionStorage.setItem('focusflow_just_logged_in', '1')
     await router.push('/')
   } catch (e: any) {
     errorMsg.value = e.message || t.value.registerError
@@ -105,6 +106,7 @@ async function handleWalletRegister() {
   }
   try {
     await signInWithWallet()
+    sessionStorage.setItem('focusflow_just_logged_in', '1')
     await router.push('/')
   } catch (e: any) {
     errorMsg.value = e.message || 'Error connecting wallet'
