@@ -34,9 +34,14 @@
           </div>
         </div>
 
-        <UButton block size="lg" variant="outline" icon="i-simple-icons-google" @click="handleGoogleRegister" class="font-medium">
-          Google
-        </UButton>
+        <div class="flex flex-col gap-2.5">
+          <UButton block size="lg" variant="outline" icon="i-simple-icons-google" @click="handleGoogleRegister" class="font-medium">
+            Google
+          </UButton>
+          <UButton v-if="walletAvailable" block size="lg" variant="outline" icon="i-heroicons-wallet" @click="handleWalletRegister" :loading="walletLoading" class="font-medium">
+            {{ t.connectWallet || 'Web3 Wallet' }}
+          </UButton>
+        </div>
 
         <p class="text-center text-sm text-gray-500 mt-8">
           {{ t.alreadyHaveAccount }}
@@ -53,6 +58,7 @@
 definePageMeta({ layout: false })
 
 const { signUp, signInWithGoogle, loading: authLoading } = useAuth()
+const { signInWithWallet, hasWallet, loading: walletLoadingRef } = useWeb3Auth()
 const router = useRouter()
 const { labels: t } = useLanguage()
 
@@ -61,6 +67,9 @@ const password = ref('')
 const confirmPassword = ref('')
 const errorMsg = ref('')
 const loading = computed(() => authLoading.value)
+const walletLoading = computed(() => walletLoadingRef.value)
+const walletAvailable = ref(false)
+onMounted(() => { walletAvailable.value = hasWallet() })
 
 async function handleRegister() {
   errorMsg.value = ''
@@ -87,6 +96,16 @@ async function handleGoogleRegister() {
     await signInWithGoogle()
   } catch (e: any) {
     errorMsg.value = e.message || t.value.googleError
+  }
+}
+
+async function handleWalletRegister() {
+  errorMsg.value = ''
+  try {
+    await signInWithWallet()
+    await router.push('/onboarding')
+  } catch (e: any) {
+    errorMsg.value = e.message || 'Error connecting wallet'
   }
 }
 </script>

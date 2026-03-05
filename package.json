@@ -27,6 +27,7 @@
     "@vueuse/core": "^14.2.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.0.0",
+    "ethers": "^6.16.0",
     "firebase": "^12.10.0",
     "firebase-admin": "^13.7.0",
     "lowlight": "^3.3.0",

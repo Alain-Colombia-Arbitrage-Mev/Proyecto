@@ -2,6 +2,7 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import { notifyUser } from '~~/server/utils/notifications'
 import { meetingInvitationEmailHtml } from '~~/server/utils/email'
 import { generateGoogleMeetLink } from '~~/server/utils/meetings'
+import { createGoogleMeetEvent } from '~~/server/utils/googleCalendar'
 
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
@@ -47,8 +48,45 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // Generate Google Meet link
-  const meetingUrl = body.meeting_url || generateGoogleMeetLink()
+  // Try to create a real Google Meet event via Calendar API
+  let meetingUrl = body.meeting_url || ''
+  let calendarEventId: string | null = null
+
+  if (!meetingUrl) {
+    // Get user's Google OAuth provider token
+    const { data: session } = await supabase.auth.admin.getUserById(user.id)
+    const providerToken = body.provider_token || null
+
+    if (providerToken) {
+      // Resolve attendee emails for Google Calendar invites
+      const attendeeEmails: string[] = []
+      for (const uid of (body.attendees || [])) {
+        try {
+          const { data: profile } = await supabase.auth.admin.getUserById(uid)
+          if (profile?.user?.email) attendeeEmails.push(profile.user.email)
+        } catch {}
+      }
+
+      const result = await createGoogleMeetEvent({
+        accessToken: providerToken,
+        title: body.title,
+        description: body.description,
+        startTime: body.scheduled_at,
+        durationMinutes: body.duration_minutes || 30,
+        attendeeEmails,
+      })
+
+      if (result) {
+        meetingUrl = result.meetingUrl
+        calendarEventId = result.calendarEventId
+      }
+    }
+
+    // Fallback to random link if Google Calendar API failed or no token
+    if (!meetingUrl) {
+      meetingUrl = generateGoogleMeetLink()
+    }
+  }
 
   const { data: meeting, error } = await supabase
     .from('meetings')

@@ -30,9 +30,14 @@
           </div>
         </div>
 
-        <UButton block size="lg" variant="outline" icon="i-simple-icons-google" @click="handleGoogleLogin" class="font-medium">
-          Google
-        </UButton>
+        <div class="flex flex-col gap-2.5">
+          <UButton block size="lg" variant="outline" icon="i-simple-icons-google" @click="handleGoogleLogin" class="font-medium">
+            Google
+          </UButton>
+          <UButton v-if="walletAvailable" block size="lg" variant="outline" icon="i-heroicons-wallet" @click="handleWalletLogin" :loading="walletLoading" class="font-medium">
+            {{ t.connectWallet || 'Web3 Wallet' }}
+          </UButton>
+        </div>
 
         <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-8">
           {{ t.noAccount }}
@@ -49,6 +54,7 @@
 definePageMeta({ layout: false })
 
 const { signIn, signInWithGoogle, loading: authLoading } = useAuth()
+const { signInWithWallet, hasWallet, loading: walletLoadingRef } = useWeb3Auth()
 const router = useRouter()
 const { labels: t } = useLanguage()
 
@@ -56,6 +62,9 @@ const email = ref('')
 const password = ref('')
 const errorMsg = ref('')
 const loading = computed(() => authLoading.value)
+const walletLoading = computed(() => walletLoadingRef.value)
+const walletAvailable = ref(false)
+onMounted(() => { walletAvailable.value = hasWallet() })
 
 async function handleLogin() {
   errorMsg.value = ''
@@ -74,6 +83,18 @@ async function handleGoogleLogin() {
     await signInWithGoogle()
   } catch (e: any) {
     errorMsg.value = e.message || t.value.googleError
+  }
+}
+
+async function handleWalletLogin() {
+  errorMsg.value = ''
+  try {
+    await signInWithWallet()
+    sessionStorage.setItem('focusflow_just_logged_in', '1')
+    await new Promise(r => setTimeout(r, 500))
+    await router.push('/')
+  } catch (e: any) {
+    errorMsg.value = e.message || 'Error connecting wallet'
   }
 }
 </script>

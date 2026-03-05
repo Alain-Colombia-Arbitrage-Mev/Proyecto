@@ -375,6 +375,7 @@ export function useLanguage() {
       repeatPassword: en ? 'Repeat password' : 'Repetir contraseña',
       createAccountBtn: en ? 'Create account' : 'Crear cuenta',
       orContinueWith: en ? 'or continue with' : 'o continua con',
+      connectWallet: en ? 'Web3 Wallet' : 'Web3 Wallet',
       alreadyHaveAccount: en ? 'Already have an account?' : '¿Ya tienes cuenta?',
       signIn: en ? 'Sign in' : 'Inicia sesión',
       welcomeBack: en ? 'Welcome back' : 'Bienvenido de nuevo',

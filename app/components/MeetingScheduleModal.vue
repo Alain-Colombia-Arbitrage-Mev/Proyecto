@@ -112,6 +112,7 @@
 <script setup lang="ts">
 import type { Meeting } from '~/types'
 
+const supabase = useSupabaseClient()
 const lang = useLanguage()
 const t = lang.labels
 
@@ -177,6 +178,10 @@ async function handleCreate() {
   error.value = ''
 
   try {
+    // Get Google OAuth provider token if available (for real Meet creation)
+    const { data: sessionData } = await supabase.auth.getSession()
+    const providerToken = sessionData?.session?.provider_token || null
+
     const meeting = await $fetch<Meeting>(`/api/workspaces/${props.workspaceId}/meetings`, {
       method: 'POST',
       body: {
@@ -186,6 +191,7 @@ async function handleCreate() {
         duration_minutes: parseInt(form.duration_minutes),
         project_id: form.project_id || null,
         attendees: form.attendees,
+        provider_token: providerToken,
       },
     })
     createdMeeting.value = meeting
