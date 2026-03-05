@@ -23,13 +23,13 @@
     <div v-else class="animate-fade-up delay-100">
       <!-- Permission groups -->
       <div v-for="group in permissionGroups" :key="group.key" class="mb-6">
-        <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-100 dark:border-white/10 overflow-hidden shadow-card">
-          <div class="px-6 py-3 border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-white/[0.02]">
+        <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 overflow-hidden shadow-card">
+          <div class="px-6 py-3 border-b border-gray-200/80 dark:border-white/10 bg-gray-50/50 dark:bg-white/[0.02]">
             <h3 class="font-semibold text-sm text-gray-900 dark:text-white">{{ group.label }}</h3>
           </div>
 
           <!-- Header row -->
-          <div class="grid px-6 py-2 border-b border-gray-100 dark:border-white/10 text-[11px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500"
+          <div class="grid px-6 py-2 border-b border-gray-200/80 dark:border-white/10 text-[11px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500"
             :style="{ gridTemplateColumns: `1fr repeat(${roles.length}, 80px)` }">
             <span>{{ lang.language.value === 'en' ? 'Permission' : 'Permiso' }}</span>
             <span v-for="role in roles" :key="role" class="text-center">{{ roleLabel(role) }}</span>
@@ -37,7 +37,7 @@
 
           <!-- Permission rows -->
           <div v-for="perm in group.perms" :key="perm"
-            class="grid px-6 py-2.5 border-b border-gray-50 dark:border-white/5 last:border-0 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors"
+            class="grid px-6 py-2.5 border-b border-gray-100 dark:border-white/5 last:border-0 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors"
             :style="{ gridTemplateColumns: `1fr repeat(${roles.length}, 80px)` }">
             <span class="text-sm text-gray-700 dark:text-gray-300">{{ permLabel(perm) }}</span>
             <div v-for="role in roles" :key="role" class="flex justify-center">
@@ -149,7 +149,11 @@ async function loadRoles() {
   loading.value = true
   errorMsg.value = ''
   try {
-    const data = await $fetch<any>(`/api/workspaces/${store.workspace!.id}/roles`)
+    if (!store.workspace?.id) {
+      errorMsg.value = 'Workspace not loaded'
+      return
+    }
+    const data = await $fetch<any>(`/api/workspaces/${store.workspace.id}/roles`)
     roles.value = data.roles
     permissions.value = data.permissions
     labels.value = data.labels
@@ -168,7 +172,7 @@ async function savePermissions() {
   savedMsg.value = ''
   errorMsg.value = ''
   try {
-    await $fetch(`/api/workspaces/${store.workspace!.id}/roles`, {
+    await $fetch(`/api/workspaces/${store.workspace?.id}/roles`, {
       method: 'PUT',
       body: { overrides: currentOverrides.value },
     })
@@ -187,5 +191,8 @@ function resetChanges() {
   loadRoles()
 }
 
-onMounted(loadRoles)
+// Wait for workspace to be loaded, then fetch roles
+watch(() => store.workspace?.id, (id) => {
+  if (id) loadRoles()
+}, { immediate: true })
 </script>

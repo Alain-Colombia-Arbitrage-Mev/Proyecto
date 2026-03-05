@@ -77,6 +77,14 @@
                       <svg class="w-3.5 h-2.5 rounded-[1px]" viewBox="0 0 640 480"><rect width="640" height="480" fill="#fff"/><g fill="#b22234"><rect width="640" height="37"/><rect width="640" height="37" y="74"/><rect width="640" height="37" y="148"/><rect width="640" height="37" y="222"/><rect width="640" height="37" y="296"/><rect width="640" height="37" y="370"/><rect width="640" height="37" y="444"/></g><rect width="256" height="259" fill="#3c3b6e"/></svg>
                       EN
                     </button>
+                    <button
+                      class="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer flex items-center gap-0.5"
+                      :class="descLang === 'ur' ? 'bg-white dark:bg-white/15 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-400 dark:text-[#99a0ae]'"
+                      @click="descLang = 'ur'"
+                    >
+                      <svg class="w-3.5 h-2.5 rounded-[1px]" viewBox="0 0 640 480"><rect width="640" height="480" fill="#01411c"/><rect width="160" height="480" fill="#fff"/></svg>
+                      UR
+                    </button>
                   </div>
                 </div>
                 <LazyTaskEditor
@@ -87,13 +95,22 @@
                   min-height="150px"
                 />
                 <LazyTaskEditor
-                  v-else
+                  v-else-if="descLang === 'en'"
                   v-model="editForm.description_en"
                   :workspace-id="workspaceId"
                   placeholder="Add a detailed description..."
                   min-height="150px"
                 />
+                <LazyTaskEditor
+                  v-else-if="descLang === 'ur'"
+                  v-model="editForm.description_ur"
+                  :workspace-id="workspaceId"
+                  placeholder="...تفصیلی وضاحت شامل کریں"
+                  min-height="150px"
+                  dir="rtl"
+                />
                 <p v-if="descLang === 'en' && !editForm.description_en" class="text-[10px] text-amber-500 mt-1">{{ lang.labels.value.noTranslation }}</p>
+                <p v-if="descLang === 'ur' && !editForm.description_ur" class="text-[10px] text-amber-500 mt-1">{{ lang.labels.value.noTranslation }}</p>
               </div>
 
               <!-- Subtasks -->
@@ -251,7 +268,7 @@ const pomodoro = usePomodoroTimer()
 const timeTracker = useTimeTracker()
 const lang = useLanguage()
 const { language } = lang
-const descLang = ref<'es' | 'en'>('es')
+const descLang = ref<'es' | 'en' | 'ur'>('es')
 
 const props = defineProps<{
   open: boolean
@@ -283,6 +300,7 @@ const editForm = reactive({
   title_en: '',
   description: '',
   description_en: '',
+  description_ur: '',
   priority: '',
   column_id: '',
   due_date: '',
@@ -310,11 +328,13 @@ watch(() => props.task, (t) => {
   if (!t) return
   const desc = t.description ? plainTextToHtml(t.description) : ''
   const descEn = t.description_en ? plainTextToHtml(t.description_en) : ''
+  const descUr = t.translations?.ur?.description ? plainTextToHtml(t.translations.ur.description) : ''
   Object.assign(editForm, {
     title: t.title,
     title_en: t.title_en || '',
     description: desc,
     description_en: descEn,
+    description_ur: descUr,
     priority: t.priority,
     column_id: t.column_id || '',
     due_date: t.due_date ? t.due_date.split('T')[0] : '',
@@ -365,6 +385,7 @@ async function handleSave() {
         assignees: editForm.assignees,
         figma_links: editForm.figma_links,
         color: editForm.color || null,
+        translations: editForm.description_ur ? { ur: { description: editForm.description_ur } } : undefined,
       },
     })
     isOpen.value = false

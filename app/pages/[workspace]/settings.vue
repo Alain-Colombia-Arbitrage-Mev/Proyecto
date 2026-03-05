@@ -11,8 +11,8 @@
 
     <div v-else class="space-y-6 max-w-2xl animate-fade-up delay-100">
       <!-- Workspace settings -->
-      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-100 dark:border-white/10 overflow-hidden shadow-card">
-        <div class="px-6 py-4 border-b border-gray-100 dark:border-white/10">
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 overflow-hidden shadow-card">
+        <div class="px-6 py-4 border-b border-gray-200/80 dark:border-white/10">
           <h2 class="font-bold text-gray-900 dark:text-white">Workspace</h2>
           <p class="text-xs text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ t.workspaceConfig }}</p>
         </div>
@@ -33,8 +33,8 @@
       </div>
 
       <!-- Profile -->
-      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-100 dark:border-white/10 overflow-hidden shadow-card">
-        <div class="px-6 py-4 border-b border-gray-100 dark:border-white/10">
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 overflow-hidden shadow-card">
+        <div class="px-6 py-4 border-b border-gray-200/80 dark:border-white/10">
           <h2 class="font-bold text-gray-900 dark:text-white">{{ t.yourProfile }}</h2>
           <p class="text-xs text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ t.accountInfo }}</p>
         </div>
@@ -51,9 +51,31 @@
         </div>
       </div>
 
+      <!-- Translations -->
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 overflow-hidden shadow-card">
+        <div class="px-6 py-4 border-b border-gray-200/80 dark:border-white/10">
+          <h2 class="font-bold text-gray-900 dark:text-white">{{ lang.language.value === 'en' ? 'Auto-Translate Tasks' : lang.language.value === 'ur' ? 'ٹاسک خودکار ترجمہ' : 'Auto-Traducir Tareas' }}</h2>
+          <p class="text-xs text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ lang.language.value === 'en' ? 'Translate all existing tasks that are missing translations (EN/UR)' : lang.language.value === 'ur' ? 'تمام موجودہ ٹاسک جن میں ترجمہ نہیں ہے ان کا ترجمہ کریں' : 'Traducir todas las tareas existentes sin traduccion (EN/UR)' }}</p>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p v-if="translateResult" class="text-sm text-emerald-600 dark:text-emerald-400">
+                {{ lang.language.value === 'en' ? `Translated ${translateResult.translated} tasks. ${translateResult.remaining} remaining.` : `${translateResult.translated} tareas traducidas. ${translateResult.remaining} pendientes.` }}
+              </p>
+              <p v-if="translateError" class="text-sm text-red-500">{{ translateError }}</p>
+            </div>
+            <UButton color="primary" variant="soft" size="sm" :loading="translating" @click="batchTranslate">
+              <UIcon name="i-heroicons-language" class="w-4 h-4 mr-1" />
+              {{ lang.language.value === 'en' ? 'Translate All' : lang.language.value === 'ur' ? 'سب ترجمہ کریں' : 'Traducir Todo' }}
+            </UButton>
+          </div>
+        </div>
+      </div>
+
       <!-- Danger zone -->
       <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-red-200 dark:border-red-500/30 overflow-hidden shadow-card">
-        <div class="px-6 py-4 border-b border-red-100 dark:border-red-500/20">
+        <div class="px-6 py-4 border-b border-red-200 dark:border-red-500/20">
           <h2 class="font-bold text-red-600">{{ t.dangerZone }}</h2>
           <p class="text-xs text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ t.irreversibleActions }}</p>
         </div>
@@ -92,6 +114,9 @@ const wsSaved = ref(false)
 const memberRole = ref('member')
 
 const userInitials = computed(() => auth.userInitials)
+const translating = ref(false)
+const translateResult = ref<{ translated: number; remaining: number } | null>(null)
+const translateError = ref('')
 
 onMounted(async () => {
   try {
@@ -119,6 +144,23 @@ async function saveWorkspace() {
     setTimeout(() => { wsSaved.value = false }, 3000)
   } catch { } finally {
     savingWs.value = false
+  }
+}
+
+async function batchTranslate() {
+  translating.value = true
+  translateResult.value = null
+  translateError.value = ''
+  try {
+    const result = await $fetch<{ translated: number; remaining: number }>(`/api/workspaces/${store.workspace!.id}/tasks/batch-translate`, {
+      method: 'POST',
+      body: { limit: 20 },
+    })
+    translateResult.value = result
+  } catch (e: any) {
+    translateError.value = e.message || 'Error translating'
+  } finally {
+    translating.value = false
   }
 }
 

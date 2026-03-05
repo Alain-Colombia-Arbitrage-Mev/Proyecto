@@ -95,6 +95,8 @@ export interface Task {
   color?: string
   // Sprint field (Phase 3)
   sprint_id?: string
+  // Multi-language translations (Urdu, etc.)
+  translations?: Record<string, { title?: string; description?: string }>
 }
 
 export interface TaskChecklist {

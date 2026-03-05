@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white dark:bg-[#111] transition-colors">
+  <div class="min-h-screen bg-[#f8f9fb] dark:bg-[#111] transition-colors">
     <!-- Desktop Sidebar -->
     <aside
       class="hidden md:flex fixed inset-y-0 left-0 z-30 flex-col bg-[#0d0d0d]/80 backdrop-blur-xl border-r border-white/10 transition-all duration-300 ease-out"

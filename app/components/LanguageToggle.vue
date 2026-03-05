@@ -1,7 +1,7 @@
 <template>
   <div class="flex items-center bg-gray-200/80 dark:bg-white/10 rounded-lg p-0.5 shrink-0">
     <button
-      class="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1.5 rounded-md transition-all cursor-pointer"
+      class="flex items-center gap-1 text-[11px] font-bold px-2 py-1.5 rounded-md transition-all cursor-pointer"
       :class="lang.language.value === 'es' ? 'bg-white dark:bg-white/20 text-[#0D0D0D] dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
       @click="lang.setLanguage('es')"
     >
@@ -13,7 +13,7 @@
       <span>ES</span>
     </button>
     <button
-      class="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1.5 rounded-md transition-all cursor-pointer"
+      class="flex items-center gap-1 text-[11px] font-bold px-2 py-1.5 rounded-md transition-all cursor-pointer"
       :class="lang.language.value === 'en' ? 'bg-white dark:bg-white/20 text-[#0D0D0D] dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
       @click="lang.setLanguage('en')"
     >
@@ -32,6 +32,21 @@
         <rect width="256" height="259" fill="#3c3b6e"/>
       </svg>
       <span>EN</span>
+    </button>
+    <button
+      class="flex items-center gap-1 text-[11px] font-bold px-2 py-1.5 rounded-md transition-all cursor-pointer"
+      :class="lang.language.value === 'ur' ? 'bg-white dark:bg-white/20 text-[#0D0D0D] dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+      @click="lang.setLanguage('ur')"
+    >
+      <!-- Pakistan flag SVG -->
+      <svg class="w-4 h-3 rounded-[2px] shrink-0" viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg">
+        <rect width="640" height="480" fill="#01411c"/>
+        <rect width="160" height="480" fill="#fff"/>
+        <circle cx="400" cy="240" r="100" fill="#fff"/>
+        <circle cx="420" cy="240" r="80" fill="#01411c"/>
+        <polygon points="440,180 455,220 498,220 463,248 476,288 440,260 404,288 417,248 382,220 425,220" fill="#fff"/>
+      </svg>
+      <span>UR</span>
     </button>
   </div>
 </template>

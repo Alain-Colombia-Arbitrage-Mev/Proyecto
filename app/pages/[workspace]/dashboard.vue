@@ -21,7 +21,7 @@
 
         <!-- ── Stat: Total Tasks ── -->
         <InspiraBlurReveal :delay="100" class="col-span-1">
-          <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200 dark:border-white/10 p-5 overflow-hidden group hover:border-emerald-200 dark:hover:border-emerald-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/5">
+          <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 p-5 overflow-hidden group hover:border-emerald-200 dark:hover:border-emerald-500/30 transition-all duration-300 shadow-card hover:shadow-card-hover">
             <div class="flex items-center justify-between mb-2">
               <span class="text-xs text-gray-600 dark:text-gray-300 font-medium">{{ t.totalTasks }}</span>
               <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
@@ -39,7 +39,7 @@
 
         <!-- ── Stat: In Progress ── -->
         <InspiraBlurReveal :delay="200" class="col-span-1">
-          <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200 dark:border-white/10 p-5 overflow-hidden group hover:border-amber-200 dark:hover:border-amber-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/5">
+          <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 p-5 overflow-hidden group hover:border-amber-200 dark:hover:border-amber-500/30 transition-all duration-300 shadow-card hover:shadow-card-hover">
             <div class="flex items-center justify-between mb-2">
               <span class="text-xs text-gray-600 dark:text-gray-300 font-medium">{{ t.inProgress }}</span>
               <div class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center">
@@ -57,7 +57,7 @@
 
         <!-- ── Stat: Completed ── -->
         <InspiraBlurReveal :delay="300" class="col-span-1">
-          <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200 dark:border-white/10 p-5 overflow-hidden group hover:border-blue-200 dark:hover:border-blue-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/5">
+          <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 p-5 overflow-hidden group hover:border-blue-200 dark:hover:border-blue-500/30 transition-all duration-300 shadow-card hover:shadow-card-hover">
             <div class="flex items-center justify-between mb-2">
               <span class="text-xs text-gray-600 dark:text-gray-300 font-medium">{{ t.completed }}</span>
               <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center">
@@ -123,7 +123,7 @@
 
         <!-- ── Project Summary Chart (spans 2 cols) ── -->
         <InspiraBlurReveal :delay="200" class="col-span-1 sm:col-span-2 row-span-2">
-          <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200 dark:border-white/10 p-5 overflow-hidden">
+          <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 shadow-card p-5 overflow-hidden">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100" style="letter-spacing: -0.32px;">{{ t.projectSummary }}</h3>
               <span class="text-xs text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/10 rounded-full px-3 py-1">{{ t.thisMonth }}</span>
@@ -154,7 +154,7 @@
 
         <!-- ── Token Usage (compact) ── -->
         <InspiraBlurReveal :delay="300" class="col-span-1">
-          <div v-if="canViewUsageStats" class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200 dark:border-white/10 p-5 overflow-hidden group hover:shadow-lg transition-all duration-300">
+          <div v-if="canViewUsageStats" class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 shadow-card p-5 overflow-hidden group hover:shadow-lg transition-all duration-300">
             <InspiraBorderBeam :size="100" :duration="12" color-from="#10b981" color-to="#3b82f6" :delay="2" />
             <div class="flex items-center justify-between mb-2">
               <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ t.tokenUsage }}</h3>
@@ -186,14 +186,14 @@
               </div>
             </template>
           </div>
-          <div v-else class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200 dark:border-white/10 p-5 flex items-center justify-center">
+          <div v-else class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 shadow-card p-5 flex items-center justify-center">
             <p class="text-xs text-gray-600 dark:text-gray-300">{{ lang.language.value === 'en' ? 'AI Usage' : 'Uso de AI' }}</p>
           </div>
         </InspiraBlurReveal>
 
         <!-- ── Pomodoro Timer ── -->
         <InspiraBlurReveal :delay="400" class="col-span-1 row-span-2">
-          <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200 dark:border-white/10 p-5 overflow-hidden group hover:shadow-lg transition-all duration-300">
+          <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 shadow-card p-5 overflow-hidden group hover:shadow-lg transition-all duration-300">
             <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ t.pomodoroTimer }}</p>
             <div class="flex flex-col items-center">
               <div class="relative">
@@ -245,7 +245,7 @@
 
         <!-- ── Task List (spans 2 cols, 2 rows) ── -->
         <InspiraBlurReveal :delay="200" class="col-span-1 sm:col-span-2 lg:col-span-3 row-span-2">
-          <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200 dark:border-white/10 overflow-hidden">
+          <div class="relative h-full bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 shadow-card overflow-hidden">
             <div class="flex items-center justify-between p-4 pb-2">
               <div class="flex items-center gap-3">
                 <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100" style="letter-spacing: -0.32px;">{{ t.board }}</h3>
@@ -344,7 +344,7 @@
 
         <!-- ── Coach Anti-Procrastinación ── -->
         <InspiraBlurReveal :delay="100" class="lg:col-span-1">
-          <div class="relative bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200 dark:border-white/10 overflow-hidden">
+          <div class="relative bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 shadow-card overflow-hidden">
             <InspiraBorderBeam :size="150" :duration="12" color-from="#a855f7" color-to="#ec4899" :delay="1" />
 
             <!-- Header -->
@@ -462,7 +462,7 @@
 
         <!-- ── Project Ranking ── -->
         <InspiraBlurReveal :delay="200" class="lg:col-span-1">
-          <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200 dark:border-white/10 p-5">
+          <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 shadow-card p-5">
             <div class="flex items-center justify-between mb-3">
               <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100" style="letter-spacing: -0.32px;">{{ t.projectRanking }}</h3>
             </div>
@@ -499,7 +499,7 @@
         <!-- ── Right Column: AI Sessions + Lo-fi + Daily Plan ── -->
         <InspiraBlurReveal :delay="300" class="lg:col-span-1 space-y-4">
           <!-- AI Token Sessions Detail -->
-          <div v-if="canViewUsageStats" class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200 dark:border-white/10 p-5">
+          <div v-if="canViewUsageStats" class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 shadow-card p-5">
             <div class="flex items-center justify-between mb-3">
               <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ lang.language.value === 'en' ? "Today's Sessions" : 'Sesiones de hoy' }}</h3>
               <div class="flex items-center gap-1.5">
@@ -621,7 +621,7 @@
           </div>
 
           <!-- Daily Plan -->
-          <div v-if="canUseAI" class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200 dark:border-white/10 p-4 cursor-pointer hover:shadow-md transition-all group"
+          <div v-if="canUseAI" class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 shadow-card p-4 cursor-pointer hover:shadow-md transition-all group"
             @click="loadDailyPlan">
             <div class="flex items-center justify-between mb-2">
               <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ t.dailyPlan }}</h3>
@@ -650,7 +650,7 @@
       <InspiraBlurReveal :delay="400">
         <div class="flex items-center gap-3">
           <button @click="router.push(`/${store.slug}/projects`)"
-            class="bg-white dark:bg-[#1b1b1b] hover:bg-gray-100 dark:hover:bg-white/10 text-gray-900 dark:text-gray-100 text-xs font-semibold px-5 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 transition-all cursor-pointer hover:shadow-md">
+            class="bg-white dark:bg-[#1b1b1b] hover:bg-gray-100 dark:hover:bg-white/10 text-gray-900 dark:text-gray-100 text-xs font-semibold px-5 py-2.5 rounded-xl border border-gray-200/80 dark:border-white/10 shadow-card transition-all cursor-pointer hover:shadow-md">
             {{ t.viewProjects }}
           </button>
           <button @click="showCreate = true"

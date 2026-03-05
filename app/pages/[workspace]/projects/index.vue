@@ -32,42 +32,42 @@
     <!-- Stat Cards Row -->
     <div v-if="store.projects.length > 0" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 animate-fade-up">
       <!-- Proyectos Totales -->
-      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-md transition-all">
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-5 border border-gray-200/80 dark:border-white/10 shadow-card hover:shadow-card-hover transition-all">
         <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">{{ t.totalProjects }}</p>
         <div class="flex items-end justify-between">
           <span class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 tabular-nums">{{ store.projects.length }}</span>
           <div class="flex items-end gap-0.5 h-10 w-20">
-            <div v-for="i in 7" :key="'p'+i" class="flex-1 rounded-sm bg-emerald-200" :style="{ height: `${barHeights.projects[i - 1]}%` }" />
+            <div v-for="i in 7" :key="'p'+i" class="flex-1 rounded-sm bg-emerald-400/60" :style="{ height: `${barHeights.projects[i - 1]}%` }" />
           </div>
         </div>
       </div>
       <!-- Tareas Totales -->
-      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-md transition-all">
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-5 border border-gray-200/80 dark:border-white/10 shadow-card hover:shadow-card-hover transition-all">
         <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">{{ t.totalTasks }}</p>
         <div class="flex items-end justify-between">
           <span class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 tabular-nums">{{ totalTasks }}</span>
           <div class="flex items-end gap-0.5 h-10 w-20">
-            <div v-for="i in 7" :key="'t'+i" class="flex-1 rounded-sm bg-emerald-300" :style="{ height: `${barHeights.tasks[i - 1]}%` }" />
+            <div v-for="i in 7" :key="'t'+i" class="flex-1 rounded-sm bg-emerald-500/60" :style="{ height: `${barHeights.tasks[i - 1]}%` }" />
           </div>
         </div>
       </div>
       <!-- Vencen Hoy -->
-      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-md transition-all">
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-5 border border-gray-200/80 dark:border-white/10 shadow-card hover:shadow-card-hover transition-all">
         <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">{{ t.dueToday }}</p>
         <div class="flex items-end justify-between">
           <span class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 tabular-nums">{{ dueTodayCount }}</span>
           <div class="flex items-end gap-0.5 h-10 w-20">
-            <div v-for="i in 7" :key="'d'+i" class="flex-1 rounded-sm bg-emerald-200" :style="{ height: `${barHeights.dueToday[i - 1]}%` }" />
+            <div v-for="i in 7" :key="'d'+i" class="flex-1 rounded-sm bg-emerald-400/60" :style="{ height: `${barHeights.dueToday[i - 1]}%` }" />
           </div>
         </div>
       </div>
       <!-- Completadas -->
-      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-md transition-all">
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-5 border border-gray-200/80 dark:border-white/10 shadow-card hover:shadow-card-hover transition-all">
         <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">{{ t.completed }}</p>
         <div class="flex items-end justify-between">
           <span class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 tabular-nums">{{ completedTaskCount }}</span>
           <div class="flex items-end gap-0.5 h-10 w-20">
-            <div v-for="i in 7" :key="'c'+i" class="flex-1 rounded-sm bg-emerald-300" :style="{ height: `${barHeights.completed[i - 1]}%` }" />
+            <div v-for="i in 7" :key="'c'+i" class="flex-1 rounded-sm bg-emerald-500/60" :style="{ height: `${barHeights.completed[i - 1]}%` }" />
           </div>
         </div>
       </div>
@@ -118,7 +118,7 @@
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-up delay-100">
       <div v-for="project in store.projects" :key="project.id" class="relative group/card">
         <NuxtLink :to="`/${store.slug}/projects/${project.id}/kanban`">
-          <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-5 border border-gray-100 dark:border-white/10 hover:border-focusflow-300 transition-all duration-200 cursor-pointer group h-full shadow-sm hover:shadow-md">
+          <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-5 border border-gray-200/80 dark:border-white/10 hover:border-focusflow-300 transition-all duration-200 cursor-pointer group h-full shadow-card hover:shadow-card-hover">
             <div class="flex items-start gap-3">
               <div class="w-4 h-4 rounded-full mt-0.5 shrink-0" :style="{ backgroundColor: project.color }" />
               <div class="min-w-0 flex-1">

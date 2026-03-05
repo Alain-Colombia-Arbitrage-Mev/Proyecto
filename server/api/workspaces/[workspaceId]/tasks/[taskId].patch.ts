@@ -1,6 +1,7 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import { notifyUser } from '~~/server/utils/notifications'
 import { taskAssignedEmailHtml } from '~~/server/utils/email'
+import { translateTaskToAll } from '~~/server/utils/translate'
 
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
@@ -13,7 +14,7 @@ export default defineEventHandler(async (event) => {
   // Verify task belongs to a project in this workspace
   const { data: task } = await supabase
     .from('tasks')
-    .select('id, title, project_id, column_id, assignees, projects!inner(workspace_id)')
+    .select('id, title, project_id, column_id, assignees, translations, projects!inner(workspace_id)')
     .eq('id', taskId)
     .maybeSingle()
 
@@ -37,6 +38,11 @@ export default defineEventHandler(async (event) => {
   if (body.position !== undefined) updates.position = body.position
   if (body.figma_links !== undefined) updates.figma_links = body.figma_links
   if (body.color !== undefined) updates.color = body.color
+  if (body.translations !== undefined) {
+    // Merge with existing translations to avoid overwriting other languages
+    const existing = (task as any).translations || {}
+    updates.translations = { ...existing, ...body.translations }
+  }
 
   // Track old column for history
   const oldColumnId = (task as any).column_id as string | null
@@ -62,6 +68,19 @@ export default defineEventHandler(async (event) => {
   if (error) {
     console.error('[tasks.patch] Supabase update error:', error.message, error.details, error.hint)
     throw createError({ statusCode: 500, message: 'Error updating task' })
+  }
+
+  // Auto-translate when title or description changes (fire-and-forget)
+  const titleChanged = body.title !== undefined && body.title !== (task as any).title
+  const descChanged = body.description !== undefined
+  if (titleChanged || descChanged) {
+    translateTaskToAll({
+      supabase,
+      taskId: updated.id,
+      title: updated.title || (task as any).title,
+      description: updated.description || null,
+      sourceLang: 'es',
+    }).catch((err: any) => console.error('[tasks.patch] Auto-translate error:', err.message))
   }
 
   // Record column transition history (fire-and-forget)
