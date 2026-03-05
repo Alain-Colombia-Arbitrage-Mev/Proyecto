@@ -147,6 +147,7 @@ export function useLanguage() {
       roles: en ? 'Roles' : 'Roles',
       rolesTitle: en ? 'Role Permissions' : 'Permisos por Rol',
       rolesDescription: en ? 'Customize what each role can do in this workspace' : 'Personaliza lo que cada rol puede hacer en este workspace',
+      billing: en ? 'Billing' : 'Facturacion',
       settings: en ? 'Settings' : 'Ajustes',
       home: en ? 'Home' : 'Home',
 

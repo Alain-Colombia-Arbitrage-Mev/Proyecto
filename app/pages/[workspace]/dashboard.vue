@@ -561,34 +561,63 @@
           </div>
 
           <!-- Lo-fi Player -->
-          <div class="bg-gradient-to-br from-[#0d0d0d] to-[#1a1a2e] rounded-2xl p-4 border border-white/5">
-            <div class="flex items-center gap-3">
-              <button @click="lofi.toggle()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all cursor-pointer shrink-0">
-                <span v-if="lofi.isLoading.value" class="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                <UIcon v-else :name="lofi.isPlaying.value ? 'i-heroicons-pause-solid' : 'i-heroicons-play-solid'" class="w-4 h-4 text-white" />
-              </button>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-semibold text-white truncate">{{ lofi.currentStation.value.emoji }} {{ lofi.currentStation.value.name }}</span>
-                  <span v-if="lofi.isPlaying.value" class="flex gap-[2px] items-end h-3 shrink-0">
-                    <span v-for="i in 3" :key="i" class="w-[2px] bg-emerald-400 rounded-full animate-pulse" :style="{ height: `${6 + (i * 3)}px`, animationDelay: `${i * 0.15}s` }" />
-                  </span>
+          <div class="bg-gradient-to-br from-[#0d0d0d] to-[#1a1a2e] rounded-2xl border border-white/5 overflow-hidden">
+            <div class="p-4">
+              <div class="flex items-center gap-3">
+                <button @click="lofi.toggle()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all cursor-pointer shrink-0">
+                  <span v-if="lofi.isLoading.value" class="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  <UIcon v-else :name="lofi.isPlaying.value ? 'i-heroicons-pause-solid' : 'i-heroicons-play-solid'" class="w-4 h-4 text-white" />
+                </button>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-white truncate">{{ lofi.currentStation.value.emoji }} {{ lofi.currentStation.value.name }}</span>
+                    <span v-if="lofi.isPlaying.value" class="flex gap-[2px] items-end h-3 shrink-0">
+                      <span v-for="i in 3" :key="i" class="w-[2px] bg-emerald-400 rounded-full animate-pulse" :style="{ height: `${6 + (i * 3)}px`, animationDelay: `${i * 0.15}s` }" />
+                    </span>
+                  </div>
+                  <p class="text-[10px] text-white/80 truncate">{{ lofi.currentQuote.value }}</p>
                 </div>
-                <p class="text-[10px] text-white/80 truncate">{{ lofi.currentQuote.value }}</p>
+                <button @click="lofi.skip()" class="text-white/80 hover:text-white transition-colors cursor-pointer shrink-0" :title="lang.language.value === 'en' ? 'Next station' : 'Siguiente estacion'">
+                  <UIcon name="i-heroicons-forward" class="w-4 h-4" />
+                </button>
+                <button @click="showStationList = !showStationList" class="text-white/80 hover:text-white transition-colors cursor-pointer shrink-0" :title="lang.language.value === 'en' ? 'Station list' : 'Lista de estaciones'">
+                  <UIcon :name="showStationList ? 'i-heroicons-chevron-up' : 'i-heroicons-queue-list'" class="w-4 h-4" />
+                </button>
               </div>
-              <button @click="lofi.skip()" class="text-white/80 hover:text-white transition-colors cursor-pointer shrink-0">
-                <UIcon name="i-heroicons-forward" class="w-4 h-4" />
-              </button>
-            </div>
-            <div class="flex items-center gap-3 mt-2.5">
-              <div class="flex-1 h-[3px] bg-white/10 rounded-full overflow-hidden">
-                <div class="h-full bg-emerald-400 rounded-full transition-all duration-1000"
-                  :style="{ width: lofi.isPlaying.value ? '60%' : '0%' }" />
+              <div class="flex items-center gap-3 mt-2.5">
+                <div class="flex-1 h-[3px] bg-white/10 rounded-full overflow-hidden">
+                  <div class="h-full bg-emerald-400 rounded-full transition-all duration-1000"
+                    :style="{ width: lofi.isPlaying.value ? '60%' : '0%' }" />
+                </div>
+                <input type="range" min="0" max="100" :value="lofi.volume.value * 100"
+                  @input="lofi.setVolume(($event.target as HTMLInputElement).valueAsNumber / 100)"
+                  class="w-16 h-1 accent-emerald-400 cursor-pointer shrink-0" />
               </div>
-              <input type="range" min="0" max="100" :value="lofi.volume.value * 100"
-                @input="lofi.setVolume(($event.target as HTMLInputElement).valueAsNumber / 100)"
-                class="w-16 h-1 accent-emerald-400 cursor-pointer shrink-0" />
             </div>
+
+            <!-- Collapsible station list -->
+            <Transition name="slide-up">
+              <div v-if="showStationList" class="border-t border-white/5 max-h-[240px] overflow-y-auto">
+                <button
+                  v-for="station in lofi.stations" :key="station.id"
+                  class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors cursor-pointer"
+                  :class="lofi.currentStationId.value === station.id ? 'bg-white/10' : ''"
+                  @click="lofi.setStation(station.id); showStationList = false"
+                >
+                  <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-sm" :style="{ backgroundColor: station.color + '25' }">
+                    {{ station.emoji }}
+                  </div>
+                  <div class="flex-1 min-w-0 text-left">
+                    <p class="text-xs font-medium text-white/90 truncate">{{ station.name }}</p>
+                    <p class="text-[10px] text-white/40 truncate">{{ station.tracks[0]?.artist || 'Live Stream' }}</p>
+                  </div>
+                  <div v-if="lofi.currentStationId.value === station.id && lofi.isPlaying.value" class="flex gap-[2px] items-end h-3 shrink-0">
+                    <span v-for="i in 3" :key="i" class="w-[2px] rounded-full animate-pulse" :style="{ height: `${4 + (i * 2)}px`, animationDelay: `${i * 0.15}s`, backgroundColor: station.color }" />
+                  </div>
+                  <UIcon v-else-if="lofi.currentStationId.value === station.id" name="i-heroicons-check" class="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                </button>
+              </div>
+            </Transition>
           </div>
 
           <!-- Daily Plan -->
@@ -674,6 +703,7 @@ const router = useRouter()
 const store = useWorkspaceStore()
 const auth = useAuthStore()
 const lofi = useLofiPlayer()
+const showStationList = ref(false)
 const pushNotif = usePushNotifications()
 const deadline = useTaskDeadline()
 const pomodoro = usePomodoroTimer()

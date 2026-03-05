@@ -14,6 +14,8 @@ export interface Workspace {
   color: string
   ai_enabled: boolean
   ai_config: Record<string, unknown>
+  token_limit?: number
+  subscription_id?: string
   created_at: string
   updated_at: string
 }

@@ -13,6 +13,7 @@ const weeklyTotal = ref(0)
 const weekStart = ref('')
 onMounted(() => { weekStart.value = getMonday(new Date()).toISOString().slice(0, 10) })
 const showEntryForm = ref(false)
+const entryFormDate = ref('')
 
 function getMonday(d: Date): Date {
   const date = new Date(d)
@@ -35,7 +36,7 @@ const weekDays = computed(() => {
 function formatDay(d: Date): string {
   const dayNames = language.value === 'en'
     ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-    : ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+    : ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab']
   return `${dayNames[d.getDay()]} ${d.getDate()}`
 }
 
@@ -58,6 +59,17 @@ function nextWeek() {
   d.setDate(d.getDate() + 7)
   weekStart.value = d.toISOString().slice(0, 10)
   fetchTimesheet()
+}
+
+function openEntryForDate(day?: Date) {
+  if (day) {
+    const d = new Date(day)
+    d.setHours(9, 0, 0, 0)
+    entryFormDate.value = d.toISOString().slice(0, 16)
+  } else {
+    entryFormDate.value = ''
+  }
+  showEntryForm.value = true
 }
 
 async function fetchTimesheet() {
@@ -95,13 +107,13 @@ watch(() => props.workspaceId, (id) => { if (id) fetchTimesheet() }, { immediate
     <!-- Header with navigation -->
     <div class="flex items-center justify-between mb-4">
       <div class="flex items-center gap-2">
-        <button @click="prevWeek" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+        <button @click="prevWeek" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
           <UIcon name="i-heroicons-chevron-left" class="w-5 h-5" />
         </button>
         <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
           {{ weekDays[0]?.toLocaleDateString() }} — {{ weekDays[6]?.toLocaleDateString() }}
         </span>
-        <button @click="nextWeek" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+        <button @click="nextWeek" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
           <UIcon name="i-heroicons-chevron-right" class="w-5 h-5" />
         </button>
       </div>
@@ -111,8 +123,8 @@ watch(() => props.workspaceId, (id) => { if (id) fetchTimesheet() }, { immediate
           {{ labels.weeklyTotal }}: {{ formatMinutes(weeklyTotal) }}
         </span>
         <button
-          @click="showEntryForm = !showEntryForm"
-          class="px-3 py-1.5 text-xs font-medium rounded-lg bg-focusflow-500 text-white hover:bg-focusflow-600"
+          @click="openEntryForDate()"
+          class="px-3 py-1.5 text-xs font-medium rounded-lg bg-focusflow-500 text-white hover:bg-focusflow-600 cursor-pointer"
         >
           {{ labels.addTimeEntry }}
         </button>
@@ -123,6 +135,7 @@ watch(() => props.workspaceId, (id) => { if (id) fetchTimesheet() }, { immediate
     <div v-if="showEntryForm" class="mb-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
       <TimeEntryForm
         :workspace-id="workspaceId"
+        :default-start-time="entryFormDate"
         @saved="onEntrySaved"
         @cancel="showEntryForm = false"
       />
@@ -142,15 +155,23 @@ watch(() => props.workspaceId, (id) => { if (id) fetchTimesheet() }, { immediate
         {{ formatDay(day) }}
       </div>
 
-      <!-- Day cells -->
+      <!-- Day cells — clickable to add entry for that date -->
       <div
         v-for="(day, idx) in weekDays"
         :key="'cell-' + idx"
-        class="min-h-[80px] p-2 rounded-lg border"
+        class="min-h-[80px] p-2 rounded-lg border cursor-pointer hover:shadow-md transition-all group relative"
         :class="isToday(day)
           ? 'border-focusflow-300 dark:border-focusflow-700 bg-focusflow-50/50 dark:bg-focusflow-900/10'
-          : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900/50'"
+          : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900/50 hover:border-focusflow-200 dark:hover:border-focusflow-800'"
+        @click="openEntryForDate(day)"
       >
+        <!-- Add button overlay -->
+        <div class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div class="w-5 h-5 rounded-full bg-focusflow-500 flex items-center justify-center">
+            <UIcon name="i-heroicons-plus" class="w-3 h-3 text-white" />
+          </div>
+        </div>
+
         <template v-if="rows[idx]">
           <div class="text-xs font-semibold mb-1"
             :class="rows[idx].total_minutes > 0 ? 'text-gray-900 dark:text-white' : 'text-gray-300 dark:text-gray-700'"

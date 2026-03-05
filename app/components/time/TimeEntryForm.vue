@@ -6,6 +6,7 @@ const props = defineProps<{
   entry?: TimeEntry | null
   taskId?: string
   projectId?: string
+  defaultStartTime?: string
 }>()
 
 const emit = defineEmits<{
@@ -18,7 +19,7 @@ const saving = ref(false)
 
 const form = reactive({
   description: props.entry?.description || '',
-  start_time: props.entry?.start_time ? props.entry.start_time.slice(0, 16) : '',
+  start_time: props.entry?.start_time ? props.entry.start_time.slice(0, 16) : (props.defaultStartTime || ''),
   end_time: props.entry?.end_time ? props.entry.end_time.slice(0, 16) : '',
   duration_minutes: props.entry?.duration_minutes || '',
   billable: props.entry?.billable ?? true,

@@ -190,7 +190,7 @@ const auth = useAuthStore()
 const pomodoro = usePomodoroTimer()
 const { labels: tRef } = useLanguage()
 const t = tRef
-const { canUseAI, canManageMembers, canViewUsageStats, canViewTimesheets, canViewGoals, canViewRoadmap, canViewAgenda } = usePermissions()
+const { canUseAI, canManageMembers, canManageWorkspace, canViewUsageStats, canViewTimesheets, canViewGoals, canViewRoadmap, canViewAgenda } = usePermissions()
 
 const collapsed = ref(false)
 
@@ -221,6 +221,7 @@ const allNav = computed(() => [
   { label: t.value.agenda, icon: 'i-heroicons-calendar-days', to: `/${workspaceSlug.value}/agenda`, show: canViewAgenda.value },
   { label: t.value.team, icon: 'i-heroicons-user-group', to: `/${workspaceSlug.value}/team`, show: canManageMembers.value },
   { label: t.value.roles, icon: 'i-heroicons-shield-check', to: `/${workspaceSlug.value}/roles`, show: canManageMembers.value },
+  { label: t.value.billing, icon: 'i-heroicons-credit-card', to: `/${workspaceSlug.value}/billing`, show: canManageWorkspace.value },
   { label: t.value.settings, icon: 'i-heroicons-cog-6-tooth', to: `/${workspaceSlug.value}/settings`, show: true },
 ])
 
