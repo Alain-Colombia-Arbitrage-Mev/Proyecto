@@ -220,6 +220,7 @@ const allNav = computed(() => [
   { label: t.value.roadmap, icon: 'i-heroicons-map', to: `/${workspaceSlug.value}/roadmap`, show: canViewRoadmap.value },
   { label: t.value.agenda, icon: 'i-heroicons-calendar-days', to: `/${workspaceSlug.value}/agenda`, show: canViewAgenda.value },
   { label: t.value.team, icon: 'i-heroicons-user-group', to: `/${workspaceSlug.value}/team`, show: canManageMembers.value },
+  { label: t.value.roles, icon: 'i-heroicons-shield-check', to: `/${workspaceSlug.value}/roles`, show: canManageMembers.value },
   { label: t.value.settings, icon: 'i-heroicons-cog-6-tooth', to: `/${workspaceSlug.value}/settings`, show: true },
 ])
 

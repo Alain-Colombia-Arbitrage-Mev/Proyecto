@@ -34,7 +34,7 @@
           <UButton block size="lg" variant="outline" icon="i-simple-icons-google" @click="handleGoogleLogin" class="font-medium">
             Google
           </UButton>
-          <UButton v-if="walletAvailable" block size="lg" variant="outline" icon="i-heroicons-wallet" @click="handleWalletLogin" :loading="walletLoading" class="font-medium">
+          <UButton block size="lg" variant="outline" icon="i-simple-icons-ethereum" @click="handleWalletLogin" :loading="walletLoading" class="font-medium">
             {{ t.connectWallet || 'Web3 Wallet' }}
           </UButton>
         </div>
@@ -63,8 +63,6 @@ const password = ref('')
 const errorMsg = ref('')
 const loading = computed(() => authLoading.value)
 const walletLoading = computed(() => walletLoadingRef.value)
-const walletAvailable = ref(false)
-onMounted(() => { walletAvailable.value = hasWallet() })
 
 async function handleLogin() {
   errorMsg.value = ''
@@ -88,6 +86,10 @@ async function handleGoogleLogin() {
 
 async function handleWalletLogin() {
   errorMsg.value = ''
+  if (!hasWallet()) {
+    errorMsg.value = t.value.installWallet || 'Install MetaMask or a compatible Web3 wallet to continue.'
+    return
+  }
   try {
     await signInWithWallet()
     sessionStorage.setItem('focusflow_just_logged_in', '1')

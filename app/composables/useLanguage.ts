@@ -144,6 +144,9 @@ export function useLanguage() {
       aiAgents: en ? 'AI Agents' : 'AI Agents',
       files: en ? 'Files' : 'Archivos',
       team: en ? 'Team' : 'Equipo',
+      roles: en ? 'Roles' : 'Roles',
+      rolesTitle: en ? 'Role Permissions' : 'Permisos por Rol',
+      rolesDescription: en ? 'Customize what each role can do in this workspace' : 'Personaliza lo que cada rol puede hacer en este workspace',
       settings: en ? 'Settings' : 'Ajustes',
       home: en ? 'Home' : 'Home',
 
@@ -376,6 +379,7 @@ export function useLanguage() {
       createAccountBtn: en ? 'Create account' : 'Crear cuenta',
       orContinueWith: en ? 'or continue with' : 'o continua con',
       connectWallet: en ? 'Web3 Wallet' : 'Web3 Wallet',
+      installWallet: en ? 'Install MetaMask or a compatible Web3 wallet to continue.' : 'Instala MetaMask o una wallet Web3 compatible para continuar.',
       alreadyHaveAccount: en ? 'Already have an account?' : '¿Ya tienes cuenta?',
       signIn: en ? 'Sign in' : 'Inicia sesión',
       welcomeBack: en ? 'Welcome back' : 'Bienvenido de nuevo',

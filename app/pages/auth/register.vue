@@ -2,8 +2,8 @@
   <div>
     <NuxtLayout name="auth">
       <div class="animate-fade-up">
-        <h2 class="text-2xl font-bold text-gray-900 mb-1">{{ t.createYourAccount }}</h2>
-        <p class="text-sm text-gray-500 mb-8">{{ t.startManaging }}</p>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">{{ t.createYourAccount }}</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">{{ t.startManaging }}</p>
 
         <form class="space-y-5" @submit.prevent="handleRegister">
           <UFormField :label="t.email">
@@ -18,7 +18,7 @@
             <UInput v-model="confirmPassword" type="password" :placeholder="t.repeatPassword" required class="w-full" size="lg" />
           </UFormField>
 
-          <p v-if="errorMsg" class="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{{ errorMsg }}</p>
+          <p v-if="errorMsg" class="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 border border-red-100 dark:border-red-900 rounded-lg px-3 py-2">{{ errorMsg }}</p>
 
           <UButton type="submit" block size="lg" :loading="loading" color="primary" class="font-semibold">
             {{ t.createAccountBtn }}
@@ -27,10 +27,10 @@
 
         <div class="relative my-6">
           <div class="absolute inset-0 flex items-center">
-            <div class="w-full border-t border-gray-100" />
+            <div class="w-full border-t border-gray-200 dark:border-gray-700" />
           </div>
           <div class="relative flex justify-center text-xs">
-            <span class="bg-white px-3 text-gray-400">{{ t.orContinueWith }}</span>
+            <span class="bg-white dark:bg-gray-950 px-3 text-gray-400 dark:text-gray-500">{{ t.orContinueWith }}</span>
           </div>
         </div>
 
@@ -38,14 +38,14 @@
           <UButton block size="lg" variant="outline" icon="i-simple-icons-google" @click="handleGoogleRegister" class="font-medium">
             Google
           </UButton>
-          <UButton v-if="walletAvailable" block size="lg" variant="outline" icon="i-heroicons-wallet" @click="handleWalletRegister" :loading="walletLoading" class="font-medium">
+          <UButton block size="lg" variant="outline" icon="i-simple-icons-ethereum" @click="handleWalletRegister" :loading="walletLoading" class="font-medium">
             {{ t.connectWallet || 'Web3 Wallet' }}
           </UButton>
         </div>
 
-        <p class="text-center text-sm text-gray-500 mt-8">
+        <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-8">
           {{ t.alreadyHaveAccount }}
-          <NuxtLink to="/auth/login" class="text-focusflow-700 hover:text-focusflow-700 font-medium transition-colors">
+          <NuxtLink to="/auth/login" class="text-focusflow-600 hover:text-focusflow-500 dark:text-focusflow-400 dark:hover:text-focusflow-300 font-medium transition-colors">
             {{ t.signIn }}
           </NuxtLink>
         </p>
@@ -68,8 +68,6 @@ const confirmPassword = ref('')
 const errorMsg = ref('')
 const loading = computed(() => authLoading.value)
 const walletLoading = computed(() => walletLoadingRef.value)
-const walletAvailable = ref(false)
-onMounted(() => { walletAvailable.value = hasWallet() })
 
 async function handleRegister() {
   errorMsg.value = ''
@@ -101,6 +99,10 @@ async function handleGoogleRegister() {
 
 async function handleWalletRegister() {
   errorMsg.value = ''
+  if (!hasWallet()) {
+    errorMsg.value = t.value.installWallet || 'Install MetaMask or a compatible Web3 wallet to continue.'
+    return
+  }
   try {
     await signInWithWallet()
     await router.push('/onboarding')
