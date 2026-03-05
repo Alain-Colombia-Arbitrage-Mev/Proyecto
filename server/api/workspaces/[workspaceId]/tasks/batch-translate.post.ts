@@ -1,12 +1,11 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
-import { translateTaskToAll } from '~~/server/utils/translate'
+import { translateTasksBatch } from '~~/server/utils/translate'
 
 /**
- * Batch-translate all tasks in a workspace that are missing translations.
- * Catches tasks missing title_en OR having a description but no description_en.
- * Processes in small batches to avoid overwhelming the API.
+ * Batch-translate tasks missing translations.
+ * Uses batched API calls (10 tasks per LLM call) for token efficiency.
  *
- * Body: { limit?: number } — max tasks to translate per call (default 20)
+ * Body: { limit?: number } — max tasks per request (default 20)
  * Response: { translated: number, remaining: number }
  */
 export default defineEventHandler(async (event) => {
@@ -18,9 +17,6 @@ export default defineEventHandler(async (event) => {
 
   const supabase = serverSupabaseServiceRole(event)
 
-  // Get tasks that need translation:
-  // - missing title_en (never translated)
-  // - OR have a description but missing description_en
   const { data: tasks, error } = await supabase
     .from('tasks')
     .select('id, title, description, title_en, description_en, translations, projects!inner(workspace_id)')
@@ -33,38 +29,27 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: 'Error fetching tasks' })
   }
 
-  // Further filter: only tasks that actually need translation
   const needsTranslation = (tasks || []).filter(t => {
-    const missingTitleEn = !t.title_en
-    const hasDescButNoEn = t.description && !t.description_en
-    const hasDescButNoUr = t.description && !(t.translations as any)?.ur?.description
-    return missingTitleEn || hasDescButNoEn || hasDescButNoUr
+    return !t.title_en || (t.description && !t.description_en) || (t.description && !(t.translations as any)?.ur?.description)
   })
 
   if (!needsTranslation.length) {
     return { translated: 0, remaining: 0 }
   }
 
-  // Translate each task (with small delay between calls to avoid rate limits)
+  // Batch in groups of 10 tasks per LLM call
+  const BATCH_SIZE = 10
   let translated = 0
-  for (const task of needsTranslation) {
-    try {
-      await translateTaskToAll({
-        supabase,
-        taskId: task.id,
-        title: task.title,
-        description: task.description,
-        sourceLang: 'es',
-      })
-      translated++
-    } catch (err: any) {
-      console.error(`[batch-translate] Failed task ${task.id}:`, err.message)
-    }
-    // Small delay to avoid rate limiting
-    await new Promise(r => setTimeout(r, 500))
+
+  for (let i = 0; i < needsTranslation.length; i += BATCH_SIZE) {
+    const batch = needsTranslation.slice(i, i + BATCH_SIZE)
+    const count = await translateTasksBatch({
+      supabase,
+      tasks: batch.map(t => ({ id: t.id, title: t.title, description: t.description })),
+    })
+    translated += count
   }
 
-  // Count remaining untranslated (approximate — checks title_en)
   const { count } = await supabase
     .from('tasks')
     .select('id, projects!inner(workspace_id)', { count: 'exact', head: true })

@@ -1,9 +1,7 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 
 /**
- * Lightweight translation endpoint using a cheap/fast model.
- * Translates text to target languages in a single call.
- *
+ * Lightweight translation endpoint. Compact prompt for minimal token usage.
  * Body: { text: string, from?: string, to: string[] }
  * Response: { translations: Record<string, string> }
  */
@@ -20,29 +18,16 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'text and to[] are required' })
   }
 
-  // Max 500 chars to keep costs minimal
-  const truncated = text.slice(0, 500)
-
   const { openrouterApiKey } = useRuntimeConfig()
   if (!openrouterApiKey) {
     throw createError({ statusCode: 500, message: 'OpenRouter API key not configured' })
   }
 
-  const langNames: Record<string, string> = {
-    es: 'Spanish',
-    en: 'English',
-    ur: 'Urdu',
-  }
+  const src = from || 'es'
+  const targets = to.join(',')
+  const truncated = text.slice(0, 500)
 
-  const targetLangs = to.map(l => langNames[l] || l).join(', ')
-  const fromLang = from ? (langNames[from] || from) : 'auto-detect'
-
-  const prompt = `Translate the following text from ${fromLang} to ${targetLangs}. Return ONLY a JSON object with language codes as keys and translations as values. No explanation.
-
-Text: "${truncated}"
-
-Example response for to=["en","ur"]: {"en":"Hello","ur":"ہیلو"}`
-
+  // Compact prompt: ~10 system tokens
   try {
     const response = await $fetch<any>('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -53,8 +38,8 @@ Example response for to=["en","ur"]: {"en":"Hello","ur":"ہیلو"}`
       body: {
         model: 'qwen/qwen3-coder-next',
         messages: [
-          { role: 'system', content: 'You are a translator. Return only valid JSON. No explanation, no markdown.' },
-          { role: 'user', content: prompt },
+          { role: 'system', content: `${src.toUpperCase()}→${targets.toUpperCase()}. JSON only: {lang:text}` },
+          { role: 'user', content: truncated },
         ],
         max_tokens: 300,
         temperature: 0.1,
@@ -64,33 +49,24 @@ Example response for to=["en","ur"]: {"en":"Hello","ur":"ہیلو"}`
     const raw = response?.choices?.[0]?.message?.content || ''
     const cleaned = stripThinkTags(raw)
 
-    // Try to parse JSON from response
     let translations: Record<string, string> = {}
-    try {
-      translations = JSON.parse(cleaned.trim())
-    } catch {
-      // Try extracting JSON from markdown block
+    try { translations = JSON.parse(cleaned.trim()) } catch {
       const match = cleaned.match(/\{[\s\S]*\}/)
-      if (match) {
-        try { translations = JSON.parse(match[0]) } catch {}
-      }
+      if (match) try { translations = JSON.parse(match[0]) } catch {}
     }
 
-    // Track token usage
+    // Track token usage (fire-and-forget)
     const tokensUsed = response?.usage?.total_tokens || 0
-    if (tokensUsed > 0) {
+    if (tokensUsed > 0 && body.workspace_id) {
       try {
         const supabase = serverSupabaseServiceRole(event)
-        const workspaceId = body.workspace_id
-        if (workspaceId) {
-          await supabase.from('token_usage').insert({
-            workspace_id: workspaceId,
-            action: 'translate',
-            tokens_used: tokensUsed,
-            created_at: new Date().toISOString(),
-          })
-        }
-      } catch { /* non-critical */ }
+        await supabase.from('token_usage').insert({
+          workspace_id: body.workspace_id,
+          action: 'translate',
+          tokens_used: tokensUsed,
+          created_at: new Date().toISOString(),
+        })
+      } catch {}
     }
 
     return { translations }
