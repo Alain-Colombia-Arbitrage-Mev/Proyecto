@@ -83,7 +83,7 @@ async function handleRegister() {
 
   try {
     await signUp(email.value, password.value)
-    await router.push('/onboarding')
+    await router.push('/')
   } catch (e: any) {
     errorMsg.value = e.message || t.value.registerError
   }
@@ -105,7 +105,7 @@ async function handleWalletRegister() {
   }
   try {
     await signInWithWallet()
-    await router.push('/onboarding')
+    await router.push('/')
   } catch (e: any) {
     errorMsg.value = e.message || 'Error connecting wallet'
   }

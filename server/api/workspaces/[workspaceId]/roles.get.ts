@@ -1,5 +1,5 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
-import { ALL_PERMISSIONS, ALL_ROLES, getRolePermissions, PERMISSION_LABELS } from '~/server/utils/permissions'
+import { ALL_PERMISSIONS, ALL_ROLES, getRolePermissions, PERMISSION_LABELS } from '~~/server/utils/permissions'
 
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!

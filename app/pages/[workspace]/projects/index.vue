@@ -101,7 +101,7 @@
       </div>
       <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ t.workspaceNotFound }}</h2>
       <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-2 mb-6">{{ t.createWorkspaceFirst }}</p>
-      <UButton color="primary" size="lg" class="font-semibold" @click="router.push('/onboarding')">{{ t.createWorkspace }}</UButton>
+      <UButton color="primary" size="lg" class="font-semibold" @click="router.push('/')">{{ t.createWorkspace }}</UButton>
     </div>
 
     <!-- Empty state -->

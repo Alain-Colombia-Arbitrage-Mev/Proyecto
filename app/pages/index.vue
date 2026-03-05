@@ -35,7 +35,7 @@ async function redirectToWorkspace() {
   if (workspaces && workspaces.length > 0) {
     await router.push(`/${workspaces[0].slug}/dashboard`)
   } else if (workspaces && workspaces.length === 0) {
-    await router.push('/onboarding')
+    await router.push('/auth/login')
   } else {
     // All retries failed — likely cookie not synced yet
     // Wait a bit more and try one last time
@@ -47,7 +47,7 @@ async function redirectToWorkspace() {
         return
       }
     } catch { /* */ }
-    await router.push('/onboarding')
+    await router.push('/auth/login')
   }
 }
 
