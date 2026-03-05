@@ -85,17 +85,8 @@ export default defineEventHandler(async (event) => {
       if (!context.projectName || typeof context.projectName !== 'string') {
         throw createError({ statusCode: 400, message: 'projectName is required' })
       }
-      systemPrompt = `Eres un experto en gestión de proyectos y productividad. El usuario te da el nombre y descripción de un proyecto.
-Genera exactamente 5 tareas sugeridas en formato JSON array. Cada tarea debe tener:
-- "title": string (claro y accionable, en español)
-- "description": string (1-2 líneas, en español)
-- "priority": "low" | "medium" | "high" | "critical"
-- "tags": string[] (1-3 tags relevantes en español)
-- "estimated_hours": number (estimación en horas)
-
-Prioriza tareas que reduzcan la procrastinación: empieza con las más pequeñas y concretas.
-Responde SOLO con el JSON array, sin markdown ni texto extra.`
-      userPrompt = `Proyecto: ${String(context.projectName).slice(0, 2000)}\nDescripción: ${String(context.projectDescription || 'Sin descripción').slice(0, 5000)}`
+      systemPrompt = `PM experto. Genera 5 tareas JSON array. Cada: {title,description,priority:"low"|"medium"|"high"|"critical",tags:[],estimated_hours:N}. ES. Empieza por las más pequeñas. Solo JSON.`
+      userPrompt = `${String(context.projectName).slice(0, 2000)}|${String(context.projectDescription || '').slice(0, 3000)}`
       if (context.workspaceId) {
         resolvedWorkspaceId = String(context.workspaceId)
         await requirePermission(event, resolvedWorkspaceId, 'use_ai_basic')
@@ -107,13 +98,8 @@ Responde SOLO con el JSON array, sin markdown ni texto extra.`
       if (!context.taskTitle || typeof context.taskTitle !== 'string') {
         throw createError({ statusCode: 400, message: 'taskTitle is required' })
       }
-      systemPrompt = `Eres un experto en gestión de proyectos. El usuario te da una tarea.
-Descompón la tarea en 3-6 subtareas/pasos concretos en formato JSON array. Cada subtarea:
-- "title": string (acción concreta en español)
-- "estimated_minutes": number (estimación en minutos)
-
-Responde SOLO con el JSON array, sin markdown ni texto extra.`
-      userPrompt = `Tarea: ${String(context.taskTitle).slice(0, 2000)}\nDescripción: ${String(context.taskDescription || 'Sin descripción').slice(0, 5000)}`
+      systemPrompt = `Descompón en 3-6 subtareas. JSON array: [{title,estimated_minutes}]. ES. Solo JSON.`
+      userPrompt = `${String(context.taskTitle).slice(0, 2000)}|${String(context.taskDescription || '').slice(0, 3000)}`
       if (context.workspaceId) {
         resolvedWorkspaceId = String(context.workspaceId)
         await requirePermission(event, resolvedWorkspaceId, 'use_ai_basic')
@@ -125,17 +111,8 @@ Responde SOLO con el JSON array, sin markdown ni texto extra.`
       if (!context.taskTitle || typeof context.taskTitle !== 'string') {
         throw createError({ statusCode: 400, message: 'taskTitle is required' })
       }
-      systemPrompt = `Eres un experto en gestión de proyectos. El usuario te da una tarea con su título y descripción.
-Mejora el título para que sea más claro y accionable, y escribe una descripción más detallada con criterios de aceptación.
-Responde en JSON con:
-- "title": string (título mejorado en español)
-- "description": string (descripción mejorada con criterios de aceptación, en español)
-- "priority_suggestion": "low" | "medium" | "high" | "critical" (prioridad sugerida)
-- "estimated_hours": number (estimación en horas)
-- "tags": string[] (tags sugeridos)
-
-Responde SOLO con el JSON object, sin markdown ni texto extra.`
-      userPrompt = `Título: ${String(context.taskTitle).slice(0, 2000)}\nDescripción: ${String(context.taskDescription || 'Sin descripción').slice(0, 5000)}\nPrioridad actual: ${context.priority || 'medium'}`
+      systemPrompt = `Mejora esta tarea. JSON: {title,description,priority_suggestion:"low"|"medium"|"high"|"critical",estimated_hours:N,tags:[]}. Descripción con criterios de aceptación. ES. Solo JSON.`
+      userPrompt = `${String(context.taskTitle).slice(0, 2000)}|${String(context.taskDescription || '').slice(0, 3000)}|p:${context.priority || 'medium'}`
       if (context.workspaceId) {
         resolvedWorkspaceId = String(context.workspaceId)
         await requirePermission(event, resolvedWorkspaceId, 'use_ai_basic')
@@ -159,16 +136,8 @@ Responde SOLO con el JSON object, sin markdown ni texto extra.`
         .order('position')
         .limit(100)
 
-      systemPrompt = `Eres un coach de productividad anti-procrastinación. El usuario tiene varias tareas pendientes.
-Analiza las tareas y crea un plan diario que combata la procrastinación. Responde en JSON con:
-- "greeting": string (saludo motivacional corto en español)
-- "focus_tasks": string[] (3-5 títulos de tareas para enfocarse hoy, ordenadas: empieza con la más fácil para generar momentum)
-- "pomodoro_suggestion": string (sugerencia de bloques de tiempo, ej: "25 min trabajo, 5 min descanso")
-- "procrastination_tip": string (técnica anti-procrastinación personalizada basada en las tareas)
-- "tip": string (consejo de productividad en español)
-
-Responde SOLO con el JSON object, sin markdown ni texto extra.`
-      userPrompt = `Tareas del proyecto:\n${JSON.stringify(tasks || [], null, 2)}`
+      systemPrompt = `Coach anti-procrastinación. JSON: {greeting,focus_tasks:[3-5 títulos],pomodoro_suggestion,procrastination_tip,tip}. Empieza por la más fácil. ES. Solo JSON.`
+      userPrompt = `Tareas:\n${JSON.stringify((tasks || []).map((t: any) => ({ t: t.title, p: t.priority, h: t.estimated_hours })))}`
       break
     }
 
@@ -200,31 +169,14 @@ Responde SOLO con el JSON object, sin markdown ni texto extra.`
           .in('project_id', projectIds.length ? projectIds : ['__none__']),
       ])
 
-      systemPrompt = `Eres un arquitecto de software senior con experiencia en DevOps, backend y sistemas distribuidos.
-Analiza la estructura del workspace (proyectos, columnas kanban, distribución de tareas) y genera un documento de arquitectura técnica completo en español.
+      systemPrompt = `Arquitecto SW senior. Analiza workspace → doc arquitectura técnica ES.
 
-Responde en JSON con:
-- "title": string (título del documento)
-- "summary": string (resumen ejecutivo, 2-3 líneas)
-- "sections": array de { "heading": string, "content": string }
-  Incluye TODAS estas secciones:
-  1. Visión General — propósito, alcance, stack tecnológico
-  2. Arquitectura Backend — estructura de APIs, patrones (REST/GraphQL), autenticación, middlewares, manejo de errores
-  3. Modelo de Datos — tablas principales, relaciones, índices clave, estrategia de migraciones
-  4. DevOps & CI/CD — pipeline de integración continua, estrategia de despliegue, ambientes (dev/staging/prod), containerización (Docker), orquestación
-  5. Infraestructura — hosting, base de datos, storage, CDN, balanceo de carga, auto-scaling
-  6. Monitoreo & Observabilidad — logging estructurado, métricas, alertas, health checks, APM
-  7. Seguridad — autenticación, autorización, RLS, CORS, rate limiting, manejo de secretos, OWASP
-  8. Testing — estrategia de testing (unit, integration, e2e), cobertura, fixtures, CI testing
-  9. Flujo de Trabajo — branching strategy (git flow/trunk), code review, release process
-  10. Recomendaciones & Mejoras — priorización de mejoras técnicas
-- "diagrams": array de { "type": "flow" | "structure" | "infrastructure" | "pipeline", "description": string } (diagramas sugeridos)
-- "risks": string[] (riesgos técnicos y operacionales identificados)
-- "recommendations": string[] (mejoras concretas priorizadas por impacto)
+JSON: {title,summary,sections:[{heading,content}],diagrams:[{type:"flow"|"structure"|"infrastructure"|"pipeline",description}],risks:[],recommendations:[]}
 
-Sé específico y técnico. No seas genérico — basa tus recomendaciones en los datos del workspace.
-Responde SOLO con el JSON object, sin markdown ni texto extra. No uses <think> tags.`
-      userPrompt = `Workspace con ${projects?.length || 0} proyectos:\n${JSON.stringify({ projects, columns: columns?.length, tasks: taskStats?.length }, null, 2)}`
+Secciones: 1.Visión General 2.Backend(APIs,auth,middlewares) 3.Modelo Datos(tablas,relaciones,migraciones) 4.DevOps&CI/CD(pipeline,deploy,Docker) 5.Infraestructura(hosting,DB,CDN,scaling) 6.Monitoreo(logging,métricas,alertas) 7.Seguridad(auth,RLS,CORS,OWASP) 8.Testing(unit,integration,e2e) 9.Flujo Trabajo(branching,review,release) 10.Recomendaciones
+
+Específico, basado en datos reales. Solo JSON.`
+      userPrompt = `${projects?.length || 0} proyectos|${columns?.length || 0} cols|${taskStats?.length || 0} tareas\n${JSON.stringify((projects || []).map((p: any) => ({ n: p.name, s: p.status, p: p.priority })))}`
 
       // Store metadata for post-processing after AI call
       ;(event.context as any)._docArchMeta = {
@@ -251,20 +203,8 @@ Responde SOLO con el JSON object, sin markdown ni texto extra. No uses <think> t
         .order('created_at')
         .limit(100)
 
-      systemPrompt = `Eres un coach experto en productividad y psicología de la procrastinación.
-Analiza las tareas del usuario y genera un análisis anti-procrastinación personalizado.
-
-Responde en JSON con:
-- "score": number (puntuación de riesgo de procrastinación 1-100, donde 100 = máximo riesgo)
-- "analysis": string (análisis breve de patrones de procrastinación detectados, en español)
-- "quick_wins": string[] (3 tareas que se pueden completar en menos de 15 minutos)
-- "blocked_tasks": string[] (tareas que probablemente están siendo procrastinadas)
-- "techniques": array de { "name": string, "description": string } (2-3 técnicas anti-procrastinación recomendadas)
-- "two_minute_rule": string[] (tareas que aplican la regla de los 2 minutos)
-- "motivation": string (frase motivacional personalizada en español)
-
-Responde SOLO con el JSON object, sin markdown ni texto extra.`
-      userPrompt = `Tareas del proyecto "${String(context.projectName || '').slice(0, 2000)}":\n${JSON.stringify(tasks || [], null, 2)}`
+      systemPrompt = `Análisis anti-procrastinación. JSON: {score:1-100,analysis,quick_wins:[3 tareas <15min],blocked_tasks:[],techniques:[{name,description}],two_minute_rule:[],motivation}. ES. Solo JSON.`
+      userPrompt = `"${String(context.projectName || '').slice(0, 500)}":\n${JSON.stringify((tasks || []).map((t: any) => ({ t: t.title, p: t.priority, h: t.estimated_hours, c: t.column_id })))}`
       break
     }
 
@@ -302,10 +242,7 @@ Responde SOLO con el JSON object, sin markdown ni texto extra.`
         const columnMap = Object.fromEntries((chatColumns || []).map((c: any) => [c.id, c.title]))
         const taskSummary = (chatTasks || []).map((t: any) => `- [${columnMap[t.column_id] || '?'}] ${t.title} (${t.priority})`).join('\n')
 
-        projectContext = `\n\nProyecto actual: "${String(context.projectName || '').slice(0, 2000)}"
-Descripción: ${String(context.projectDescription || 'Sin descripción').slice(0, 5000)}
-Columnas: ${(chatColumns || []).map((c: any) => c.title).join(', ')}
-Tareas actuales:\n${taskSummary || 'Sin tareas'}`
+        projectContext = `\nProyecto:"${String(context.projectName || '').slice(0, 500)}"|Col:${(chatColumns || []).map((c: any) => c.title).join(',')}|Tareas:\n${taskSummary || 'ninguna'}`
       }
 
       // RAG: Search relevant memories from workspace
@@ -321,9 +258,9 @@ Tareas actuales:\n${taskSummary || 'Sin tareas'}`
           })
           if (memories.length > 0) {
             const memoryLines = memories.map(m =>
-              `- [${m.agent_type}/${m.content_type}] ${m.content_text.slice(0, 500)} (relevancia: ${(m.similarity * 100).toFixed(0)}%)`
+              `- ${m.content_text.slice(0, 300)}`
             ).join('\n')
-            memoryContext = `\n\nMemorias relevantes del workspace:\n${memoryLines}`
+            memoryContext = `\nCtx:\n${memoryLines}`
           }
         } catch (memErr: any) {
           console.error('[chat] Memory search error:', memErr.message)
@@ -339,41 +276,13 @@ Tareas actuales:\n${taskSummary || 'Sin tareas'}`
           content: String(h.text).slice(0, MAX_HISTORY_MSG_LENGTH),
         }))
 
-      systemPrompt = `Eres un asistente de gestión de proyectos en FocusFlow.${projectContext}${memoryContext}
+      systemPrompt = `Asistente PM FocusFlow.${projectContext}${memoryContext}
 
-REGLAS ESTRICTAS:
-1. Si el usuario pide CREAR, SUGERIR, GENERAR o LISTAR tareas → responde ÚNICAMENTE con un JSON array:
-   [{"title":"...","title_en":"...","description":"...","description_en":"...","priority":"medium","tags":["..."],"estimated_hours":N}]
-   Sin texto adicional antes ni después del JSON.
+REGLAS:
+1. Crear/sugerir/generar tareas → JSON array: [{title,title_en,description,description_en,priority,tags:[],estimated_hours}]. Description detallado: objetivo, pasos implementación, archivos, criterios aceptación ✅, notas técnicas. Bilingüe ES+EN. Solo JSON.
+2. Otra consulta → texto plano ES, max 5 líneas.
 
-2. Para cualquier otra consulta → responde en texto plano en español (máximo 5 líneas).
-
-IMPORTANTE — Cada tarea generada DEBE tener un "description" COMPLETO y DETALLADO con instrucciones paso a paso para implementarla. El description debe incluir:
-- **Objetivo**: Qué se logra (1 línea)
-- **Pasos de implementación**: Lista numerada de 4-8 pasos concretos (archivos a crear/modificar, funciones, APIs, etc.)
-- **Archivos involucrados**: Rutas de archivos relevantes
-- **Criterios de aceptación**: Checklist con ✅ de condiciones que se deben cumplir
-- **Notas técnicas**: Dependencias, patrones, consideraciones de seguridad/performance
-
-El description debe ser lo suficientemente detallado para que un desarrollador pueda ejecutar la tarea sin preguntar nada adicional. Incluye código de referencia cuando sea útil.
-
-BILINGÜE: Cada tarea DEBE incluir "title_en" (título en inglés) y "description_en" (description completo traducido al inglés). El "title" y "description" son en español.
-
-EJEMPLOS de peticiones que requieren JSON array de tareas:
-- "Crea tareas para el módulo de pagos" → JSON array
-- "Qué tareas necesito para lanzar el MVP" → JSON array
-- "Sugiere mejoras para el proyecto" → JSON array
-- "Descompón esto en pasos" → JSON array
-- "Genera un backlog" → JSON array
-- "Lista las tareas pendientes de diseño" → JSON array
-
-EJEMPLOS de consultas que requieren texto:
-- "Cómo puedo ser más productivo?" → texto
-- "Analiza mi progreso" → texto
-- "Qué prioridad debería tener X?" → texto
-- "Explica qué hace este proyecto" → texto
-
-No uses <think> tags. No uses markdown.`
+No <think>. No markdown.`
       userPrompt = message
 
       // Inject history into the messages array for this call
@@ -431,7 +340,7 @@ No uses <think> tags. No uses markdown.`
 
         const sessionId = createSessionId()
         systemPrompt = buildDocAgentSystemPrompt(docConfig, libraryDocs || undefined)
-        userPrompt = `Session ID: ${sessionId}\nWorkspace con ${projects?.length || 0} proyectos:\n${JSON.stringify({ projects, columns: columns?.length, tasks: taskStats?.length }, null, 2)}`
+        userPrompt = `SID:${sessionId}|${projects?.length || 0}proj|${columns?.length || 0}cols|${taskStats?.length || 0}tasks\n${JSON.stringify((projects || []).map((p: any) => ({ n: p.name, s: p.status })))}`
 
         // Store metadata for post-processing
         ;(event.context as any)._docAgentMeta = {
@@ -480,15 +389,16 @@ No uses <think> tags. No uses markdown.`
           .maybeSingle()
 
         const columnMap = Object.fromEntries((columnsFull || []).map((c: any) => [c.id, c.title]))
-        const projectContext = `Proyecto: "${proj?.name || ''}"
-Descripción: ${proj?.description || 'Sin descripción'}
-Columnas: ${JSON.stringify(columnsFull || [])}
-Miembros: ${(members || []).length} miembros
-Tareas (${(tasksFull || []).length} total):
+        const projectContext = `"${proj?.name || ''}"|${proj?.description?.slice(0, 300) || ''}|Cols:${(columnsFull || []).map((c: any) => c.title).join(',')}|${(members || []).length}mbrs|${(tasksFull || []).length}tasks
 ${JSON.stringify((tasksFull || []).map((t: any) => ({
-  ...t,
-  column_name: columnMap[t.column_id] || '?',
-})), null, 2)}`
+  id: t.id,
+  t: t.title,
+  p: t.priority,
+  c: columnMap[t.column_id] || '?',
+  h: t.estimated_hours,
+  tags: t.tags,
+  a: t.assignees?.length || 0,
+})))}`
 
         // For task_generator: fetch library docs via Context7
         let libraryDocs = ''
@@ -710,48 +620,13 @@ ${JSON.stringify((tasksFull || []).map((t: any) => ({
                   messages: [
                     {
                       role: 'system',
-                      content: `Eres un tech lead senior con experiencia en DevOps y backend. Basándote en el documento de arquitectura generado, crea tareas accionables de backend, DevOps e infraestructura.
-
-Genera exactamente 8 tareas en formato JSON array. Distribuye las tareas así:
-- 3 tareas de Backend (APIs, modelos de datos, testing, seguridad)
-- 3 tareas de DevOps (CI/CD, Docker, deployment, monitoreo, logging)
-- 2 tareas de Documentación técnica (diagramas, API docs, runbooks)
-
-Cada tarea:
-- "title": string (acción concreta en español, ej: "Configurar pipeline CI/CD con GitHub Actions")
-- "title_en": string (traducción del título al inglés)
-- "description": string (INSTRUCCIONES COMPLETAS en español — ver formato abajo)
-- "description_en": string (traducción completa del description al inglés)
-- "priority": "low" | "medium" | "high" | "critical"
-- "tags": string[] (2-3 tags de: backend, devops, ci-cd, docker, testing, seguridad, monitoring, api, database, documentación, infraestructura)
-- "estimated_hours": number
-
-FORMATO DEL DESCRIPTION — Cada tarea debe incluir instrucciones completas:
-
-## Objetivo
-Qué se logra al completar esta tarea (1 línea).
-
-## Pasos de implementación
-1. Paso detallado con archivos y comandos específicos
-2. Paso con configuración o código de referencia
-3. ... (mínimo 4 pasos, máximo 8)
-
-## Archivos involucrados
-- ruta/del/archivo — qué crear o modificar
-
-## Criterios de aceptación
-- ✅ Criterio verificable
-- ✅ Otro criterio
-
-## Notas técnicas
-Dependencias, herramientas concretas (Docker, GitHub Actions, Grafana, etc.), consideraciones de seguridad.
-
-Las tareas deben ser específicas y ejecutables, no genéricas. El description debe permitir que un dev ejecute la tarea sin preguntar nada.
-Responde SOLO con el JSON array, sin markdown, sin texto extra, sin <think> tags.`,
+                      content: `Tech lead. Genera 8 tareas JSON array del doc arquitectura: 3 Backend, 3 DevOps, 2 Docs.
+Cada: {title,title_en,description,description_en,priority,tags:[],estimated_hours}
+Description: objetivo + pasos implementación + archivos + criterios ✅ + notas técnicas. Detallado y ejecutable. Bilingüe ES+EN. Solo JSON.`,
                     },
                     {
                       role: 'user',
-                      content: `Documento de arquitectura generado:\nTítulo: ${docTitle}\nResumen: ${docSummary || ''}\nSecciones: ${(docContent.sections as any[]).map((s: any) => s.heading).join(', ')}\nRiesgos: ${(docContent.risks as string[]).join(', ')}\nRecomendaciones: ${(docContent.recommendations as string[]).join(', ')}`,
+                      content: `${docTitle}|${docSummary || ''}|S:${(docContent.sections as any[]).map((s: any) => s.heading).join(',')}|R:${(docContent.risks as string[]).slice(0, 5).join(',')}`,
                     },
                   ],
                   temperature: 0.7,

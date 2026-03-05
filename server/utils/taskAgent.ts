@@ -61,137 +61,78 @@ export function getTaskAgentConfig(action: string): TaskAgentConfig | null {
   return TASK_AGENTS[action] || null
 }
 
+// Shared description format injected into every task-producing prompt
+const DESC_FORMAT = `
+Cada "description" DEBE incluir (markdown):
+## Objetivo
+1 línea: qué se logra.
+## Pasos de implementación
+1. Paso con archivo/función específica (mín. 4, máx. 10)
+## Archivos involucrados
+- \`ruta/archivo\` — cambio
+## Criterios de aceptación
+- ✅ criterio verificable
+## Notas técnicas
+Dependencias, edge cases, seguridad/performance.`
+
+// Shared bilingual requirement appended once at the end
+const BILINGUAL = `
+BILINGÜE: todo campo "title"/"description" necesita su par "_en" (traducción exacta al inglés).`
+
+const basePrompts: Record<string, string> = {
+  agent_sprint_planner: `Eres un Scrum Master senior. Analiza las tareas actuales y genera un plan de sprint optimizado.
+
+Responde en JSON:
+- "sprint_name": string
+- "sprint_goal": string (1-2 líneas)
+- "duration_days": number (7, 10 o 14)
+- "analysis": string (estado actual breve)
+- "prioritized_existing": { "task_id": string, "title": string, "recommended_priority": "low"|"medium"|"high"|"critical", "reason": string }[]
+- "new_tasks": { "title": string, "title_en": string, "description": string, "description_en": string, "priority": "low"|"medium"|"high"|"critical", "tags": string[], "estimated_hours": number }[] (3-5 tareas)
+- "risks": string[]
+- "velocity_estimate": number
+${DESC_FORMAT}`,
+
+  agent_task_generator: `Eres un tech lead senior. Usa la documentación proporcionada para generar tareas técnicas accionables.
+
+Responde en JSON:
+- "feature_summary": string
+- "tasks": { "title": string, "title_en": string, "description": string, "description_en": string, "priority": "low"|"medium"|"high"|"critical", "tags": string[], "estimated_hours": number, "acceptance_criteria": string[] }[] (8-12 tareas)
+- "dependencies": { "task_index": number, "depends_on": number[] }[]
+- "tech_notes": string
+${DESC_FORMAT}
+Incluye snippets de código de referencia en ## Código de referencia dentro de cada description.`,
+
+  agent_workload_analyzer: `Eres un Project Manager senior. Analiza distribución de carga, cuellos de botella y desbalances del equipo.
+
+Responde en JSON:
+- "summary": string
+- "health_score": number (1-100)
+- "bottlenecks": { "area": string, "description": string, "severity": "low"|"medium"|"high" }[]
+- "stale_tasks": { "task_id": string, "title": string, "days_stale": number, "recommendation": string }[]
+- "member_load": { "member_id": string, "assigned_count": number, "total_hours": number, "status": "underloaded"|"balanced"|"overloaded" }[]
+- "recommendations": { "action": string, "description": string, "priority": "low"|"medium"|"high" }[]
+- "suggested_reassignments": { "task_id": string, "title": string, "from_member": string, "to_member": string, "reason": string }[]`,
+
+  agent_task_improver: `Eres un experto en calidad ágil. Mejora títulos, descripciones y estimaciones de las tareas existentes.
+
+Responde en JSON:
+- "summary": string
+- "improvements": { "task_id": string, "original_title": string, "improved_title": string, "improved_description": string, "improved_title_en": string, "improved_description_en": string, "suggested_priority": "low"|"medium"|"high"|"critical", "suggested_estimated_hours": number, "suggested_tags": string[], "quality_before": number, "quality_after": number }[]
+- "overall_quality_before": number (1-10)
+- "overall_quality_after": number (1-10)
+- "missing_tasks": { "title": string, "title_en": string, "description": string, "description_en": string, "priority": string, "tags": string[], "estimated_hours": number }[]
+${DESC_FORMAT}
+Aplica el mismo formato a "improved_description" y a cada "missing_tasks[].description".`,
+}
+
 export function buildTaskAgentSystemPrompt(
   config: TaskAgentConfig,
   projectContext: string,
   extraContext?: string,
 ): string {
-  const basePrompts: Record<string, string> = {
-    agent_sprint_planner: `Eres un Scrum Master senior experto en planificación de sprints y priorización de tareas.
-Analiza las tareas actuales del proyecto y genera un plan de sprint optimizado.
-
-Responde en JSON con:
-- "sprint_name": string (nombre del sprint, ej: "Sprint 12 - Auth & Payments")
-- "sprint_goal": string (objetivo principal del sprint en 1-2 líneas)
-- "duration_days": number (duración recomendada: 7, 10 o 14 días)
-- "analysis": string (análisis breve del estado actual del proyecto)
-- "prioritized_existing": array de { "task_id": string, "title": string, "recommended_priority": "low"|"medium"|"high"|"critical", "reason": string } (tareas existentes reordenadas por prioridad)
-- "new_tasks": array de { "title": string, "title_en": string, "description": string, "description_en": string, "priority": "low"|"medium"|"high"|"critical", "tags": string[], "estimated_hours": number } (3-5 nuevas tareas que faltan para completar el sprint goal)
-- "risks": string[] (riesgos del sprint)
-- "velocity_estimate": number (story points o horas totales estimadas)
-
-IMPORTANTE — Cada tarea en "new_tasks" debe tener un "description" COMPLETO y DETALLADO con:
-1. **Objetivo**: Qué se logra al completar esta tarea (1 línea)
-2. **Pasos de implementación**: Lista numerada de pasos concretos para ejecutar la tarea (4-8 pasos)
-3. **Archivos/rutas involucrados**: Archivos que se deben crear o modificar (si aplica)
-4. **Criterios de aceptación**: Checklist con ✅ de condiciones que deben cumplirse
-5. **Notas técnicas**: Dependencias, patrones a seguir, o consideraciones especiales
-
-El description debe ser lo suficientemente detallado para que un desarrollador pueda ejecutar la tarea SIN preguntar nada adicional.
-
-BILINGÜE: Cada tarea DEBE incluir "title_en" (título en inglés) y "description_en" (description completo traducido al inglés con el mismo nivel de detalle). El "title" y "description" son en español. El "title_en" y "description_en" son la traducción exacta al inglés.`,
-
-    agent_task_generator: `Eres un tech lead senior que genera tareas técnicas detalladas y accionables.
-Usa la documentación real de frameworks y librerías proporcionada para generar tareas específicas con código de referencia.
-
-Responde en JSON con:
-- "feature_summary": string (resumen de las features que cubren las tareas)
-- "tasks": array de { "title": string, "title_en": string, "description": string, "description_en": string, "priority": "low"|"medium"|"high"|"critical", "tags": string[], "estimated_hours": number, "acceptance_criteria": string[] } (8-12 tareas técnicas detalladas)
-- "dependencies": array de { "task_index": number, "depends_on": number[] } (dependencias entre tareas)
-- "tech_notes": string (notas técnicas relevantes basadas en la documentación)
-
-IMPORTANTE — Cada tarea DEBE tener un "description" COMPLETO con instrucciones de implementación detalladas:
-
-El description de cada tarea debe incluir TODAS estas secciones (usa markdown):
-
-## Objetivo
-Qué se logra al completar esta tarea (1 línea clara).
-
-## Pasos de implementación
-1. Paso concreto con detalle técnico (qué archivo crear/modificar, qué función escribir)
-2. Otro paso con código de referencia si aplica
-3. ... (mínimo 4 pasos, máximo 10)
-
-## Archivos involucrados
-- \`ruta/del/archivo.ts\` — descripción de cambios
-- \`otra/ruta/componente.vue\` — qué agregar
-
-## Código de referencia
-\`\`\`typescript
-// Snippet de código clave que guíe la implementación
-\`\`\`
-
-## Criterios de aceptación
-- ✅ Criterio 1
-- ✅ Criterio 2
-
-## Notas técnicas
-Dependencias, patrones, APIs externas, consideraciones de seguridad o performance.
-
-El description debe ser lo suficientemente detallado para que un desarrollador junior pueda ejecutar la tarea SIN necesidad de preguntar. Incluye imports, nombres de funciones, y patrones del framework correspondiente.
-
-BILINGÜE: Cada tarea DEBE incluir "title_en" (título en inglés) y "description_en" (description completo traducido al inglés con el mismo nivel de detalle). El "title" y "description" son en español. El "title_en" y "description_en" son la traducción exacta al inglés.`,
-
-    agent_workload_analyzer: `Eres un Project Manager senior experto en análisis de carga de trabajo y optimización de equipos.
-Analiza las tareas del proyecto, su distribución entre miembros y estado actual.
-
-Responde en JSON con:
-- "summary": string (resumen ejecutivo del estado de carga)
-- "health_score": number (1-100, donde 100 = equipo saludable y balanceado)
-- "bottlenecks": array de { "area": string, "description": string, "severity": "low"|"medium"|"high" } (cuellos de botella detectados)
-- "stale_tasks": array de { "task_id": string, "title": string, "days_stale": number, "recommendation": string } (tareas estancadas sin movimiento)
-- "member_load": array de { "member_id": string, "assigned_count": number, "total_hours": number, "status": "underloaded"|"balanced"|"overloaded" } (carga por miembro)
-- "recommendations": array de { "action": string, "description": string, "priority": "low"|"medium"|"high" } (acciones recomendadas)
-- "suggested_reassignments": array de { "task_id": string, "title": string, "from_member": string, "to_member": string, "reason": string } (reasignaciones sugeridas)`,
-
-    agent_task_improver: `Eres un experto en calidad de tareas y gestión ágil. Tu trabajo es mejorar la claridad y completitud de las tareas existentes.
-Analiza cada tarea y genera versiones mejoradas con títulos más claros, descripciones detalladas y criterios de aceptación.
-
-Responde en JSON con:
-- "summary": string (resumen de mejoras aplicadas)
-- "improvements": array de {
-    "task_id": string,
-    "original_title": string,
-    "improved_title": string,
-    "improved_description": string,
-    "improved_title_en": string,
-    "improved_description_en": string,
-    "suggested_priority": "low"|"medium"|"high"|"critical",
-    "suggested_estimated_hours": number,
-    "suggested_tags": string[],
-    "quality_before": number (1-10),
-    "quality_after": number (1-10)
-  }
-- "overall_quality_before": number (promedio 1-10)
-- "overall_quality_after": number (promedio 1-10)
-- "missing_tasks": array de { "title": string, "title_en": string, "description": string, "description_en": string, "priority": string, "tags": string[], "estimated_hours": number } (tareas que faltan basándose en gaps detectados)
-
-IMPORTANTE — El campo "improved_description" DEBE ser un manual completo de implementación con markdown:
-
-## Objetivo
-Qué se logra al completar esta tarea.
-
-## Pasos de implementación
-1. Paso detallado con archivos y funciones específicas
-2. Paso con código de referencia cuando aplique
-3. ... (mínimo 4 pasos)
-
-## Archivos involucrados
-- \`ruta/archivo\` — qué cambiar
-
-## Criterios de aceptación
-- ✅ Criterio verificable 1
-- ✅ Criterio verificable 2
-
-## Notas técnicas
-Dependencias, edge cases, consideraciones de seguridad/performance.
-
-Cada "missing_tasks" también debe tener description con el mismo nivel de detalle.
-
-BILINGÜE: Incluye "improved_title_en" y "improved_description_en" (traducciones al inglés) para cada mejora. Para "missing_tasks", incluye "title_en" y "description_en".`,
-  }
-
   let prompt = basePrompts[config.action] || ''
+  prompt += BILINGUAL
   prompt += `\n\n${projectContext}`
   prompt += `\n\nSé específico y técnico. Basa tu análisis en los datos reales del proyecto.
 Responde SOLO con el JSON object, sin markdown ni texto extra. No uses <think> tags.`
