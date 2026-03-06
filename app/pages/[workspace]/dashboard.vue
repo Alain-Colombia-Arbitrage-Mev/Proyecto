@@ -1007,8 +1007,8 @@ async function loadTokenUsage() {
 }
 
 // Load task stats + recent tasks
-watch(() => store.workspace?.id, async (wsId) => {
-  if (!wsId || store.projects.length === 0) return
+watch([() => store.workspace?.id, () => store.projectsLoaded], async ([wsId, loaded]) => {
+  if (!wsId || !loaded) return
 
   loadTokenUsage()
   loadAssessment()
