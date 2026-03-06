@@ -4,12 +4,19 @@ export default defineEventHandler(async (event) => {
   let user
   try {
     user = await requireUser(event)
-  } catch (e) {
-    console.error('[user/workspaces] Error getting user:', e)
+  } catch (e: any) {
+    console.error('[user/workspaces] Auth error:', e?.message || e)
     throw createError({ statusCode: 401, message: 'Not authenticated' })
   }
 
-  const supabase = serverSupabaseServiceRole(event)
+  let supabase
+  try {
+    supabase = serverSupabaseServiceRole(event)
+  } catch (e: any) {
+    console.error('[user/workspaces] Supabase init error:', e?.message || e)
+    throw createError({ statusCode: 500, message: 'Database connection failed' })
+  }
+
   const isSuperadmin = isPlatformAdmin(user.email)
 
   // Superadmin sees ALL workspaces (read-only, no DB writes)
