@@ -43,8 +43,11 @@ export default defineEventHandler(async (event) => {
   }
 
   if (!userId || !userEmail) {
+    console.log(`[accept-invitation] No user found. Auth user: ${!!userId}, email fallback tried: ${!!body.email}`)
     return { processed: false, reason: 'not_authenticated' }
   }
+
+  console.log(`[accept-invitation] Processing invite ${inviteId} for user ${userEmail} (${userId})`)
 
   // Load the invitation
   const { data: invite, error } = await supabase

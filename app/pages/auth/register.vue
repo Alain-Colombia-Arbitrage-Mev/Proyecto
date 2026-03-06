@@ -146,14 +146,22 @@ async function handleRegister() {
     }
 
     sessionStorage.setItem('focusflow_just_logged_in', '1')
-    // Accept invitation — wait for it so user lands in workspace, not onboarding
+
+    // For invited users: wait for session to be ready, then accept invitation
     if (inviteId.value) {
-      try {
-        await $fetch('/api/auth/accept-invitation', {
-          method: 'POST',
-          body: { inviteId: inviteId.value, email: email.value },
-        })
-      } catch { /* will be retried by index.vue process-invitations */ }
+      // Wait for auth cookie to propagate (signUp just happened)
+      await new Promise(r => setTimeout(r, 1000))
+      // Retry accept-invitation up to 3 times
+      for (let i = 0; i < 3; i++) {
+        try {
+          const result = await $fetch<any>('/api/auth/accept-invitation', {
+            method: 'POST',
+            body: { inviteId: inviteId.value, email: email.value },
+          })
+          if (result?.processed) break
+        } catch {}
+        if (i < 2) await new Promise(r => setTimeout(r, 800))
+      }
     }
     await router.push('/')
   } catch (e: any) {

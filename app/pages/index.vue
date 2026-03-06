@@ -53,18 +53,35 @@ async function redirectToWorkspace() {
     sessionStorage.removeItem('focusflow_invite_id')
   }
 
+  // Also try accept-invitation if we have an inviteId stored from register/login
+  if (import.meta.client) {
+    const storedInvite = sessionStorage.getItem('focusflow_invite_id')
+    if (storedInvite && invitationsProcessed === 0) {
+      try {
+        const result = await $fetch<any>('/api/auth/accept-invitation', {
+          method: 'POST',
+          body: { inviteId: storedInvite },
+        })
+        if (result?.processed) invitationsProcessed = 1
+      } catch {}
+    }
+    sessionStorage.removeItem('focusflow_invite_id')
+  }
+
   const workspaces = await fetchWorkspacesWithRetry()
 
   if (workspaces && workspaces.length > 0) {
     await router.push(`/${workspaces[0].slug}/dashboard`)
   } else if (workspaces && workspaces.length === 0) {
-    // If invitations were just processed, workspaces may not be ready yet — retry
+    // If invitations were processed, workspace should exist — retry harder
     if (invitationsProcessed > 0) {
-      await new Promise(r => setTimeout(r, 800))
-      const retry = await fetchWorkspacesWithRetry()
-      if (retry && retry.length > 0) {
-        await router.push(`/${retry[0].slug}/dashboard`)
-        return
+      for (let i = 0; i < 3; i++) {
+        await new Promise(r => setTimeout(r, 1000))
+        const retry = await fetchWorkspacesWithRetry()
+        if (retry && retry.length > 0) {
+          await router.push(`/${retry[0].slug}/dashboard`)
+          return
+        }
       }
     }
     await router.push('/onboarding')
