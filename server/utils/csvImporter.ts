@@ -287,6 +287,23 @@ const STATUS_SYNONYMS: Record<string, string[]> = {
   'desarrollo frontend': ['desarrollo frontend', 'frontend development', 'frontend dev'],
   'review / qa visual': ['review / qa visual', 'review/qa visual', 'visual qa'],
   'integracion': ['integracion', 'integración', 'integration'],
+  'maquetacion': ['maquetacion', 'maquetación', 'layout', 'markup', 'html/css'],
+  'componentes': ['componentes', 'components'],
+  'integracion api': ['integracion api', 'integración api', 'api integration', 'api connect'],
+  'estado / store': ['estado / store', 'estado/store', 'state management', 'store', 'pinia', 'vuex', 'redux'],
+  'responsive / a11y': ['responsive / a11y', 'responsive/a11y', 'responsive', 'accessibility', 'a11y'],
+  'qa visual': ['qa visual', 'visual qa', 'pixel perfect'],
+  'diseno db / schema': ['diseno db / schema', 'diseño db / schema', 'db design', 'schema design', 'database design'],
+  'endpoints / api': ['endpoints / api', 'endpoints/api', 'api endpoints', 'routes', 'rest api'],
+  'logica de negocio': ['logica de negocio', 'lógica de negocio', 'business logic', 'services'],
+  'auth / permisos': ['auth / permisos', 'auth/permisos', 'authentication', 'authorization', 'permissions', 'rbac'],
+  'testing / unit': ['testing / unit', 'testing/unit', 'unit tests', 'unit testing'],
+  'migraciones': ['migraciones', 'migrations', 'db migrations'],
+  'deploy': ['deploy', 'deployment', 'ship'],
+  'beta': ['beta', 'beta testing'],
+  'release': ['release', 'launch'],
+  'post-launch': ['post-launch', 'post launch', 'post-release'],
+  'diseno ux/ui': ['diseno ux/ui', 'diseño ux/ui', 'ux/ui design', 'ux design', 'ui/ux'],
 }
 
 // Build reverse lookup: synonym → canonical key
@@ -311,6 +328,9 @@ const TEMPLATE_SIGNATURES: Record<string, string[]> = {
   ai_agents: ['prompts pendientes', 'diseno de agente', 'entrenamiento', 'testing', 'evaluacion', 'produccion', 'monitoreo'],
   backend_senior_dev: ['backlog', 'diseno de api', 'desarrollo', 'code review', 'testing', 'seguridad / rls', 'staging', 'produccion', 'monitoreo'],
   frontend_design: ['inspiracion', 'wireframes', 'diseno ui', 'prototipo', 'desarrollo frontend', 'review / qa visual', 'integracion', 'publicado'],
+  app_development: ['backlog', 'diseno ux/ui', 'desarrollo', 'code review', 'testing', 'beta', 'release', 'post-launch'],
+  frontend_dev: ['backlog', 'maquetacion', 'componentes', 'integracion api', 'estado / store', 'responsive / a11y', 'code review', 'qa visual', 'deploy'],
+  backend_dev: ['backlog', 'diseno db / schema', 'endpoints / api', 'logica de negocio', 'auth / permisos', 'testing / unit', 'code review', 'migraciones', 'deploy'],
 }
 
 function normalizeStatus(status: string): string {

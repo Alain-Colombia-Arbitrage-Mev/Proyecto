@@ -106,6 +106,28 @@ const TEMPLATES: Record<string, { title: string; color: string; wip_limit?: numb
     { title: 'Release', color: '#10B981' },
     { title: 'Post-Launch', color: '#14B8A6' },
   ],
+  frontend_dev: [
+    { title: 'Backlog', color: '#6B7280' },
+    { title: 'Maquetación', color: '#EC4899' },
+    { title: 'Componentes', color: '#8B5CF6', wip_limit: 4 },
+    { title: 'Integración API', color: '#3B82F6', wip_limit: 4 },
+    { title: 'Estado / Store', color: '#6366F1', wip_limit: 3 },
+    { title: 'Responsive / A11y', color: '#F59E0B', wip_limit: 3 },
+    { title: 'Code Review', color: '#F97316', wip_limit: 3 },
+    { title: 'QA Visual', color: '#EF4444', wip_limit: 3 },
+    { title: 'Deploy', color: '#10B981' },
+  ],
+  backend_dev: [
+    { title: 'Backlog', color: '#6B7280' },
+    { title: 'Diseño DB / Schema', color: '#8B5CF6' },
+    { title: 'Endpoints / API', color: '#3B82F6', wip_limit: 4 },
+    { title: 'Lógica de Negocio', color: '#6366F1', wip_limit: 4 },
+    { title: 'Auth / Permisos', color: '#EF4444', wip_limit: 3 },
+    { title: 'Testing / Unit', color: '#F59E0B', wip_limit: 3 },
+    { title: 'Code Review', color: '#F97316', wip_limit: 3 },
+    { title: 'Migraciones', color: '#14B8A6' },
+    { title: 'Deploy', color: '#10B981' },
+  ],
 }
 
 export default defineEventHandler(async (event) => {
@@ -173,6 +195,8 @@ export default defineEventHandler(async (event) => {
     marketing: ['/marketing', '/marketing/assets', '/marketing/campañas'],
     ai_agents: ['/agents', '/agents/prompts', '/agents/evaluaciones'],
     app_development: ['/app', '/app/design', '/app/releases', '/app/tests'],
+    frontend_dev: ['/frontend', '/frontend/components', '/frontend/pages', '/frontend/stores', '/frontend/assets'],
+    backend_dev: ['/backend', '/backend/api', '/backend/migrations', '/backend/tests', '/backend/utils'],
   }
 
   const projectSlug = body.name.replace(/[^a-zA-Z0-9 _-]/g, '').replace(/\s+/g, '_').slice(0, 50).toLowerCase()

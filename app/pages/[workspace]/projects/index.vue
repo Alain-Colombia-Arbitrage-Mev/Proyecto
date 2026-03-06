@@ -430,6 +430,23 @@ const clientSynonyms: Record<string, string[]> = {
   'desarrollo frontend': ['desarrollo frontend', 'frontend development', 'frontend dev'],
   'review / qa visual': ['review / qa visual', 'review/qa visual', 'visual qa'],
   'integracion': ['integracion', 'integración', 'integration'],
+  'maquetacion': ['maquetacion', 'maquetación', 'layout', 'markup', 'html/css'],
+  'componentes': ['componentes', 'components'],
+  'integracion api': ['integracion api', 'integración api', 'api integration', 'api connect'],
+  'estado / store': ['estado / store', 'estado/store', 'state management', 'store', 'pinia', 'vuex', 'redux'],
+  'responsive / a11y': ['responsive / a11y', 'responsive/a11y', 'responsive', 'accessibility', 'a11y'],
+  'qa visual': ['qa visual', 'visual qa', 'pixel perfect'],
+  'diseno db / schema': ['diseno db / schema', 'diseño db / schema', 'db design', 'schema design', 'database design'],
+  'endpoints / api': ['endpoints / api', 'endpoints/api', 'api endpoints', 'routes', 'rest api'],
+  'logica de negocio': ['logica de negocio', 'lógica de negocio', 'business logic', 'services'],
+  'auth / permisos': ['auth / permisos', 'auth/permisos', 'authentication', 'authorization', 'permissions', 'rbac'],
+  'testing / unit': ['testing / unit', 'testing/unit', 'unit tests', 'unit testing'],
+  'migraciones': ['migraciones', 'migrations', 'db migrations'],
+  'deploy': ['deploy', 'deployment', 'ship'],
+  'beta': ['beta', 'beta testing'],
+  'release': ['release', 'launch'],
+  'post-launch': ['post-launch', 'post launch', 'post-release'],
+  'diseno ux/ui': ['diseno ux/ui', 'diseño ux/ui', 'ux/ui design', 'ux design', 'ui/ux'],
 }
 const clientSynLookup = new Map<string, string>()
 for (const [canonical, syns] of Object.entries(clientSynonyms)) {
@@ -448,11 +465,15 @@ const clientTemplateSignatures: Record<string, string[]> = {
   ai_agents: ['prompts pendientes', 'diseno de agente', 'entrenamiento', 'testing', 'evaluacion', 'produccion', 'monitoreo'],
   backend_senior_dev: ['backlog', 'diseno de api', 'desarrollo', 'code review', 'testing', 'seguridad / rls', 'staging', 'produccion', 'monitoreo'],
   frontend_design: ['inspiracion', 'wireframes', 'diseno ui', 'prototipo', 'desarrollo frontend', 'review / qa visual', 'integracion', 'publicado'],
+  app_development: ['backlog', 'diseno ux/ui', 'desarrollo', 'code review', 'testing', 'beta', 'release', 'post-launch'],
+  frontend_dev: ['backlog', 'maquetacion', 'componentes', 'integracion api', 'estado / store', 'responsive / a11y', 'code review', 'qa visual', 'deploy'],
+  backend_dev: ['backlog', 'diseno db / schema', 'endpoints / api', 'logica de negocio', 'auth / permisos', 'testing / unit', 'code review', 'migraciones', 'deploy'],
 }
 const templateLabels: Record<string, string> = {
   simple: 'Simple', kanban: 'Kanban Clásico', dev: 'Desarrollo IT', devops: 'DevOps',
   support: 'Soporte', scrum: 'Scrum', scrumban: 'Scrumban', marketing: 'Marketing',
   ai_agents: 'Agentes AI', backend_senior_dev: 'Backend Senior Dev', frontend_design: 'Frontend & Design',
+  app_development: 'App Development', frontend_dev: 'Frontend Dev', backend_dev: 'Backend Dev',
 }
 
 function suggestTemplateClient(statuses: string[]): { template: string; score: number; matched: number; total: number } | null {
@@ -714,6 +735,34 @@ const templateConfigs = [
       { title: 'Beta', color: '#F97316' },
       { title: 'Release', color: '#10B981' },
       { title: 'Post-Launch', color: '#14B8A6' },
+    ],
+  },
+  {
+    label: 'Frontend Dev', value: 'frontend_dev', cols: 9,
+    columns: [
+      { title: 'Backlog', color: '#6B7280' },
+      { title: 'Maquetación', color: '#EC4899' },
+      { title: 'Componentes', color: '#8B5CF6' },
+      { title: 'Integración API', color: '#3B82F6' },
+      { title: 'Estado / Store', color: '#6366F1' },
+      { title: 'Responsive / A11y', color: '#F59E0B' },
+      { title: 'Code Review', color: '#F97316' },
+      { title: 'QA Visual', color: '#EF4444' },
+      { title: 'Deploy', color: '#10B981' },
+    ],
+  },
+  {
+    label: 'Backend Dev', value: 'backend_dev', cols: 9,
+    columns: [
+      { title: 'Backlog', color: '#6B7280' },
+      { title: 'Diseño DB / Schema', color: '#8B5CF6' },
+      { title: 'Endpoints / API', color: '#3B82F6' },
+      { title: 'Lógica de Negocio', color: '#6366F1' },
+      { title: 'Auth / Permisos', color: '#EF4444' },
+      { title: 'Testing / Unit', color: '#F59E0B' },
+      { title: 'Code Review', color: '#F97316' },
+      { title: 'Migraciones', color: '#14B8A6' },
+      { title: 'Deploy', color: '#10B981' },
     ],
   },
 ]
