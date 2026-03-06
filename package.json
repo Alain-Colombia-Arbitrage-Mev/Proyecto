@@ -14,7 +14,6 @@
   "dependencies": {
     "@nuxt/ui": "^3.0.0",
     "@nuxtjs/supabase": "^2.0.4",
-    "@oxc-parser/binding-win32-x64-msvc": "^0.116.0",
     "@pinia/nuxt": "^0.11.0",
     "@supabase/supabase-js": "^2.58.0",
     "@tanstack/vue-query": "^5.0.0",
