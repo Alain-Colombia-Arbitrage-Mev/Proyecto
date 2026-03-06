@@ -79,11 +79,11 @@ export default defineEventHandler(async (event) => {
 
     // Build registration URL with invitation context
     const config = useRuntimeConfig()
-    const baseUrl = config.appUrl || config.public?.appUrl || 'https://focusflow.app'
+    const baseUrl = config.appUrl || config.public?.appUrl || 'https://focus.nexaru.net'
     const registerUrl = `${baseUrl}/auth/register?invite=${invitation.id}&email=${encodeURIComponent(normalizedEmail)}`
 
     // Send invitation email
-    sendEmail({
+    const emailSent = await sendEmail({
       to: normalizedEmail,
       subject: `${inviterName} te invitó a ${workspaceName} en FocusFlow`,
       html: pendingInvitationEmailHtml({
@@ -92,7 +92,12 @@ export default defineEventHandler(async (event) => {
         role: assignedRole,
         registerUrl,
       }),
-    }).catch(() => {})
+    }).catch((err) => {
+      console.error('[members.post] Email send error:', err)
+      return false
+    })
+    console.log(`[members.post] Invitation email to ${normalizedEmail}: ${emailSent ? 'SENT' : 'FAILED'}`)
+    console.log(`[members.post] registerUrl: ${registerUrl}`)
 
     return {
       pending: true,

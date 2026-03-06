@@ -36,15 +36,29 @@ async function redirectToWorkspace() {
   if (handled.value) return
   handled.value = true
 
+  // Process any pending invitations before checking workspaces
+  try {
+    const headers: Record<string, string> = {}
+    if (import.meta.server) {
+      const reqHeaders = useRequestHeaders(['cookie'])
+      if (reqHeaders.cookie) headers.cookie = reqHeaders.cookie
+    }
+    await $fetch('/api/auth/process-invitations', { method: 'POST', headers })
+  } catch { /* ignore — user may have no invitations */ }
+
+  // Clean up invite session marker
+  if (import.meta.client) {
+    sessionStorage.removeItem('focusflow_invite_id')
+  }
+
   const workspaces = await fetchWorkspacesWithRetry()
 
   if (workspaces && workspaces.length > 0) {
     await router.push(`/${workspaces[0].slug}/dashboard`)
   } else if (workspaces && workspaces.length === 0) {
-    await router.push('/auth/login')
+    await router.push('/onboarding')
   } else {
     // All retries failed — likely cookie not synced yet
-    // Wait a bit more and try one last time
     await new Promise(r => setTimeout(r, 1500))
     try {
       const data = await $fetch<any[]>('/api/user/workspaces')
@@ -53,7 +67,7 @@ async function redirectToWorkspace() {
         return
       }
     } catch { /* */ }
-    await router.push('/auth/login')
+    await router.push('/onboarding')
   }
 }
 

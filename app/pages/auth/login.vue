@@ -3,7 +3,20 @@
     <NuxtLayout name="auth">
       <div class="animate-fade-up">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">{{ t.welcomeBack }}</h2>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">{{ t.loginSubtitle }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ t.loginSubtitle }}</p>
+
+        <!-- Invitation banner for existing users -->
+        <div v-if="inviteInfo" class="mb-6 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl px-4 py-3">
+          <div class="flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
+            <UIcon name="i-heroicons-envelope" class="w-5 h-5 shrink-0" />
+            <div class="text-sm">
+              <p class="font-semibold">{{ lang.language.value === 'en' ? `You're invited to "${inviteInfo.workspace}"` : `Te invitaron a "${inviteInfo.workspace}"` }}</p>
+              <p class="text-emerald-600 dark:text-emerald-400 text-xs mt-0.5">
+                {{ lang.language.value === 'en' ? 'Sign in to join the workspace' : 'Inicia sesion para unirte al workspace' }}
+              </p>
+            </div>
+          </div>
+        </div>
 
         <form class="space-y-5" @submit.prevent="handleLogin">
           <UFormField :label="t.email">
@@ -41,7 +54,7 @@
 
         <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-8">
           {{ t.noAccount }}
-          <NuxtLink to="/auth/register" class="text-focusflow-600 hover:text-focusflow-500 dark:text-focusflow-400 dark:hover:text-focusflow-300 font-medium transition-colors">
+          <NuxtLink :to="inviteId ? `/auth/register?invite=${inviteId}&email=${encodeURIComponent(email)}` : '/auth/register'" class="text-focusflow-600 hover:text-focusflow-500 dark:text-focusflow-400 dark:hover:text-focusflow-300 font-medium transition-colors">
             {{ t.createAccountBtn }}
           </NuxtLink>
         </p>
@@ -56,13 +69,32 @@ definePageMeta({ layout: false })
 const { signIn, signInWithGoogle, loading: authLoading } = useAuth()
 const { signInWithWallet, hasWallet, loading: walletLoadingRef } = useWeb3Auth()
 const router = useRouter()
-const { labels: t } = useLanguage()
+const route = useRoute()
+const lang = useLanguage()
+const t = lang.labels
 
-const email = ref('')
+const email = ref((route.query.email as string) || '')
 const password = ref('')
 const errorMsg = ref('')
 const loading = computed(() => authLoading.value)
 const walletLoading = computed(() => walletLoadingRef.value)
+
+const inviteId = computed(() => (route.query.invite as string) || '')
+const inviteInfo = ref<{ workspace: string } | null>(null)
+
+watch(inviteId, (id) => {
+  if (id) sessionStorage.setItem('focusflow_invite_id', id)
+}, { immediate: true })
+
+async function loadInviteInfo() {
+  if (!inviteId.value) return
+  try {
+    const data = await $fetch<any>('/api/auth/invitation-info', { params: { id: inviteId.value } })
+    if (data?.workspace_name) inviteInfo.value = { workspace: data.workspace_name }
+  } catch {}
+}
+
+onMounted(loadInviteInfo)
 
 async function handleLogin() {
   errorMsg.value = ''

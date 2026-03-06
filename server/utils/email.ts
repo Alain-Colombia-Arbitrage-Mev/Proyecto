@@ -40,21 +40,21 @@ interface SendEmailOptions {
 
 export async function sendEmail({ to, subject, html }: SendEmailOptions): Promise<boolean> {
   const transporter = getTransporter()
-  if (!transporter) return false
+  if (!transporter) {
+    console.error(`[email] No SMTP transporter — check AMAZON_SMTP_ENDPOINT, AMAZON_SMTP_USER, AMAZON_SMTP_PASSWORD env vars`)
+    return false
+  }
 
   const config = useRuntimeConfig()
+  const from = String(config.amazonEmailFrom || '') || `FocusFlow <noreply@focusflow.app>`
 
   try {
-    await transporter.sendMail({
-      from: String(config.amazonEmailFrom || '') || `FocusFlow <noreply@focusflow.app>`,
-      to,
-      subject,
-      html,
-    })
+    const info = await transporter.sendMail({ from, to, subject, html })
+    console.log(`[email] Sent to=${to} messageId=${info.messageId}`)
     return true
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
-    console.error(`[email] Send failed to=${to} subject="${subject}": ${message}`)
+    console.error(`[email] Send failed from=${from} to=${to} subject="${subject}": ${message}`)
     return false
   }
 }
@@ -249,14 +249,21 @@ export function pendingInvitationEmailHtml(opts: {
         </tr>
       </table>
     </div>
-    <div style="text-align: center; margin-bottom: 24px;">
+    <div style="text-align: center; margin-bottom: 16px;">
       <a href="${escapeHtml(opts.registerUrl)}"
          style="display: inline-block; background: #0D0D0D; color: white; text-decoration: none; font-weight: 600; font-size: 15px; padding: 14px 36px; border-radius: 10px; letter-spacing: 0.3px;">
         Crear cuenta y unirme
       </a>
     </div>
+    <p style="margin: 0 0 8px; color: #6b7280; font-size: 13px; text-align: center; line-height: 1.5;">
+      &iquest;Ya tienes cuenta?
+      <a href="${escapeHtml(opts.registerUrl.replace('/auth/register?', '/auth/login?'))}"
+         style="color: #10B981; text-decoration: underline; font-weight: 600;">
+        Inicia sesi&oacute;n aqu&iacute;
+      </a>
+    </p>
     <p style="margin: 0 0 8px; color: #9ca3af; font-size: 12px; text-align: center; line-height: 1.5;">
-      Al registrarte, ser&aacute;s a&ntilde;adido autom&aacute;ticamente al workspace con tu rol asignado.
+      Al registrarte o iniciar sesi&oacute;n, ser&aacute;s a&ntilde;adido autom&aacute;ticamente al workspace.
     </p>
     <hr style="border: none; border-top: 1px solid #f3f4f6; margin: 20px 0;" />
     <p style="margin: 0; color: #d1d5db; font-size: 11px; text-align: center;">
