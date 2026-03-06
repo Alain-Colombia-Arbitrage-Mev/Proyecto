@@ -20,8 +20,29 @@ export default defineEventHandler(async (event) => {
     }
   } catch {}
 
+  // If not authenticated, look up user by email from body (for post-signup before session is ready)
+  if (!userId && body.email) {
+    const email = (body.email as string).toLowerCase()
+    // Load invitation first to validate email matches
+    const { data: invCheck } = await supabase
+      .from('workspace_invitations')
+      .select('email')
+      .eq('id', inviteId)
+      .eq('status', 'pending')
+      .maybeSingle()
+
+    if (invCheck && invCheck.email.toLowerCase() === email) {
+      // Find user in auth by email — single page, recently created user will be near the end
+      const { data: authData } = await supabase.auth.admin.listUsers({ page: 1, perPage: 50 })
+      const found = authData?.users?.find((u: any) => u.email?.toLowerCase() === email)
+      if (found) {
+        userId = found.id
+        userEmail = email
+      }
+    }
+  }
+
   if (!userId || !userEmail) {
-    // Not authenticated yet — will be processed by process-invitations later
     return { processed: false, reason: 'not_authenticated' }
   }
 
