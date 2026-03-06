@@ -941,7 +941,7 @@ let quoteInterval: ReturnType<typeof setInterval> | null = null
 onMounted(() => {
   quoteInterval = setInterval(() => {
     currentQuoteIndex.value = (currentQuoteIndex.value + 1) % motivationalQuotesEs.length
-  }, 5500)
+  }, 15000)
 })
 onUnmounted(() => {
   if (quoteInterval) clearInterval(quoteInterval)

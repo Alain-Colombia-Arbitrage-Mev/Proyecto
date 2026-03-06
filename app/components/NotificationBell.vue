@@ -79,9 +79,39 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts">
+// Module-level shared state — all NotificationBell instances share one poll
 import type { Notification } from '~/types'
 
+const _sharedNotifications = ref<Notification[]>([])
+let _sharedPollInterval: ReturnType<typeof setInterval> | null = null
+let _sharedWorkspaceId = ''
+let _instanceCount = 0
+
+async function _sharedLoad(wsId: string) {
+  if (!wsId) return
+  try {
+    _sharedNotifications.value = await $fetch<Notification[]>(`/api/workspaces/${wsId}/notifications`)
+  } catch {}
+}
+
+function _startSharedPoll(wsId: string) {
+  if (_sharedPollInterval && _sharedWorkspaceId === wsId) return // already polling this workspace
+  if (_sharedPollInterval) clearInterval(_sharedPollInterval)
+  _sharedWorkspaceId = wsId
+  _sharedLoad(wsId)
+  _sharedPollInterval = setInterval(() => _sharedLoad(wsId), 60_000)
+}
+
+function _stopSharedPoll() {
+  if (_sharedPollInterval) {
+    clearInterval(_sharedPollInterval)
+    _sharedPollInterval = null
+  }
+}
+</script>
+
+<script setup lang="ts">
 const store = useWorkspaceStore()
 const pushNotif = usePushNotifications()
 const lang = useLanguage()
@@ -90,7 +120,7 @@ const t = lang.labels
 const open = ref(false)
 const bellRef = ref<HTMLElement | null>(null)
 const panelRef = ref<HTMLElement | null>(null)
-const notifications = ref<Notification[]>([])
+const notifications = _sharedNotifications
 
 const unreadCount = computed(() => notifications.value.filter(n => !n.read).length)
 const workspaceId = computed(() => store.workspace?.id || '')
@@ -115,16 +145,8 @@ const panelStyle = computed(() => {
 
 // Listen for foreground FCM messages
 pushNotif.listenForeground(() => {
-  loadNotifications()
+  _sharedLoad(workspaceId.value)
 })
-
-async function loadNotifications() {
-  if (!workspaceId.value) return
-  try {
-    const data = await $fetch<Notification[]>(`/api/workspaces/${workspaceId.value}/notifications`)
-    notifications.value = data
-  } catch {}
-}
 
 async function markAllRead() {
   if (!workspaceId.value) return
@@ -184,18 +206,21 @@ function timeAgo(dateStr: string) {
   return `${days}${t.value.daysAgo}`
 }
 
-// Poll every 60s
-let pollInterval: ReturnType<typeof setInterval> | null = null
+// Shared poll — only one interval regardless of how many instances
+onMounted(() => {
+  _instanceCount++
+  if (workspaceId.value) _startSharedPoll(workspaceId.value)
+})
 
 watch(workspaceId, (id) => {
-  if (id) {
-    loadNotifications()
-    if (pollInterval) clearInterval(pollInterval)
-    pollInterval = setInterval(loadNotifications, 60_000)
-  }
-}, { immediate: true })
+  if (id) _startSharedPoll(id)
+}, { immediate: false })
 
 onUnmounted(() => {
-  if (pollInterval) clearInterval(pollInterval)
+  _instanceCount--
+  if (_instanceCount <= 0) {
+    _stopSharedPoll()
+    _instanceCount = 0
+  }
 })
 </script>

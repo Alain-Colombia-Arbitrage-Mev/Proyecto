@@ -1088,15 +1088,20 @@ function taskAgingClass(task: Task): string {
   return ''
 }
 
+// Memoized: group filtered tasks by column in a single pass (called once per reactive change, not per render)
+const _filteredByColumn = computed(() => {
+  const map: Record<string, Task[]> = {}
+  for (const t of tasks.value) {
+    if (kanbanFilterPriority.value && t.priority !== kanbanFilterPriority.value) continue
+    if (kanbanFilterAssignee.value && !(t.assignees || []).includes(kanbanFilterAssignee.value)) continue
+    if (!map[t.column_id]) map[t.column_id] = []
+    map[t.column_id]!.push(t)
+  }
+  return map
+})
+
 function filteredTasksByColumn(columnId: string) {
-  let result = tasks.value.filter(t => t.column_id === columnId)
-  if (kanbanFilterPriority.value) {
-    result = result.filter(t => t.priority === kanbanFilterPriority.value)
-  }
-  if (kanbanFilterAssignee.value) {
-    result = result.filter(t => (t.assignees || []).includes(kanbanFilterAssignee.value))
-  }
-  return result
+  return _filteredByColumn.value[columnId] || []
 }
 
 const allFilteredTasks = computed(() => {
@@ -1260,8 +1265,17 @@ async function loadTasks() {
   tasks.value = (data.tasks || []) as Task[]
 }
 
+const _tasksByColumn = computed(() => {
+  const map: Record<string, Task[]> = {}
+  for (const t of tasks.value) {
+    if (!map[t.column_id]) map[t.column_id] = []
+    map[t.column_id]!.push(t)
+  }
+  return map
+})
+
 function tasksByColumn(columnId: string) {
-  return tasks.value.filter(t => t.column_id === columnId)
+  return _tasksByColumn.value[columnId] || []
 }
 
 function columnBgColor(hex: string) {

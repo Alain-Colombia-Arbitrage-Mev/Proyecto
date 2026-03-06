@@ -367,11 +367,16 @@ export function useLofiPlayer() {
   function startSessionTimer() {
     if (sessionInterval) return
     if (!sessionStartTime.value) sessionStartTime.value = Date.now()
+    // Update every 5s instead of 1s — session timer doesn't need 1s precision
     sessionInterval = setInterval(() => {
       if (sessionStartTime.value) {
         sessionElapsed.value = Math.floor((Date.now() - sessionStartTime.value) / 1000)
       }
-    }, 1000)
+    }, 5000)
+    // Immediate first update
+    if (sessionStartTime.value) {
+      sessionElapsed.value = Math.floor((Date.now() - sessionStartTime.value) / 1000)
+    }
   }
 
   function stopSessionTimer() {
