@@ -555,15 +555,10 @@ watch(() => store.workspace?.id, async (id) => {
 async function loadAllProjects() {
   if (!store.workspace?.id) return
   try {
-    // Use store projects (already loaded) or fetch
-    if (store.projects.length > 0) {
-      allProjects.value = store.projects
-    } else {
-      const data = await $fetch<Project[]>(`/api/workspaces/${store.workspace.id}/projects`)
-      allProjects.value = data || []
-    }
+    const data = await $fetch<Project[]>(`/api/workspaces/${store.workspace.id}/projects`)
+    allProjects.value = data || []
   } catch {
-    allProjects.value = []
+    allProjects.value = store.projects.length > 0 ? store.projects : []
   }
 }
 
@@ -714,7 +709,11 @@ function availableProjectsFor(member: any): Project[] {
 }
 
 async function addProjectToMember(member: any, projectId: string) {
-  const newIds = [...(member.project_ids || []), projectId]
+  // Update local state immediately to prevent stale reads on rapid clicks
+  const currentMember = members.value.find(m => m.id === member.id)
+  if (!currentMember) return
+  const newIds = [...(currentMember.project_ids || []), projectId]
+  currentMember.project_ids = newIds
   try {
     await $fetch(`/api/workspaces/${store.workspace!.id}/members/${member.id}/projects`, {
       method: 'PUT',
@@ -723,12 +722,17 @@ async function addProjectToMember(member: any, projectId: string) {
     await loadMembers()
   } catch (e: any) {
     alert(e.data?.message || t.value.errorAddingProject)
+    await loadMembers() // revert on error
   }
   quickAddMemberId.value = null
 }
 
 async function removeProjectFromMember(member: any, projectId: string) {
-  const newIds = (member.project_ids || []).filter((id: string) => id !== projectId)
+  // Update local state immediately to prevent stale reads on rapid clicks
+  const currentMember = members.value.find(m => m.id === member.id)
+  if (!currentMember) return
+  const newIds = (currentMember.project_ids || []).filter((id: string) => id !== projectId)
+  currentMember.project_ids = newIds
   try {
     await $fetch(`/api/workspaces/${store.workspace!.id}/members/${member.id}/projects`, {
       method: 'PUT',
@@ -737,6 +741,7 @@ async function removeProjectFromMember(member: any, projectId: string) {
     await loadMembers()
   } catch (e: any) {
     alert(e.data?.message || t.value.errorRemovingProject)
+    await loadMembers() // revert on error
   }
 }
 
