@@ -31,27 +31,31 @@ export async function notifyUser(opts: NotifyUserOptions): Promise<void> {
     entity_id: opts.entityId || null,
   })
 
-  // 2. Fire-and-forget email
+  // 2. Send email
   if (opts.emailSubject && opts.emailHtml) {
-    getUserEmail(supabase, opts.userId).then((email) => {
+    try {
+      const email = await getUserEmail(supabase, opts.userId)
       if (email) {
-        sendEmail({ to: email, subject: opts.emailSubject!, html: opts.emailHtml! }).catch(() => {})
+        await sendEmail({ to: email, subject: opts.emailSubject, html: opts.emailHtml })
+      } else {
+        console.warn(`[notifyUser] No email found for user ${opts.userId}`)
       }
-    }).catch(() => {})
+    } catch (err) {
+      console.error(`[notifyUser] Email failed for user ${opts.userId}:`, err)
+    }
   }
 
-  // 3. Fire-and-forget push
-  Promise.resolve(
-    supabase
+  // 3. Push notification (fire-and-forget)
+  try {
+    const { data } = await supabase
       .from('fcm_tokens')
       .select('token')
-      .eq('user_id', opts.userId),
-  ).then(({ data }) => {
+      .eq('user_id', opts.userId)
     if (data && data.length > 0) {
       const tokens = data.map(r => r.token)
       sendPushNotification(tokens, { title: opts.title, body: opts.body }).catch(() => {})
     }
-  }).catch(() => {})
+  } catch {}
 }
 
 async function getUserEmail(supabase: any, userId: string): Promise<string | null> {

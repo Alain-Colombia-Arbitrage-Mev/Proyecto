@@ -129,33 +129,36 @@ export default defineEventHandler(async (event) => {
     projectName = proj?.name
   }
 
-  // Send email invitations to all attendees (fire-and-forget)
+  // Send email invitations to all attendees (awaited so emails actually send before response closes)
   const meetingAttendees: string[] = meeting.attendees || []
-  for (const attendeeId of meetingAttendees) {
-    if (attendeeId === user.id) continue
 
-    const emailHtml = meetingInvitationEmailHtml({
-      title: meeting.title,
-      description: meeting.description,
-      scheduledAt: meeting.scheduled_at,
-      durationMinutes: meeting.duration_minutes,
-      meetingUrl: meeting.meeting_url,
-      organizerName,
-      projectName,
-    })
+  const emailHtml = meetingInvitationEmailHtml({
+    title: meeting.title,
+    description: meeting.description,
+    scheduledAt: meeting.scheduled_at,
+    durationMinutes: meeting.duration_minutes,
+    meetingUrl: meeting.meeting_url,
+    organizerName,
+    projectName,
+  })
 
-    notifyUser({
-      event,
-      userId: attendeeId,
-      type: 'meeting_scheduled',
-      title: `Reunión: ${meeting.title}`,
-      body: `${organizerName} programó "${meeting.title}" para ${new Date(meeting.scheduled_at).toLocaleDateString('es-ES')}`,
-      entityType: 'meeting',
-      entityId: meeting.id,
-      emailSubject: `Reunión programada: ${meeting.title}`,
-      emailHtml,
-    }).catch(() => {})
-  }
+  const notifyPromises = meetingAttendees
+    .filter(id => id !== user.id)
+    .map(attendeeId =>
+      notifyUser({
+        event,
+        userId: attendeeId,
+        type: 'meeting_scheduled',
+        title: `Reunión: ${meeting.title}`,
+        body: `${organizerName} programó "${meeting.title}" para ${new Date(meeting.scheduled_at).toLocaleDateString('es-ES')}`,
+        entityType: 'meeting',
+        entityId: meeting.id,
+        emailSubject: `Reunión programada: ${meeting.title}`,
+        emailHtml,
+      }).catch(err => console.error(`[meetings.post] notifyUser failed for ${attendeeId}:`, err))
+    )
+
+  await Promise.allSettled(notifyPromises)
 
   return meeting
 })
