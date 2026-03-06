@@ -211,6 +211,59 @@ export function meetingInvitationEmailHtml(opts: {
 </html>`
 }
 
+export function meetingReminderEmailHtml(opts: {
+  title: string
+  scheduledAt: string
+  durationMinutes: number
+  meetingUrl: string
+  minutesBefore: number
+}): string {
+  const safeTitle = escapeHtml(opts.title)
+
+  let formattedDate: string
+  try {
+    formattedDate = new Date(opts.scheduledAt).toLocaleString('es-ES', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  } catch {
+    formattedDate = opts.scheduledAt
+  }
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f6f6f6; padding: 32px; margin: 0;">
+  <div style="max-width: 520px; margin: 0 auto; background: white; border-radius: 12px; padding: 32px; border: 1px solid #e5e7eb;">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <div style="display: inline-block; width: 40px; height: 40px; background: #0ea5e9; border-radius: 8px; line-height: 40px; color: white; font-weight: bold; font-size: 18px;">F</div>
+    </div>
+    <div style="text-align: center; margin-bottom: 20px;">
+      <span style="display: inline-block; background: #FEF3C7; color: #92400E; font-weight: 700; font-size: 13px; padding: 6px 16px; border-radius: 20px;">
+        &#9200; Comienza en ${opts.minutesBefore} minutos
+      </span>
+    </div>
+    <h2 style="margin: 0 0 4px; font-size: 18px; color: #0D0D0D; text-align: center;">${safeTitle}</h2>
+    <p style="margin: 0 0 20px; color: #7A7A7A; font-size: 13px; text-align: center;">${formattedDate} &bull; ${opts.durationMinutes} min</p>
+    <div style="text-align: center; margin-bottom: 20px;">
+      <a href="${escapeHtml(opts.meetingUrl)}"
+         style="display: inline-block; background: #1a73e8; color: white; text-decoration: none; font-weight: 600; font-size: 15px; padding: 14px 36px; border-radius: 10px;">
+        Unirse ahora
+      </a>
+    </div>
+    <p style="margin: 0; color: #7A7A7A; font-size: 11px; text-align: center;">
+      <a href="${escapeHtml(opts.meetingUrl)}" style="color: #3B82F6; text-decoration: none;">${escapeHtml(opts.meetingUrl)}</a>
+    </p>
+    <p style="margin: 12px 0 0; color: #7A7A7A; font-size: 12px; text-align: center;">&mdash; FocusFlow</p>
+  </div>
+</body>
+</html>`
+}
+
 export function reservedDateEmailHtml(opts: {
   title: string
   type: string

@@ -1115,16 +1115,40 @@ async function triggerDeadlineCheck() {
   } catch {}
 }
 
+// Meeting reminders: trigger every 2 min (meetings need 10-min-before alerts)
+let meetingReminderInterval: ReturnType<typeof setInterval> | null = null
+const MEETING_LOCK_KEY = 'focusflow-meeting-reminder-ts'
+const MEETING_INTERVAL_MS = 2 * 60 * 1000
+
+async function triggerMeetingReminders() {
+  if (!store.workspace?.id) return
+  try {
+    const lastRun = Number(localStorage.getItem(MEETING_LOCK_KEY) || '0')
+    if (Date.now() - lastRun < MEETING_INTERVAL_MS - 10_000) return
+    localStorage.setItem(MEETING_LOCK_KEY, String(Date.now()))
+  } catch {}
+  try {
+    await $fetch('/api/cron/meeting-reminders', {
+      method: 'POST',
+      body: {},
+    })
+  } catch {}
+}
+
 watch(() => store.workspace?.id, (id) => {
   if (id) {
     triggerDeadlineCheck()
+    triggerMeetingReminders()
     if (deadlineCheckInterval) clearInterval(deadlineCheckInterval)
     deadlineCheckInterval = setInterval(triggerDeadlineCheck, DEADLINE_INTERVAL_MS)
+    if (meetingReminderInterval) clearInterval(meetingReminderInterval)
+    meetingReminderInterval = setInterval(triggerMeetingReminders, MEETING_INTERVAL_MS)
   }
 }, { immediate: true })
 
 onUnmounted(() => {
   if (deadlineCheckInterval) clearInterval(deadlineCheckInterval)
+  if (meetingReminderInterval) clearInterval(meetingReminderInterval)
 })
 </script>
 
