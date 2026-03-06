@@ -9,7 +9,7 @@
       <!-- Header -->
       <div class="text-center mb-10 animate-fade-up">
         <div class="w-14 h-14 rounded-2xl bg-focusflow-600 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-focusflow-100">
-          <span class="text-white font-bold text-xl" style="font-family: 'Space Mono', monospace;">F</span>
+          <span class="text-white font-bold text-xl" style="font-family: 'Space Grotesk', monospace;">F</span>
         </div>
         <h1 class="text-3xl font-bold text-gray-900 tracking-tight">
           {{ t.setupWorkspace }}

@@ -19,8 +19,15 @@ export default defineNuxtConfig({
           crossorigin: '',
         },
         {
+          rel: 'preload',
+          as: 'style',
+          href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=Space+Grotesk:wght@400;500;600;700&display=swap',
+        },
+        {
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Space+Mono:wght@400;700&display=swap',
+          href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=Space+Grotesk:wght@400;500;600;700&display=swap',
+          media: 'print',
+          onload: "this.media='all'",
         },
       ],
     },
@@ -73,6 +80,23 @@ export default defineNuxtConfig({
     optimizeDeps: {
       exclude: ['@vueuse/core', '@vueuse/shared'],
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id: string) {
+            // Separate heavy libs into their own chunks
+            if (id.includes('node_modules/@tiptap')) return 'tiptap'
+            if (id.includes('node_modules/date-fns')) return 'date-fns'
+            if (id.includes('node_modules/@supabase')) return 'supabase'
+            if (id.includes('node_modules/zod')) return 'zod'
+          },
+        },
+      },
+    },
+  },
+  experimental: {
+    payloadExtraction: true,
+    treeshakeClientOnly: true,
   },
   devtools: { enabled: true },
   devServer: { port: 3001 }, // solo desarrollo local — v2

@@ -8,7 +8,7 @@
       <!-- Logo + workspace -->
       <div class="h-14 flex items-center gap-2.5 shrink-0 border-b border-white/[0.06]" :class="collapsed ? 'px-4 justify-center' : 'px-4'">
         <div class="w-8 h-8 rounded-lg bg-[#75fc96] flex items-center justify-center shrink-0 shadow-lg shadow-[#75fc96]/20">
-          <span class="text-[#17191c] font-bold text-sm" style="font-family: 'Space Mono', monospace;">F</span>
+          <span class="text-[#17191c] font-bold text-sm" style="font-family: 'Space Grotesk', monospace;">F</span>
         </div>
         <div v-if="!collapsed" class="min-w-0">
           <p class="font-semibold text-[13px] text-white/90 truncate leading-tight">{{ store.workspace?.name || 'FocusFlow' }}</p>
@@ -81,20 +81,20 @@
 
       <!-- Lofi Player (sidebar mini) -->
       <div class="shrink-0">
-        <LofiPlayer sidebar :collapsed="collapsed" />
+        <LazyLofiPlayer sidebar :collapsed="collapsed" />
       </div>
 
       <!-- Language + Notifications + user + collapse -->
       <div class="border-t border-white/[0.06]">
         <div v-if="!collapsed" class="px-3 pt-2 flex items-center justify-between">
-          <NotificationBell />
+          <LazyNotificationBell />
           <div class="flex items-center gap-1">
             <ClientOnly><DarkModeToggle sidebar-style /></ClientOnly>
             <LanguageToggle />
           </div>
         </div>
         <div v-else class="flex flex-col items-center gap-2 pt-2">
-          <NotificationBell />
+          <LazyNotificationBell />
           <ClientOnly><DarkModeToggle sidebar-style /></ClientOnly>
         </div>
         <div class="flex items-center gap-2 p-2" :class="collapsed ? 'justify-center' : ''">
@@ -135,7 +135,7 @@
     <header class="md:hidden fixed top-0 inset-x-0 z-30 h-14 flex items-center justify-between px-4 bg-white/90 dark:bg-[#111]/90 backdrop-blur-xl border-b border-gray-200/60 dark:border-white/10">
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-lg bg-[#75fc96] flex items-center justify-center shadow-sm shadow-[#75fc96]/20">
-          <span class="text-[#17191c] font-bold text-sm" style="font-family: 'Space Mono', monospace;">F</span>
+          <span class="text-[#17191c] font-bold text-sm" style="font-family: 'Space Grotesk', monospace;">F</span>
         </div>
         <div class="min-w-0">
           <p class="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate leading-tight">{{ store.workspace?.name || 'FocusFlow' }}</p>
@@ -143,7 +143,7 @@
       </div>
       <div class="flex items-center gap-1.5">
         <ClientOnly><DarkModeToggle sidebar-style /></ClientOnly>
-        <NotificationBell />
+        <LazyNotificationBell />
       </div>
     </header>
 
@@ -180,11 +180,11 @@
     </Transition>
 
     <!-- Time Tracker Widget -->
-    <TimeTracker v-if="store.workspace?.id" :workspace-id="store.workspace.id" />
+    <LazyTimeTracker v-if="store.workspace?.id" :workspace-id="store.workspace.id" />
 
     <!-- Lofi Player (mobile only — desktop is in sidebar) -->
     <div class="md:hidden">
-      <LofiPlayer />
+      <LazyLofiPlayer />
     </div>
 
     <!-- Mobile Bottom Nav -->

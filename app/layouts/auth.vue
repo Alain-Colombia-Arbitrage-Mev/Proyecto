@@ -7,7 +7,7 @@
       <div class="relative z-10 max-w-sm">
         <div class="flex items-center gap-3 mb-12 animate-fade-up">
           <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
-            <span class="text-white font-bold text-lg" style="font-family: 'Space Mono', monospace;">F</span>
+            <span class="text-white font-bold text-lg" style="font-family: 'Space Grotesk', monospace;">F</span>
           </div>
           <span class="text-xl font-bold text-white tracking-tight">FocusFlow</span>
         </div>
@@ -33,7 +33,7 @@
         <!-- Mobile logo -->
         <div class="lg:hidden flex items-center gap-3 mb-10 justify-center animate-fade-up">
           <div class="w-10 h-10 rounded-xl bg-focusflow-600 flex items-center justify-center">
-            <span class="text-white font-bold text-lg" style="font-family: 'Space Mono', monospace;">F</span>
+            <span class="text-white font-bold text-lg" style="font-family: 'Space Grotesk', monospace;">F</span>
           </div>
           <span class="text-xl font-bold text-gray-900 dark:text-white tracking-tight">FocusFlow</span>
         </div>

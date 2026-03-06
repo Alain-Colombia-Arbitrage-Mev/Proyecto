@@ -707,7 +707,7 @@
     </UModal>
 
     <!-- Procrastination Quiz Modal -->
-    <ProcrastinationQuiz
+    <LazyProcrastinationQuiz
       v-if="showQuiz && store.workspace?.id"
       :workspace-id="store.workspace.id"
       @close="showQuiz = false"

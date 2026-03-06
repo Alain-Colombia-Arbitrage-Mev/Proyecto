@@ -929,7 +929,7 @@
     </transition>
 
     <!-- Add Task Modal -->
-    <TaskCreateModal
+    <LazyTaskCreateModal
       v-model:open="showAddTask"
       :workspace-id="workspaceId"
       :project-id="(route.params.id as string)"
@@ -975,7 +975,7 @@
     </UModal>
 
     <!-- Task Detail Slideover -->
-    <TaskDetailModal
+    <LazyTaskDetailModal
       v-model:open="showTaskDetail"
       :task="selectedTask"
       :workspace-id="workspaceId"
@@ -987,7 +987,7 @@
       @improve-with-a-i="handleImproveTask"
     />
 
-    <TaskImportModal
+    <LazyTaskImportModal
       v-model:open="showImportModal"
       :workspace-id="workspaceId"
       :project-id="(route.params.id as string)"

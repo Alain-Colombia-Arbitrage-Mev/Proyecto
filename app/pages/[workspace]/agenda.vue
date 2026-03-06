@@ -221,7 +221,7 @@
     />
 
     <!-- Meeting schedule modal -->
-    <MeetingScheduleModal
+    <LazyMeetingScheduleModal
       v-model:open="showMeetingModal"
       :workspace-id="store.workspace?.id || ''"
       :members="meetingMembers"
