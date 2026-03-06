@@ -83,7 +83,7 @@ const inviteId = computed(() => (route.query.invite as string) || '')
 const inviteInfo = ref<{ workspace: string } | null>(null)
 
 watch(inviteId, (id) => {
-  if (id) sessionStorage.setItem('focusflow_invite_id', id)
+  if (import.meta.client && id) sessionStorage.setItem('focusflow_invite_id', id)
 }, { immediate: true })
 
 async function loadInviteInfo() {

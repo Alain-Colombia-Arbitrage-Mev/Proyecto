@@ -96,7 +96,7 @@ const inviteInfo = ref<{ workspace: string; role: string; invitedBy: string } | 
 
 // Persist inviteId so index.vue can process it after redirect
 watch(inviteId, (id) => {
-  if (id) sessionStorage.setItem('focusflow_invite_id', id)
+  if (import.meta.client && id) sessionStorage.setItem('focusflow_invite_id', id)
 }, { immediate: true })
 
 // Load invitation details
