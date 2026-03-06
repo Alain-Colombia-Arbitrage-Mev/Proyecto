@@ -37,6 +37,7 @@
             <UInput v-model="confirmPassword" type="password" :placeholder="t.repeatPassword" required class="w-full" size="lg" />
           </UFormField>
 
+          <p v-if="successMsg" class="text-sm text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-100 dark:border-emerald-900 rounded-lg px-3 py-2">{{ successMsg }}</p>
           <p v-if="errorMsg" class="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 border border-red-100 dark:border-red-900 rounded-lg px-3 py-2">{{ errorMsg }}</p>
 
           <UButton type="submit" block size="lg" :loading="loading" color="primary" class="font-semibold">
@@ -76,7 +77,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: false })
 
-const { signUp, signInWithGoogle, loading: authLoading } = useAuth()
+const { signInWithGoogle, loading: authLoading } = useAuth()
 const { signInWithWallet, hasWallet, loading: walletLoadingRef } = useWeb3Auth()
 const router = useRouter()
 const lang = useLanguage()
@@ -87,8 +88,10 @@ const email = ref((route.query.email as string) || '')
 const password = ref('')
 const confirmPassword = ref('')
 const errorMsg = ref('')
+const successMsg = ref('')
 const inviteId = computed(() => (route.query.invite as string) || '')
-const loading = computed(() => authLoading.value)
+const registering = ref(false)
+const loading = computed(() => authLoading.value || registering.value)
 const walletLoading = computed(() => walletLoadingRef.value)
 
 // Invitation details for rich banner
@@ -124,21 +127,37 @@ async function handleRegister() {
     return
   }
 
+  registering.value = true
   try {
-    await signUp(email.value, password.value)
+    const supabase = useSupabaseClient()
+    const { data, error } = await supabase.auth.signUp({
+      email: email.value,
+      password: password.value,
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+    })
+    if (error) throw error
+
+    // If email confirmation required (session is null), show message
+    if (data?.user && !data.session) {
+      successMsg.value = lang.language.value === 'en'
+        ? 'Check your email to confirm your account, then sign in.'
+        : 'Revisa tu correo para confirmar tu cuenta, luego inicia sesion.'
+      return
+    }
+
     sessionStorage.setItem('focusflow_just_logged_in', '1')
-    // Process invitation immediately after signup
+    // Accept invitation — non-blocking, will be retried by index.vue if it fails
     if (inviteId.value) {
-      try {
-        await $fetch('/api/auth/accept-invitation', {
-          method: 'POST',
-          body: { inviteId: inviteId.value, email: email.value },
-        })
-      } catch { /* will be retried by index.vue */ }
+      $fetch('/api/auth/accept-invitation', {
+        method: 'POST',
+        body: { inviteId: inviteId.value, email: email.value },
+      }).catch(() => {})
     }
     await router.push('/')
   } catch (e: any) {
     errorMsg.value = e.message || t.value.registerError
+  } finally {
+    registering.value = false
   }
 }
 

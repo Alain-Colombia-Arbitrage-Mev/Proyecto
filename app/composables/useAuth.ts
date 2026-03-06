@@ -6,8 +6,18 @@ export function useAuth() {
   async function signUp(email: string, password: string) {
     loading.value = true
     try {
-      const { error } = await supabase.auth.signUp({ email, password })
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
       if (error) throw error
+      // If email confirmation is required, data.user exists but session is null
+      if (data?.user && !data.session) {
+        console.log('[auth] signUp: email confirmation required')
+      }
     } finally {
       loading.value = false
     }

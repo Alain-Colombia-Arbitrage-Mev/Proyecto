@@ -8,10 +8,10 @@ export default defineEventHandler(async (event) => {
 
   const supabase = serverSupabaseServiceRole(event)
 
-  // Try to get the authenticated user first
   let userId: string | null = null
   let userEmail: string | null = null
 
+  // Get the authenticated user — required
   try {
     const user = await serverSupabaseUser(event)
     if (user?.id && user?.email) {
@@ -20,25 +20,9 @@ export default defineEventHandler(async (event) => {
     }
   } catch {}
 
-  // If not authenticated, try to find user by email from the invitation
-  if (!userId) {
-    const email = (body.email as string)?.toLowerCase()
-    if (!email) throw createError({ statusCode: 401, message: 'Not authenticated and no email provided' })
-
-    // Look up the user by email
-    let foundUser: any = null
-    let page = 1
-    while (!foundUser) {
-      const { data: authData } = await supabase.auth.admin.listUsers({ page, perPage: 500 })
-      const users = authData?.users || []
-      foundUser = users.find((u: any) => u.email?.toLowerCase() === email)
-      if (foundUser || users.length < 500) break
-      if (++page > 20) break
-    }
-
-    if (!foundUser) throw createError({ statusCode: 404, message: 'User not found' })
-    userId = foundUser.id
-    userEmail = email
+  if (!userId || !userEmail) {
+    // Not authenticated yet — will be processed by process-invitations later
+    return { processed: false, reason: 'not_authenticated' }
   }
 
   // Load the invitation
