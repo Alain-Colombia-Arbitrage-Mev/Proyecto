@@ -665,6 +665,9 @@ async function handleInvite() {
 }
 
 async function handleRoleChange(member: any, newRole: string) {
+  // Skip if role didn't actually change
+  if (newRole === member.role) return
+
   const label = member.email || member.display_name || member.user_id.slice(0, 12)
   const msg = lang.language.value === 'en'
     ? `Change ${label} role to "${newRole}"?`
