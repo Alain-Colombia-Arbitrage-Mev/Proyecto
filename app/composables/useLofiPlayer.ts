@@ -22,6 +22,19 @@ export interface LofiStation {
 const stations: LofiStation[] = [
   // === TOP PICKS ===
   {
+    id: 'hiphop',
+    name: 'Hip Hop',
+    emoji: '🎤',
+    url: '',
+    color: '#EF4444',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: 'WN9G_VnluX4',
+    tracks: [
+      { title: 'Hip Hop Radio', artist: 'Hip Hop Mix', duration: 'LIVE' },
+    ],
+  },
+  {
     id: 'lofi-hiphop',
     name: 'Work With Me',
     emoji: '🎧',
