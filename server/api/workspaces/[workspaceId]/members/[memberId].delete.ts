@@ -3,11 +3,10 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
   const memberId = getRouterParam(event, 'memberId')!
-  await requireWorkspaceRole(event, workspaceId, 'admin')
+  const { membership } = await requireWorkspaceRole(event, workspaceId, 'admin')
 
   const supabase = serverSupabaseServiceRole(event)
 
-  // Cannot remove workspace owner
   const { data: target } = await supabase
     .from('workspace_members')
     .select('id, role')
@@ -16,7 +15,11 @@ export default defineEventHandler(async (event) => {
     .maybeSingle()
 
   if (!target) throw createError({ statusCode: 404, message: 'Member not found' })
-  if (target.role === 'owner') throw createError({ statusCode: 403, message: 'Cannot remove workspace owner' })
+
+  // Only superadmins can remove owners
+  if (target.role === 'owner' && membership.role !== 'superadmin') {
+    throw createError({ statusCode: 403, message: 'Cannot remove workspace owner' })
+  }
 
   const { error } = await supabase
     .from('workspace_members')

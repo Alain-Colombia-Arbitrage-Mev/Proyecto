@@ -28,11 +28,18 @@ export default defineEventHandler(async (event) => {
   }
 
   // Replace: delete all current entries, then insert new ones
-  await supabase
+  const { error: delErr } = await supabase
     .from('project_members')
     .delete()
     .eq('workspace_id', workspaceId)
     .eq('user_id', target.user_id)
+
+  if (delErr) {
+    console.error(`[projects.put] Error deleting project_members for user ${target.user_id}:`, delErr.message)
+    throw createError({ statusCode: 500, message: 'Error clearing project access' })
+  }
+
+  console.log(`[projects.put] Cleared project_members for user ${target.user_id}, inserting ${body.project_ids.length} projects`)
 
   if (body.project_ids.length > 0) {
     const rows = body.project_ids.map((pid: string) => ({
@@ -43,7 +50,10 @@ export default defineEventHandler(async (event) => {
     }))
 
     const { error } = await supabase.from('project_members').insert(rows)
-    if (error) throw createError({ statusCode: 500, message: 'Error updating project access' })
+    if (error) {
+      console.error(`[projects.put] Error inserting project_members:`, error.message)
+      throw createError({ statusCode: 500, message: 'Error updating project access' })
+    }
   }
 
   return { success: true, project_ids: body.project_ids }
