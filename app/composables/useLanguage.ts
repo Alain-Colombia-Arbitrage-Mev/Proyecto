@@ -767,6 +767,27 @@ export function useLanguage() {
 
       // ── Motivational ──
       motivationalToast: t('Tip del día', 'Tip of the day', 'آج کی نصیحت'),
+
+      // ── Admin Panel ──
+      adminUsers: t('Usuarios', 'Users', 'صارفین'),
+      adminPanel: t('Panel Admin', 'Admin Panel', 'ایڈمن پینل'),
+      adminPanelDesc: t('Vista global de todos los usuarios de la plataforma', 'Global view of all platform users', 'تمام پلیٹ فارم صارفین کا عالمی نظارہ'),
+      totalUsers: t('Usuarios Totales', 'Total Users', 'کل صارفین'),
+      activeToday: t('Activos hoy', 'Active today', 'آج فعال'),
+      withWorkspace: t('Con workspace', 'With workspace', 'ورک سپیس کے ساتھ'),
+      noWorkspace: t('Sin workspace', 'No workspace', 'ورک سپیس نہیں'),
+      searchUsers: t('Buscar por email...', 'Search by email...', 'ای میل سے تلاش کریں...'),
+      lastLogin: t('Último login', 'Last login', 'آخری لاگ ان'),
+      never: t('Nunca', 'Never', 'کبھی نہیں'),
+      tasksAssigned: t('Tareas asignadas', 'Tasks assigned', 'تفویض شدہ کام'),
+      completed: t('Completadas', 'Completed', 'مکمل'),
+      inProgress: t('En progreso', 'In progress', 'جاری'),
+      workspacesLabel: t('Workspaces', 'Workspaces', 'ورک سپیسز'),
+      membersLabel: t('Miembros', 'Members', 'ممبران'),
+      projectsLabel: t('Proyectos', 'Projects', 'پروجیکٹس'),
+      registeredOn: t('Registrado el', 'Registered on', 'رجسٹرڈ'),
+      noUsersFound: t('No se encontraron usuarios', 'No users found', 'کوئی صارف نہیں ملا'),
+      loadingUsers: t('Cargando usuarios...', 'Loading users...', 'صارفین لوڈ ہو رہے ہیں...'),
     }
   })
 

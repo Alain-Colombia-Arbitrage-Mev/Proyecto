@@ -309,6 +309,7 @@ const allNav = computed<NavItem[]>(() => [
       { label: t.value.reserveTime, icon: 'i-heroicons-clock', to: `/${workspaceSlug.value}/agenda`, show: true },
     ],
   },
+  { label: t.value.adminUsers, icon: 'i-heroicons-shield-exclamation', to: `/${workspaceSlug.value}/admin/users`, show: auth.isSuperadmin },
   { label: t.value.billing, icon: 'i-heroicons-credit-card', to: `/${workspaceSlug.value}/billing`, show: canManageWorkspace.value },
   { label: t.value.settings, icon: 'i-heroicons-cog-6-tooth', to: `/${workspaceSlug.value}/settings`, show: true },
 ])
