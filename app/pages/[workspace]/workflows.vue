@@ -655,15 +655,65 @@
 
         <!-- Right: AI Chat Assistant Panel -->
         <div class="lg:col-span-2">
-          <div class="bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10 flex flex-col h-[500px] sm:h-[600px]">
+          <div class="bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10 flex flex-col h-[500px] sm:h-[600px] relative overflow-hidden">
             <!-- Chat header -->
             <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-100 dark:border-white/10 shrink-0">
               <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center">
                 <UIcon name="i-heroicons-sparkles" class="w-4 h-4 text-white" />
               </div>
-              <div>
+              <div class="flex-1 min-w-0">
                 <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ t.workflowAssistant }}</h3>
-                <p class="text-[10px] text-gray-400">{{ t.workflowAssistantDesc }}</p>
+                <p class="text-[10px] text-gray-400 truncate">
+                  {{ chatSessionId ? t.sessionActive : t.workflowAssistantDesc }}
+                </p>
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                <button
+                  class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-500/10 transition-colors"
+                  :title="t.newSession"
+                  @click="startNewSession()"
+                >
+                  <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+                </button>
+                <button
+                  class="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+                  :class="showSessionList ? 'text-violet-600 bg-violet-50 dark:bg-violet-500/10' : 'text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-500/10'"
+                  :title="t.chatHistory"
+                  @click="showSessionList = !showSessionList"
+                >
+                  <UIcon name="i-heroicons-clock" class="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <!-- Session list overlay -->
+            <div v-if="showSessionList" class="absolute inset-x-0 top-[52px] bottom-0 z-10 bg-white dark:bg-[#1b1b1b] flex flex-col">
+              <div class="px-4 py-3 border-b border-gray-100 dark:border-white/10 flex items-center justify-between">
+                <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t.chatHistory }}</span>
+                <button class="text-xs text-violet-600 dark:text-violet-400 font-semibold hover:underline" @click="showSessionList = false">{{ t.close }}</button>
+              </div>
+              <div class="flex-1 overflow-y-auto">
+                <div v-if="loadingSessions" class="p-4 text-center text-xs text-gray-400">{{ t.loading }}...</div>
+                <div v-else-if="chatSessions.length === 0" class="p-6 text-center text-xs text-gray-400">{{ t.noSessions }}</div>
+                <button
+                  v-for="session in chatSessions"
+                  :key="session.id"
+                  class="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-left group"
+                  :class="chatSessionId === session.id ? 'bg-violet-50 dark:bg-violet-500/10' : ''"
+                  @click="loadSession(session)"
+                >
+                  <UIcon name="i-heroicons-chat-bubble-left-right" class="w-4 h-4 text-gray-400 shrink-0" />
+                  <div class="flex-1 min-w-0">
+                    <p class="text-xs font-medium text-gray-700 dark:text-gray-200 truncate">{{ session.title }}</p>
+                    <p class="text-[10px] text-gray-400">{{ new Date(session.updated_at).toLocaleDateString() }}</p>
+                  </div>
+                  <button
+                    class="w-6 h-6 rounded flex items-center justify-center text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                    @click.stop="deleteSession(session.id)"
+                  >
+                    <UIcon name="i-heroicons-trash" class="w-3.5 h-3.5" />
+                  </button>
+                </button>
               </div>
             </div>
 
@@ -783,6 +833,10 @@ const chatContainer = ref<HTMLElement | null>(null)
 const chatInput = ref('')
 const chatLoading = ref(false)
 const chatMessages = ref<{ role: 'user' | 'assistant'; content: string; actionsApplied?: boolean }[]>([])
+const chatSessionId = ref<string | null>(null)
+const chatSessions = ref<{ id: string; title: string; updated_at: string }[]>([])
+const showSessionList = ref(false)
+const loadingSessions = ref(false)
 
 const chatSuggestions = computed(() => [
   t.value.workflowSuggestion1,
@@ -1049,12 +1103,15 @@ onMounted(() => { loadWorkflows(); loadApiKeys(); checkN8n() })
 watch(() => store.workspace?.id, () => { loadWorkflows(); loadApiKeys(); checkN8n() })
 
 // Reset chat when switching workflows
-watch(editingWorkflow, () => {
+watch(editingWorkflow, (wf) => {
   chatMessages.value = []
   chatInput.value = ''
+  chatSessionId.value = null
+  showSessionList.value = false
   selectedNodeId.value = null
   showNodePicker.value = false
   lastRunResult.value = null
+  if (wf) loadChatSessions(wf.id)
 })
 
 // Close node picker on click outside
@@ -1228,7 +1285,7 @@ async function sendChatMessage(message: string) {
 
   chatLoading.value = true
   try {
-    const result = await $fetch<{ message?: string; actions?: any[] }>(
+    const result = await $fetch<{ message?: string; actions?: any[]; sessionId?: string }>(
       `/api/workspaces/${store.workspace.id}/workflows/assist`,
       {
         method: 'POST',
@@ -1236,10 +1293,15 @@ async function sendChatMessage(message: string) {
           message: userMsg,
           currentNodes: editingWorkflow.value.nodes || [],
           workflowType: editingWorkflow.value.type,
+          workflowId: editingWorkflow.value.id,
+          sessionId: chatSessionId.value,
           history: chatMessages.value.slice(-10).map(m => ({ role: m.role, content: m.content })),
         },
       }
     )
+
+    // Track session ID
+    if (result.sessionId) chatSessionId.value = result.sessionId
 
     let actionsApplied = false
 
@@ -1296,6 +1358,51 @@ async function sendChatMessage(message: string) {
     chatLoading.value = false
     scrollChatToBottom()
   }
+}
+
+// ── Chat Sessions ──
+
+async function loadChatSessions(workflowId?: string) {
+  if (!store.workspace?.id) return
+  loadingSessions.value = true
+  try {
+    const params = workflowId ? `?workflow_id=${workflowId}` : ''
+    chatSessions.value = await $fetch(`/api/workspaces/${store.workspace.id}/chat-sessions${params}`)
+  } catch { chatSessions.value = [] }
+  finally { loadingSessions.value = false }
+}
+
+async function loadSession(session: { id: string; title: string }) {
+  if (!store.workspace?.id) return
+  try {
+    const data = await $fetch<{ id: string; messages: any[] }>(
+      `/api/workspaces/${store.workspace.id}/chat-sessions/${session.id}`
+    )
+    chatSessionId.value = data.id
+    chatMessages.value = (data.messages || []).map((m: any) => ({
+      role: m.role as 'user' | 'assistant',
+      content: m.content,
+      actionsApplied: m.hasActions || false,
+    }))
+    showSessionList.value = false
+    nextTick(() => scrollChatToBottom())
+  } catch {}
+}
+
+function startNewSession() {
+  chatSessionId.value = null
+  chatMessages.value = []
+  chatInput.value = ''
+  showSessionList.value = false
+}
+
+async function deleteSession(sessionId: string) {
+  if (!store.workspace?.id) return
+  try {
+    await $fetch(`/api/workspaces/${store.workspace.id}/chat-sessions/${sessionId}`, { method: 'DELETE' })
+    chatSessions.value = chatSessions.value.filter(s => s.id !== sessionId)
+    if (chatSessionId.value === sessionId) startNewSession()
+  } catch {}
 }
 </script>
 

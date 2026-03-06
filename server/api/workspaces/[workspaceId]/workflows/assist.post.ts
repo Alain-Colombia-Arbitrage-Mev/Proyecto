@@ -1,4 +1,5 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
+import { searchMemories, storeMemory } from '~/server/utils/embeddings'
 
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
@@ -9,11 +10,30 @@ export default defineEventHandler(async (event) => {
   if (!openrouterApiKey) throw createError({ statusCode: 500, message: 'OpenRouter API key not configured' })
 
   const body = await readBody(event)
-  const { message, currentNodes, workflowType, history } = body
+  const { message, currentNodes, workflowType, history, sessionId } = body
 
   if (!message || typeof message !== 'string') {
     throw createError({ statusCode: 400, message: 'message is required' })
   }
+
+  const supabase = serverSupabaseServiceRole(event)
+
+  // --- RAG: search relevant memories ---
+  let memoryContext = ''
+  try {
+    const memories = await searchMemories({
+      supabase,
+      workspaceId,
+      query: message,
+      agentType: 'workflow_chat',
+      limit: 5,
+      threshold: 0.6,
+    })
+    if (memories.length > 0) {
+      memoryContext = '\n\nRelevant context from previous conversations:\n' +
+        memories.map(m => `- ${m.content_text}`).join('\n')
+    }
+  } catch {}
 
   const nodeTypesSpec = `
 Available node types:
@@ -39,6 +59,7 @@ ${nodeTypesSpec}
 
 Current workflow type: ${workflowType || 'ai_agent'}
 Current nodes: ${JSON.stringify(currentNodes || [])}
+${memoryContext}
 
 IMPORTANT: When the user asks to create, add, or modify nodes, respond with JSON in this format:
 {
@@ -74,10 +95,8 @@ ONLY output valid JSON. No markdown wrapping.`
 
   messages.push({ role: 'user', content: message.slice(0, 5000) })
 
-  const supabase = serverSupabaseServiceRole(event)
-
   try {
-    const response = await $fetch<{ choices: { message: { content: string } }[] }>('https://openrouter.ai/api/v1/chat/completions', {
+    const response = await $fetch<{ choices: { message: { content: string } }[]; usage?: any }>('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: { Authorization: `Bearer ${openrouterApiKey}`, 'Content-Type': 'application/json' },
       body: {
@@ -112,18 +131,81 @@ ONLY output valid JSON. No markdown wrapping.`
       }
     }
 
+    const result = parsed || { message: raw }
+
+    // --- Session persistence ---
+    let activeSessionId = sessionId || null
+    const chatEntry = [
+      { role: 'user', content: message.slice(0, 5000), ts: new Date().toISOString() },
+      { role: 'assistant', content: result.message || raw, ts: new Date().toISOString(), hasActions: !!(result.actions?.length) },
+    ]
+
+    if (activeSessionId) {
+      // Append to existing session
+      const { data: session } = await supabase
+        .from('chat_sessions')
+        .select('messages')
+        .eq('id', activeSessionId)
+        .eq('workspace_id', workspaceId)
+        .single()
+
+      if (session) {
+        const existingMessages = Array.isArray(session.messages) ? session.messages : []
+        await supabase
+          .from('chat_sessions')
+          .update({
+            messages: [...existingMessages, ...chatEntry],
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', activeSessionId)
+      }
+    } else {
+      // Create new session
+      const title = message.slice(0, 80) + (message.length > 80 ? '...' : '')
+      const { data: newSession } = await supabase
+        .from('chat_sessions')
+        .insert({
+          workspace_id: workspaceId,
+          workflow_id: body.workflowId || null,
+          user_id: user.id,
+          title,
+          messages: chatEntry,
+          metadata: { workflowType: workflowType || 'ai_agent' },
+        })
+        .select('id')
+        .single()
+
+      if (newSession) activeSessionId = newSession.id
+    }
+
+    // --- Store interaction as vector memory (fire-and-forget) ---
+    const memoryText = `User: ${message}\nAssistant: ${result.message || raw}`
+    storeMemory({
+      supabase,
+      workspaceId,
+      contentText: memoryText,
+      agentType: 'workflow_chat',
+      contentType: 'chat',
+      metadata: {
+        sessionId: activeSessionId,
+        workflowType: workflowType || 'ai_agent',
+        hadActions: !!(result.actions?.length),
+      },
+      createdBy: user.id,
+    }).catch(() => {})
+
     // Track token usage
     try {
       await supabase.from('ai_usage_log').insert({
         workspace_id: workspaceId,
         user_id: user.id,
         action: 'workflow_assist',
-        tokens_used: raw.length,
+        tokens_used: response.usage?.total_tokens || raw.length,
         created_at: new Date().toISOString(),
       })
     } catch {}
 
-    return parsed || { message: raw }
+    return { ...result, sessionId: activeSessionId }
   } catch (e: any) {
     throw createError({ statusCode: 500, message: e.message || 'AI request failed' })
   }
