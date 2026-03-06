@@ -24,13 +24,23 @@ export default defineEventHandler(async (event) => {
     diagnostics.userError = e?.message || String(e)
   }
 
-  // Test serverSupabaseClient
+  // Test serverSupabaseServiceRole (bypasses RLS)
+  try {
+    const { serverSupabaseServiceRole } = await import('#supabase/server')
+    const srClient = serverSupabaseServiceRole(event)
+    const { data, error } = await srClient.from('workspaces').select('id').limit(1)
+    diagnostics.dbServiceRole = error ? { error: error.message } : { count: data?.length || 0 }
+  } catch (e: any) {
+    diagnostics.dbServiceRoleError = e?.message || String(e)
+  }
+
+  // Test anon client (goes through RLS)
   try {
     const client = await serverSupabaseClient(event)
     const { data, error } = await (client as any).from('workspaces').select('id').limit(1)
-    diagnostics.dbTest = error ? { error: error.message } : { count: data?.length || 0 }
+    diagnostics.dbAnon = error ? { error: error.message } : { count: data?.length || 0 }
   } catch (e: any) {
-    diagnostics.dbError = e?.message || String(e)
+    diagnostics.dbAnonError = e?.message || String(e)
   }
 
   return diagnostics

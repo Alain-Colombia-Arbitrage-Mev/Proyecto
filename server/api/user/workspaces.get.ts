@@ -7,7 +7,8 @@ export default defineEventHandler(async (event) => {
     try {
       user = await requireUser(event)
     } catch (e: any) {
-      throw createError({ statusCode: 401, message: `Auth failed: ${e?.message || 'unknown'}` })
+      const msg = e?.statusMessage || e?.message || 'unknown'
+      throw createError({ statusCode: 401, message: `Auth failed: ${msg}` })
     }
 
     const supabase = serverSupabaseServiceRole(event)
