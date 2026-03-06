@@ -210,7 +210,7 @@
           <!-- Role badge / selector -->
           <div class="flex items-center gap-2">
             <span
-              v-if="member.role === 'owner'"
+              v-if="member.role === 'owner' && !canChangeRole(member)"
               class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400"
             >
               Owner
@@ -239,7 +239,7 @@
 
             <!-- Remove member button -->
             <button
-              v-if="isAdmin && !member.isCurrentUser && member.role !== 'owner'"
+              v-if="isAdmin && !member.isCurrentUser && (member.role !== 'owner' || auth.isSuperadmin)"
               class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer"
               :title="t.removeFromTeam"
               @click="handleRemoveMember(member)"
