@@ -65,8 +65,45 @@
       </div>
     </div>
 
+    <!-- Pending Invitations -->
+    <div v-if="!loading && pendingInvitations.length > 0 && isAdmin" class="mb-6 animate-fade-up">
+      <h2 class="text-sm font-bold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wider mb-3">
+        {{ t.pendingInvitations }} ({{ pendingInvitations.length }})
+      </h2>
+      <div class="space-y-2">
+        <div
+          v-for="inv in pendingInvitations"
+          :key="inv.id"
+          class="bg-amber-50/50 dark:bg-amber-500/5 rounded-2xl p-4 border border-amber-200/50 dark:border-amber-500/10 group"
+        >
+          <div class="flex items-center gap-3 sm:gap-4">
+            <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center font-bold text-sm text-amber-700 dark:text-amber-400 shrink-0">
+              {{ getInitials(inv.email) }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-sm text-gray-900 dark:text-white truncate">{{ inv.email }}</p>
+              <p class="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5 flex items-center gap-1.5">
+                <UIcon name="i-heroicons-clock" class="w-3 h-3" />
+                {{ t.pendingInvite }} · {{ formatJoinDate(inv.created_at) }}
+              </p>
+            </div>
+            <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400">
+              {{ roleLabel(inv.role) }}
+            </span>
+            <button
+              class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer"
+              :title="t.cancelInvite"
+              @click="handleDeleteInvitation(inv)"
+            >
+              <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Members list -->
-    <div v-else class="space-y-2 animate-fade-up delay-100">
+    <div v-if="!loading" class="space-y-2 animate-fade-up delay-100">
       <div
         v-for="member in members"
         :key="member.id"
@@ -438,6 +475,9 @@ const meetings = ref<Meeting[]>([])
 const showMeetingModal = ref(false)
 const showPermEditor = ref(false)
 
+// Pending invitations
+const pendingInvitations = ref<{ id: string; email: string; role: string; status: string; created_at: string }[]>([])
+
 // Invite modal state
 const showInvite = ref(false)
 const inviteEmail = ref('')
@@ -506,7 +546,7 @@ watch(() => store.workspace?.id, async (id) => {
   if (!id) return
   loading.value = true
   try {
-    await Promise.all([loadMembers(), loadAllProjects(), loadMeetings()])
+    await Promise.all([loadMembers(), loadAllProjects(), loadMeetings(), loadInvitations()])
   } catch { } finally {
     loading.value = false
   }
@@ -546,6 +586,25 @@ function onMeetingCreated(_meeting: Meeting) {
 
 function formatMeetingDate(d: string) {
   try { return format(new Date(d), "EEE d MMM, HH:mm", { locale: lang.language.value === 'en' ? enUS : es }) } catch { return d }
+}
+
+async function loadInvitations() {
+  if (!store.workspace?.id) return
+  try {
+    pendingInvitations.value = await $fetch(`/api/workspaces/${store.workspace.id}/invitations`)
+  } catch {
+    pendingInvitations.value = []
+  }
+}
+
+async function handleDeleteInvitation(inv: { id: string; email: string }) {
+  if (!confirm(t.value.confirmCancelInvite?.replace('{email}', inv.email) || `Cancel invitation for ${inv.email}?`)) return
+  try {
+    await $fetch(`/api/workspaces/${store.workspace!.id}/invitations/${inv.id}`, { method: 'DELETE' })
+    pendingInvitations.value = pendingInvitations.value.filter(i => i.id !== inv.id)
+  } catch (e: any) {
+    alert(e.data?.message || 'Error cancelling invitation')
+  }
 }
 
 async function loadMembers() {
@@ -590,6 +649,7 @@ async function handleInvite() {
     })
     if (result.pending) {
       inviteSuccess.value = result.message || `Invitacion enviada a ${inviteEmail.value}`
+      await loadInvitations()
     } else {
       inviteSuccess.value = `${inviteEmail.value} ${t.value.addedToTeam}`
       await loadMembers()
