@@ -26,6 +26,8 @@ export default defineNuxtConfig({
     },
   },
   supabase: {
+    serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '',
+    secretKey: process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '',
     redirectOptions: {
       login: '/auth/login',
       callback: '/auth/callback',
@@ -38,8 +40,8 @@ export default defineNuxtConfig({
     },
   },
   runtimeConfig: {
-    supabaseServiceRoleKey: '',
-    supabase: { secretKey: '' },
+    supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '',
+    supabase: { secretKey: process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '' },
     openrouterApiKey: '',
     amazonSesIamUser: '',
     amazonEmailFrom: '',
