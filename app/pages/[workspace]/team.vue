@@ -665,13 +665,20 @@ async function handleInvite() {
 }
 
 async function handleRoleChange(member: any, newRole: string) {
-  const oldRole = member.role
+  const label = member.email || member.display_name || member.user_id.slice(0, 12)
+  const msg = lang.language.value === 'en'
+    ? `Change ${label} role to "${newRole}"?`
+    : `¿Cambiar rol de ${label} a "${newRole}"?`
+  if (!confirm(msg)) {
+    // Reset select to old value by reloading
+    await loadMembers()
+    return
+  }
   try {
     await $fetch(`/api/workspaces/${store.workspace!.id}/members/${member.id}`, {
       method: 'PATCH',
       body: { role: newRole },
     })
-    // Reload to get updated project_ids / has_all_projects
     await loadMembers()
   } catch (e: any) {
     alert(e.data?.message || t.value.errorChangingRole)
