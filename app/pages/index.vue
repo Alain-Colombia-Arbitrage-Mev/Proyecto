@@ -37,13 +37,15 @@ async function redirectToWorkspace() {
   handled.value = true
 
   // Process any pending invitations before checking workspaces
+  let invitationsProcessed = 0
   try {
     const headers: Record<string, string> = {}
     if (import.meta.server) {
       const reqHeaders = useRequestHeaders(['cookie'])
       if (reqHeaders.cookie) headers.cookie = reqHeaders.cookie
     }
-    await $fetch('/api/auth/process-invitations', { method: 'POST', headers })
+    const result = await $fetch<any>('/api/auth/process-invitations', { method: 'POST', headers })
+    invitationsProcessed = result?.processed || 0
   } catch { /* ignore — user may have no invitations */ }
 
   // Clean up invite session marker
@@ -56,6 +58,15 @@ async function redirectToWorkspace() {
   if (workspaces && workspaces.length > 0) {
     await router.push(`/${workspaces[0].slug}/dashboard`)
   } else if (workspaces && workspaces.length === 0) {
+    // If invitations were just processed, workspaces may not be ready yet — retry
+    if (invitationsProcessed > 0) {
+      await new Promise(r => setTimeout(r, 800))
+      const retry = await fetchWorkspacesWithRetry()
+      if (retry && retry.length > 0) {
+        await router.push(`/${retry[0].slug}/dashboard`)
+        return
+      }
+    }
     await router.push('/onboarding')
   } else {
     // All retries failed — likely cookie not synced yet

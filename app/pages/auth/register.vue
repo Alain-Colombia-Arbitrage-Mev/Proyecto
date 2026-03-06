@@ -146,12 +146,14 @@ async function handleRegister() {
     }
 
     sessionStorage.setItem('focusflow_just_logged_in', '1')
-    // Accept invitation — non-blocking, will be retried by index.vue if it fails
+    // Accept invitation — wait for it so user lands in workspace, not onboarding
     if (inviteId.value) {
-      $fetch('/api/auth/accept-invitation', {
-        method: 'POST',
-        body: { inviteId: inviteId.value, email: email.value },
-      }).catch(() => {})
+      try {
+        await $fetch('/api/auth/accept-invitation', {
+          method: 'POST',
+          body: { inviteId: inviteId.value, email: email.value },
+        })
+      } catch { /* will be retried by index.vue process-invitations */ }
     }
     await router.push('/')
   } catch (e: any) {
