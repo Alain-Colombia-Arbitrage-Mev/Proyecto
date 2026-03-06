@@ -249,32 +249,67 @@
     <UModal v-model:open="showRescheduleModal">
       <template #content>
         <div class="p-6 bg-white dark:bg-[#1b1b1b]">
-          <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">
-            {{ lang.language.value === 'en' ? 'Reschedule Meeting' : 'Reprogramar Reunión' }}
-          </h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">{{ rescheduleTarget?.title }}</p>
-          <form class="space-y-4" @submit.prevent="handleReschedule">
-            <UFormField :label="t.dateTime">
-              <UInput v-model="rescheduleDate" type="datetime-local" required class="w-full" size="lg" autofocus />
-            </UFormField>
-            <UFormField :label="t.duration">
-              <select
-                v-model="rescheduleDuration"
-                class="w-full text-sm border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1b1b1b] text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-              >
-                <option value="15">15 min</option>
-                <option value="30">30 min</option>
-                <option value="45">45 min</option>
-                <option value="60">1 hora</option>
-                <option value="90">1.5 horas</option>
-                <option value="120">2 horas</option>
-              </select>
-            </UFormField>
-            <p v-if="rescheduleError" class="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-lg px-3 py-2">{{ rescheduleError }}</p>
-            <div class="flex justify-end gap-3">
+          <div class="flex items-center gap-2.5 mb-5">
+            <div class="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center">
+              <UIcon name="i-heroicons-calendar" class="w-4.5 h-4.5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">
+                {{ isEn ? 'Reschedule Meeting' : 'Reprogramar Reunión' }}
+              </h2>
+              <p class="text-[11px] text-gray-400 dark:text-gray-500 truncate max-w-[280px]">{{ rescheduleTarget?.title }}</p>
+            </div>
+          </div>
+          <form class="space-y-5" @submit.prevent="handleReschedule">
+            <!-- Date + Time -->
+            <div>
+              <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-2">{{ isEn ? 'New date & time' : 'Nueva fecha y hora' }}</label>
+              <div class="grid grid-cols-3 gap-2">
+                <input
+                  v-model="rescheduleForm.date"
+                  type="date"
+                  required
+                  class="text-sm border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1b1b1b] text-gray-900 dark:text-gray-100 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500/40"
+                  autofocus
+                />
+                <select
+                  v-model="rescheduleForm.hour"
+                  class="text-sm border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1b1b1b] text-gray-900 dark:text-gray-100 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500/40 cursor-pointer"
+                >
+                  <option v-for="h in hoursArray" :key="h" :value="h">{{ h }}h</option>
+                </select>
+                <select
+                  v-model="rescheduleForm.minute"
+                  class="text-sm border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1b1b1b] text-gray-900 dark:text-gray-100 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500/40 cursor-pointer"
+                >
+                  <option v-for="m in minutesArray" :key="m" :value="m">{{ m }} min</option>
+                </select>
+              </div>
+            </div>
+            <!-- Duration pills -->
+            <div>
+              <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-2">{{ t.duration }}</label>
+              <div class="flex flex-wrap gap-1.5">
+                <button
+                  v-for="opt in rescheduleDurationOptions"
+                  :key="opt.value"
+                  type="button"
+                  class="px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer border"
+                  :class="rescheduleForm.duration === opt.value
+                    ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20'
+                    : 'bg-white dark:bg-white/[0.04] text-gray-500 dark:text-gray-400 border-gray-100 dark:border-white/[0.08] hover:border-gray-200 dark:hover:border-white/[0.12]'"
+                  @click="rescheduleForm.duration = opt.value"
+                >
+                  {{ opt.label }}
+                </button>
+              </div>
+            </div>
+            <p v-if="rescheduleError" class="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl px-3 py-2">{{ rescheduleError }}</p>
+            <div class="flex justify-end gap-3 pt-1">
               <UButton variant="ghost" @click="showRescheduleModal = false">{{ t.cancel }}</UButton>
               <UButton type="submit" color="primary" :loading="rescheduling" class="font-semibold">
-                {{ lang.language.value === 'en' ? 'Reschedule' : 'Reprogramar' }}
+                <UIcon name="i-heroicons-calendar" class="w-4 h-4 mr-1" />
+                {{ isEn ? 'Reschedule' : 'Reprogramar' }}
               </UButton>
             </div>
           </form>
@@ -439,32 +474,52 @@ function onMeetingCreated(meeting: Meeting) {
 // --- Meeting management ---
 const showRescheduleModal = ref(false)
 const rescheduleTarget = ref<Meeting | null>(null)
-const rescheduleDate = ref('')
-const rescheduleDuration = ref('30')
 const rescheduling = ref(false)
 const rescheduleError = ref('')
+const isEn = computed(() => lang.language.value === 'en')
+const _pad = (n: number) => String(n).padStart(2, '0')
+const hoursArray = Array.from({ length: 24 }, (_, i) => _pad(i))
+const minutesArray = ['00', '15', '30', '45']
+
+const rescheduleForm = reactive({
+  date: '',
+  hour: '09',
+  minute: '00',
+  duration: 30,
+})
+
+const rescheduleDurationOptions = computed(() => [
+  { label: '15 min', value: 15 },
+  { label: '30 min', value: 30 },
+  { label: '45 min', value: 45 },
+  { label: isEn.value ? '1 hour' : '1 hora', value: 60 },
+  { label: isEn.value ? '1.5 hours' : '1.5 horas', value: 90 },
+  { label: isEn.value ? '2 hours' : '2 horas', value: 120 },
+])
 
 function openRescheduleMeeting(meeting: Meeting) {
   rescheduleTarget.value = meeting
-  // Pre-fill with current values
   const dt = new Date(meeting.scheduled_at)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  rescheduleDate.value = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`
-  rescheduleDuration.value = String(meeting.duration_minutes || 30)
+  rescheduleForm.date = `${dt.getFullYear()}-${_pad(dt.getMonth() + 1)}-${_pad(dt.getDate())}`
+  rescheduleForm.hour = _pad(dt.getHours())
+  const snappedMin = Math.round(dt.getMinutes() / 15) * 15
+  rescheduleForm.minute = _pad(snappedMin >= 60 ? 45 : snappedMin)
+  rescheduleForm.duration = meeting.duration_minutes || 30
   rescheduleError.value = ''
   showRescheduleModal.value = true
 }
 
 async function handleReschedule() {
-  if (!store.workspace?.id || !rescheduleTarget.value || !rescheduleDate.value) return
+  if (!store.workspace?.id || !rescheduleTarget.value || !rescheduleForm.date) return
   rescheduling.value = true
   rescheduleError.value = ''
   try {
+    const scheduledAt = new Date(`${rescheduleForm.date}T${rescheduleForm.hour}:${rescheduleForm.minute}:00`)
     const updated = await $fetch<Meeting>(`/api/workspaces/${store.workspace.id}/meetings/${rescheduleTarget.value.id}`, {
       method: 'PATCH',
       body: {
-        scheduled_at: new Date(rescheduleDate.value).toISOString(),
-        duration_minutes: parseInt(rescheduleDuration.value),
+        scheduled_at: scheduledAt.toISOString(),
+        duration_minutes: rescheduleForm.duration,
       },
     })
     const idx = agendaMeetings.value.findIndex(m => m.id === updated.id)
@@ -472,7 +527,7 @@ async function handleReschedule() {
     else agendaMeetings.value.push(updated)
     showRescheduleModal.value = false
   } catch (e: any) {
-    rescheduleError.value = e.data?.message || (lang.language.value === 'en' ? 'Error rescheduling' : 'Error al reprogramar')
+    rescheduleError.value = e.data?.message || (isEn.value ? 'Error rescheduling' : 'Error al reprogramar')
   } finally {
     rescheduling.value = false
   }
