@@ -12,7 +12,13 @@ const handled = ref(false)
 async function fetchWorkspacesWithRetry(): Promise<any[] | null> {
   for (let attempt = 0; attempt < 4; attempt++) {
     try {
-      const data = await $fetch<any[]>('/api/user/workspaces')
+      const headers: Record<string, string> = {}
+      // Forward cookies in SSR so Supabase auth works server-side
+      if (import.meta.server) {
+        const reqHeaders = useRequestHeaders(['cookie'])
+        if (reqHeaders.cookie) headers.cookie = reqHeaders.cookie
+      }
+      const data = await $fetch<any[]>('/api/user/workspaces', { headers })
       return data
     } catch (e: any) {
       const status = e.statusCode || e.status
