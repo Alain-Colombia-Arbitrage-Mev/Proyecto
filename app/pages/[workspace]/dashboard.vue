@@ -7,7 +7,7 @@
           <InspiraMeteors :number="12" />
           <div class="relative z-10">
             <Transition name="quote-fade" mode="out-in">
-              <p :key="currentQuoteIndex" class="text-sm sm:text-base text-white/80">{{ motivationalQuote }}</p>
+              <p :key="currentQuoteIndex" class="text-sm sm:text-base text-white/90">{{ motivationalQuote }}</p>
             </Transition>
             <h1 class="text-xl sm:text-2xl md:text-[42px] font-bold text-white leading-tight mt-1" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -1px;">
               {{ greeting }}, {{ userName }} &#x1F44B;
@@ -237,7 +237,7 @@
               </button>
             </div>
             <button v-if="pushNotif.permission.value !== 'granted'" @click="pushNotif.requestPermission()"
-              class="w-full mt-2 px-3 py-1 rounded-lg text-[10px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 hover:bg-amber-100 transition-all cursor-pointer">
+              class="w-full mt-2 px-3 py-1 rounded-lg text-[10px] font-medium text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/10 hover:bg-amber-200 dark:hover:bg-amber-500/20 transition-all cursor-pointer">
               {{ t.enableNotifications }}
             </button>
           </div>
@@ -561,61 +561,61 @@
             </template>
           </div>
 
-          <!-- Lo-fi Player — WidgetPod black -->
-          <div class="bg-[#111113] rounded-2xl border border-white/[0.06] overflow-hidden">
+          <!-- Lo-fi Player — WidgetPod -->
+          <div class="bg-white dark:bg-[#111113] rounded-2xl border border-gray-200/80 dark:border-white/[0.06] shadow-card overflow-hidden">
             <div class="p-4">
               <!-- Now Playing -->
               <div class="flex items-center gap-3">
-                <div class="w-11 h-11 rounded-[12px] bg-[#1c1c1e] flex items-center justify-center text-lg shrink-0">
+                <div class="w-11 h-11 rounded-[12px] bg-gray-100 dark:bg-[#1c1c1e] flex items-center justify-center text-lg shrink-0">
                   {{ lofi.currentStation.value.emoji }}
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="text-[13px] font-bold text-white truncate leading-tight">{{ lofi.currentTrack.value.title }}</p>
-                  <p class="text-[10px] text-white/40 truncate mt-0.5">{{ lofi.currentTrack.value.artist }} · {{ lofi.currentStation.value.name }}</p>
+                  <p class="text-[13px] font-bold text-gray-900 dark:text-white truncate leading-tight">{{ lofi.currentTrack.value.title }}</p>
+                  <p class="text-[10px] text-gray-500 dark:text-white/40 truncate mt-0.5">{{ lofi.currentTrack.value.artist }} · {{ lofi.currentStation.value.name }}</p>
                   <div class="flex items-center gap-1 mt-0.5">
                     <span v-if="lofi.isPlaying.value" class="flex items-center gap-1">
                       <span class="w-1.5 h-1.5 rounded-full bg-[#30d158] animate-pulse" />
                       <span class="text-[9px] text-[#30d158] font-semibold">LIVE</span>
                     </span>
                     <span v-else-if="lofi.isLoading.value" class="text-[9px] text-[#ffd60a] font-semibold">Conectando...</span>
-                    <span v-else class="text-[9px] text-white/25 font-medium">Pausado</span>
+                    <span v-else class="text-[9px] text-gray-400 dark:text-white/25 font-medium">Pausado</span>
                   </div>
                 </div>
               </div>
 
               <!-- Transport Controls -->
               <div class="flex items-center justify-center gap-4 mt-3">
-                <button @click="lofi.skip()" class="w-8 h-8 flex items-center justify-center text-white/40 hover:text-white transition-colors cursor-pointer">
+                <button @click="lofi.skip()" class="w-8 h-8 flex items-center justify-center text-gray-400 dark:text-white/40 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer">
                   <UIcon name="i-heroicons-backward" class="w-4.5 h-4.5" />
                 </button>
-                <button @click="lofi.toggle()" class="w-11 h-11 rounded-full bg-white flex items-center justify-center text-black transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-lg shadow-white/10">
-                  <span v-if="lofi.isLoading.value" class="w-4 h-4 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
+                <button @click="lofi.toggle()" class="w-11 h-11 rounded-full bg-gray-900 dark:bg-white flex items-center justify-center text-white dark:text-black transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-lg shadow-gray-900/20 dark:shadow-white/10">
+                  <span v-if="lofi.isLoading.value" class="w-4 h-4 border-2 border-gray-400 dark:border-gray-300 border-t-white dark:border-t-black rounded-full animate-spin" />
                   <UIcon v-else-if="lofi.isPlaying.value" name="i-heroicons-pause" class="w-5 h-5" />
                   <UIcon v-else name="i-heroicons-play" class="w-5 h-5 ml-0.5" />
                 </button>
-                <button @click="lofi.skip()" class="w-8 h-8 flex items-center justify-center text-white/40 hover:text-white transition-colors cursor-pointer">
+                <button @click="lofi.skip()" class="w-8 h-8 flex items-center justify-center text-gray-400 dark:text-white/40 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer">
                   <UIcon name="i-heroicons-forward" class="w-4.5 h-4.5" />
                 </button>
               </div>
 
               <!-- Volume -->
               <div class="flex items-center gap-2.5 mt-3">
-                <UIcon name="i-heroicons-speaker-x-mark" class="w-3 h-3 text-white/25 shrink-0" />
+                <UIcon name="i-heroicons-speaker-x-mark" class="w-3 h-3 text-gray-400 dark:text-white/25 shrink-0" />
                 <div class="flex-1 relative h-6 flex items-center group">
-                  <div class="absolute inset-x-0 h-[3px] rounded-full bg-white/[0.08]" />
-                  <div class="absolute left-0 h-[3px] rounded-full bg-white/50 transition-all" :style="{ width: (lofi.volume.value * 100) + '%' }" />
+                  <div class="absolute inset-x-0 h-[3px] rounded-full bg-gray-200 dark:bg-white/[0.08]" />
+                  <div class="absolute left-0 h-[3px] rounded-full bg-gray-500 dark:bg-white/50 transition-all" :style="{ width: (lofi.volume.value * 100) + '%' }" />
                   <input type="range" min="0" max="100" :value="lofi.volume.value * 100"
                     @input="lofi.setVolume(($event.target as HTMLInputElement).valueAsNumber / 100)"
                     class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                 </div>
-                <UIcon name="i-heroicons-speaker-wave" class="w-3 h-3 text-white/25 shrink-0" />
+                <UIcon name="i-heroicons-speaker-wave" class="w-3 h-3 text-gray-400 dark:text-white/25 shrink-0" />
               </div>
             </div>
 
             <!-- Station List Toggle -->
             <button
-              class="w-full px-4 py-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest border-t border-white/[0.04] cursor-pointer transition-colors"
-              :class="showStationList ? 'text-white/50' : 'text-white/20 hover:text-white/40'"
+              class="w-full px-4 py-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest border-t border-gray-200/60 dark:border-white/[0.04] cursor-pointer transition-colors"
+              :class="showStationList ? 'text-gray-600 dark:text-white/50' : 'text-gray-400 dark:text-white/20 hover:text-gray-600 dark:hover:text-white/40'"
               @click="showStationList = !showStationList">
               <span>{{ lofi.stations.length }} {{ lang.language.value === 'en' ? 'stations' : 'estaciones' }}</span>
               <UIcon :name="showStationList ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'" class="w-3.5 h-3.5" />
@@ -623,22 +623,22 @@
 
             <!-- Station List -->
             <Transition name="slide-up">
-              <div v-if="showStationList" class="border-t border-white/[0.04] max-h-[220px] overflow-y-auto">
+              <div v-if="showStationList" class="border-t border-gray-200/60 dark:border-white/[0.04] max-h-[220px] overflow-y-auto">
                 <button
                   v-for="station in lofi.stations" :key="station.id"
                   class="w-full flex items-center gap-3 px-4 py-2.5 transition-colors cursor-pointer"
-                  :class="lofi.currentStationId.value === station.id ? 'bg-white/[0.06] text-white' : 'text-white/40 hover:bg-white/[0.03] hover:text-white/70'"
+                  :class="lofi.currentStationId.value === station.id ? 'bg-gray-100 dark:bg-white/[0.06] text-gray-900 dark:text-white' : 'text-gray-500 dark:text-white/40 hover:bg-gray-50 dark:hover:bg-white/[0.03] hover:text-gray-700 dark:hover:text-white/70'"
                   @click="lofi.setStation(station.id); showStationList = false"
                 >
                   <span class="text-base shrink-0">{{ station.emoji }}</span>
                   <div class="flex-1 min-w-0 text-left">
                     <p class="text-[12px] font-medium truncate">{{ station.name }}</p>
-                    <p class="text-[10px] text-white/20 truncate">{{ station.tracks[0]?.title }}</p>
+                    <p class="text-[10px] text-gray-400 dark:text-white/20 truncate">{{ station.tracks[0]?.title }}</p>
                   </div>
                   <div v-if="lofi.currentStationId.value === station.id && lofi.isPlaying.value" class="flex gap-[2px] items-end h-3 shrink-0">
-                    <span v-for="i in 3" :key="i" class="w-[2px] bg-white rounded-full animate-pulse" :style="{ height: `${4 + (i * 2)}px`, animationDelay: `${i * 0.15}s` }" />
+                    <span v-for="i in 3" :key="i" class="w-[2px] bg-gray-900 dark:bg-white rounded-full animate-pulse" :style="{ height: `${4 + (i * 2)}px`, animationDelay: `${i * 0.15}s` }" />
                   </div>
-                  <div v-else-if="lofi.currentStationId.value === station.id" class="w-2 h-2 rounded-full bg-white shrink-0" />
+                  <div v-else-if="lofi.currentStationId.value === station.id" class="w-2 h-2 rounded-full bg-gray-900 dark:bg-white shrink-0" />
                 </button>
               </div>
             </Transition>
