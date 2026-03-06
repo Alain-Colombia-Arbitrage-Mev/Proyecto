@@ -147,7 +147,23 @@
                   class="group/chip flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-500/[0.08] border border-blue-100 dark:border-blue-500/10 hover:border-blue-300 dark:hover:border-blue-500/20 transition-all cursor-default"
                 >
                   <UIcon name="i-heroicons-video-camera" class="w-3 h-3 text-blue-500 shrink-0" />
-                  <span class="text-[10px] font-medium text-blue-800 dark:text-blue-300 truncate">{{ meeting.title }}</span>
+                  <span class="text-[10px] font-medium text-blue-800 dark:text-blue-300 truncate flex-1">{{ meeting.title }}</span>
+                  <div v-if="canCreateMeetings" class="flex items-center gap-0.5 opacity-0 group-hover/chip:opacity-100 transition-all shrink-0">
+                    <button
+                      @click="openRescheduleMeeting(meeting)"
+                      class="w-3.5 h-3.5 rounded flex items-center justify-center hover:bg-blue-200/60 dark:hover:bg-blue-500/20 transition-all"
+                      :title="lang.language.value === 'en' ? 'Reschedule' : 'Aplazar'"
+                    >
+                      <UIcon name="i-heroicons-calendar" class="w-2.5 h-2.5" />
+                    </button>
+                    <button
+                      @click="deleteMeeting(meeting.id)"
+                      class="w-3.5 h-3.5 rounded flex items-center justify-center hover:bg-red-200/60 dark:hover:bg-red-500/20 transition-all"
+                      :title="lang.language.value === 'en' ? 'Delete' : 'Eliminar'"
+                    >
+                      <UIcon name="i-heroicons-x-mark" class="w-2.5 h-2.5" />
+                    </button>
+                  </div>
                 </div>
 
                 <!-- Reserved dates -->
@@ -228,6 +244,43 @@
       :projects="projects"
       @created="onMeetingCreated"
     />
+
+    <!-- Reschedule meeting modal -->
+    <UModal v-model:open="showRescheduleModal">
+      <template #content>
+        <div class="p-6 bg-white dark:bg-[#1b1b1b]">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">
+            {{ lang.language.value === 'en' ? 'Reschedule Meeting' : 'Reprogramar Reunión' }}
+          </h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">{{ rescheduleTarget?.title }}</p>
+          <form class="space-y-4" @submit.prevent="handleReschedule">
+            <UFormField :label="t.dateTime">
+              <UInput v-model="rescheduleDate" type="datetime-local" required class="w-full" size="lg" autofocus />
+            </UFormField>
+            <UFormField :label="t.duration">
+              <select
+                v-model="rescheduleDuration"
+                class="w-full text-sm border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1b1b1b] text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              >
+                <option value="15">15 min</option>
+                <option value="30">30 min</option>
+                <option value="45">45 min</option>
+                <option value="60">1 hora</option>
+                <option value="90">1.5 horas</option>
+                <option value="120">2 horas</option>
+              </select>
+            </UFormField>
+            <p v-if="rescheduleError" class="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-lg px-3 py-2">{{ rescheduleError }}</p>
+            <div class="flex justify-end gap-3">
+              <UButton variant="ghost" @click="showRescheduleModal = false">{{ t.cancel }}</UButton>
+              <UButton type="submit" color="primary" :loading="rescheduling" class="font-semibold">
+                {{ lang.language.value === 'en' ? 'Reschedule' : 'Reprogramar' }}
+              </UButton>
+            </div>
+          </form>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
@@ -381,6 +434,58 @@ function onReservedCreated(data: any) {
 
 function onMeetingCreated(meeting: Meeting) {
   agendaMeetings.value.push(meeting)
+}
+
+// --- Meeting management ---
+const showRescheduleModal = ref(false)
+const rescheduleTarget = ref<Meeting | null>(null)
+const rescheduleDate = ref('')
+const rescheduleDuration = ref('30')
+const rescheduling = ref(false)
+const rescheduleError = ref('')
+
+function openRescheduleMeeting(meeting: Meeting) {
+  rescheduleTarget.value = meeting
+  // Pre-fill with current values
+  const dt = new Date(meeting.scheduled_at)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  rescheduleDate.value = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`
+  rescheduleDuration.value = String(meeting.duration_minutes || 30)
+  rescheduleError.value = ''
+  showRescheduleModal.value = true
+}
+
+async function handleReschedule() {
+  if (!store.workspace?.id || !rescheduleTarget.value || !rescheduleDate.value) return
+  rescheduling.value = true
+  rescheduleError.value = ''
+  try {
+    const updated = await $fetch<Meeting>(`/api/workspaces/${store.workspace.id}/meetings/${rescheduleTarget.value.id}`, {
+      method: 'PATCH',
+      body: {
+        scheduled_at: new Date(rescheduleDate.value).toISOString(),
+        duration_minutes: parseInt(rescheduleDuration.value),
+      },
+    })
+    const idx = agendaMeetings.value.findIndex(m => m.id === updated.id)
+    if (idx !== -1) agendaMeetings.value[idx] = updated
+    else agendaMeetings.value.push(updated)
+    showRescheduleModal.value = false
+  } catch (e: any) {
+    rescheduleError.value = e.data?.message || (lang.language.value === 'en' ? 'Error rescheduling' : 'Error al reprogramar')
+  } finally {
+    rescheduling.value = false
+  }
+}
+
+async function deleteMeeting(meetingId: string) {
+  if (!store.workspace?.id) return
+  const confirmMsg = lang.language.value === 'en' ? 'Delete this meeting? Attendees will be notified.' : 'Eliminar esta reunión? Se notificará a los asistentes.'
+  if (!confirm(confirmMsg)) return
+  try {
+    await $fetch(`/api/workspaces/${store.workspace.id}/meetings/${meetingId}`, { method: 'DELETE' })
+    agendaMeetings.value = agendaMeetings.value.filter(m => m.id !== meetingId)
+  } catch {}
 }
 
 async function loadData() {

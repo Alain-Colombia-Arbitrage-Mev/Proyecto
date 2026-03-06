@@ -211,6 +211,51 @@ export function meetingInvitationEmailHtml(opts: {
 </html>`
 }
 
+export function reservedDateEmailHtml(opts: {
+  title: string
+  type: string
+  startAt: string
+  endAt: string
+  userName: string
+}): string {
+  const safeTitle = escapeHtml(opts.title)
+  const safeName = escapeHtml(opts.userName)
+  const safeType = escapeHtml(opts.type)
+
+  let formattedStart: string
+  let formattedEnd: string
+  try {
+    formattedStart = new Date(opts.startAt).toLocaleString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    formattedEnd = new Date(opts.endAt).toLocaleString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+  } catch {
+    formattedStart = opts.startAt
+    formattedEnd = opts.endAt
+  }
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f6f6f6; padding: 32px; margin: 0;">
+  <div style="max-width: 520px; margin: 0 auto; background: white; border-radius: 12px; padding: 32px; border: 1px solid #e5e7eb;">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <div style="display: inline-block; width: 40px; height: 40px; background: #0ea5e9; border-radius: 8px; line-height: 40px; color: white; font-weight: bold; font-size: 18px;">F</div>
+    </div>
+    <h2 style="margin: 0 0 4px; font-size: 18px; color: #0D0D0D;">Tiempo Reservado</h2>
+    <p style="margin: 0 0 20px; color: #7A7A7A; font-size: 14px;">${safeName} reserv&oacute; tiempo en la agenda</p>
+    <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+      <p style="margin: 0 0 4px; font-weight: 700; color: #0D0D0D; font-size: 16px;">${safeTitle}</p>
+      <p style="margin: 0 0 4px; color: #92400E; font-size: 13px;">Tipo: ${safeType}</p>
+      <div style="border-top: 1px solid #FDE68A; padding-top: 10px; margin-top: 8px;">
+        <p style="margin: 0 0 4px; color: #92400E; font-size: 13px;">&#128197; Desde: ${formattedStart}</p>
+        <p style="margin: 0; color: #92400E; font-size: 13px;">&#128197; Hasta: ${formattedEnd}</p>
+      </div>
+    </div>
+    <p style="margin: 0; color: #7A7A7A; font-size: 12px; text-align: center;">&mdash; FocusFlow</p>
+  </div>
+</body>
+</html>`
+}
+
 export function pendingInvitationEmailHtml(opts: {
   workspaceName: string
   invitedByName: string
