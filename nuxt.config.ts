@@ -39,6 +39,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     supabaseServiceRoleKey: '',
+    supabase: { secretKey: '' },
     openrouterApiKey: '',
     amazonSesIamUser: '',
     amazonEmailFrom: '',
