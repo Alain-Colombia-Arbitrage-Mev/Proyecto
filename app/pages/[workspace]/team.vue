@@ -657,7 +657,8 @@ async function handleInvite() {
     inviteEmail.value = ''
     inviteProjectIds.value = []
   } catch (e: any) {
-    inviteError.value = e.data?.message || t.value.errorInviting
+    const msg = e.data?.message || e.statusMessage || e.message || ''
+    inviteError.value = msg || t.value.errorInviting
   } finally {
     inviting.value = false
   }

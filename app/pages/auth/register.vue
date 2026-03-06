@@ -127,6 +127,15 @@ async function handleRegister() {
   try {
     await signUp(email.value, password.value)
     sessionStorage.setItem('focusflow_just_logged_in', '1')
+    // Process invitation immediately after signup
+    if (inviteId.value) {
+      try {
+        await $fetch('/api/auth/accept-invitation', {
+          method: 'POST',
+          body: { inviteId: inviteId.value, email: email.value },
+        })
+      } catch { /* will be retried by index.vue */ }
+    }
     await router.push('/')
   } catch (e: any) {
     errorMsg.value = e.message || t.value.registerError
@@ -150,6 +159,14 @@ async function handleWalletRegister() {
   try {
     await signInWithWallet()
     sessionStorage.setItem('focusflow_just_logged_in', '1')
+    if (inviteId.value) {
+      try {
+        await $fetch('/api/auth/accept-invitation', {
+          method: 'POST',
+          body: { inviteId: inviteId.value, email: email.value },
+        })
+      } catch {}
+    }
     await router.push('/')
   } catch (e: any) {
     errorMsg.value = e.message || 'Error connecting wallet'

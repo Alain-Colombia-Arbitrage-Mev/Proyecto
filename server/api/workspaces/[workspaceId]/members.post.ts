@@ -118,6 +118,13 @@ export default defineEventHandler(async (event) => {
     .maybeSingle()
 
   if (existing) {
+    // Clean up any leftover pending invitation for this email
+    await supabase
+      .from('workspace_invitations')
+      .update({ status: 'accepted', accepted_at: new Date().toISOString() })
+      .eq('workspace_id', workspaceId)
+      .eq('email', normalizedEmail)
+      .eq('status', 'pending')
     throw createError({ statusCode: 409, message: 'Este usuario ya es miembro del workspace' })
   }
 
