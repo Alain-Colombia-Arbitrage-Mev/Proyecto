@@ -75,5 +75,5 @@ export default defineNuxtConfig({
     },
   },
   devtools: { enabled: true },
-  devServer: { port: 3001 }, // solo desarrollo local
+  devServer: { port: 3001 }, // solo desarrollo local — v2
 })
