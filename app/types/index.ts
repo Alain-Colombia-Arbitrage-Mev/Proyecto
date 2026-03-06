@@ -442,3 +442,56 @@ export interface ProjectDependency {
   created_by?: string
   created_at: string
 }
+
+// ── Workflow Builder ──
+
+export type WorkflowType = 'ai_agent' | 'social_media' | 'video_creation'
+export type WorkflowStatus = 'draft' | 'active' | 'paused' | 'completed' | 'failed'
+export type WorkflowNodeType =
+  | 'trigger'
+  | 'ai_prompt'
+  | 'ai_agent'
+  | 'social_post'
+  | 'video_generate'
+  | 'image_generate'
+  | 'send_email'
+  | 'webhook'
+  | 'http_request'
+  | 'condition'
+  | 'delay'
+  | 'transform'
+  | 'output'
+
+export interface WorkflowNode {
+  id: string
+  type: WorkflowNodeType
+  label: string
+  config: Record<string, unknown>
+  position: { x: number; y: number }
+  next?: string[]
+}
+
+export interface Workflow {
+  id: string
+  workspace_id: string
+  name: string
+  description?: string
+  type: WorkflowType
+  status: WorkflowStatus
+  nodes: WorkflowNode[]
+  created_by: string
+  last_run_at?: string
+  run_count: number
+  created_at: string
+  updated_at: string
+}
+
+export interface WorkflowRun {
+  id: string
+  workflow_id: string
+  status: 'running' | 'completed' | 'failed'
+  started_at: string
+  finished_at?: string
+  output?: Record<string, unknown>
+  error?: string
+}

@@ -31,6 +31,8 @@ type Permission =
   | 'view_roadmap'
   | 'view_agenda'
   | 'manage_reserved_dates'
+  | 'use_workflows'
+  | 'manage_workflows'
 
 export const ALL_PERMISSIONS: Permission[] = [
   'view_tasks', 'create_tasks', 'edit_tasks', 'delete_tasks', 'import_tasks',
@@ -42,6 +44,7 @@ export const ALL_PERMISSIONS: Permission[] = [
   'manage_comments', 'view_timesheets', 'manage_timesheets',
   'view_reports', 'manage_sprints', 'view_goals', 'manage_goals', 'view_roadmap',
   'view_agenda', 'manage_reserved_dates',
+  'use_workflows', 'manage_workflows',
 ]
 
 export const ALL_ROLES = ['viewer', 'marketing', 'member', 'admin', 'owner', 'superadmin'] as const
@@ -83,6 +86,8 @@ const DEFAULT_PERMISSION_MIN_ROLE: Record<Permission, number> = {
   view_roadmap: 0,
   view_agenda: 1,
   manage_reserved_dates: 1,
+  use_workflows: 1,
+  manage_workflows: 2,
 }
 
 const MARKETING_DEFAULT_PERMISSIONS: Permission[] = [
@@ -95,6 +100,8 @@ const MARKETING_DEFAULT_PERMISSIONS: Permission[] = [
 const AI_PERMISSIONS = new Set<Permission>([
   'use_ai_basic',
   'use_ai_doc_agents',
+  'use_workflows',
+  'manage_workflows',
 ])
 
 type RolePermissionOverrides = Record<string, Record<string, boolean>>
@@ -127,6 +134,8 @@ export const PERMISSION_LABELS: Record<Permission, { en: string; es: string }> =
   view_roadmap: { en: 'View roadmap', es: 'Ver roadmap' },
   view_agenda: { en: 'View agenda', es: 'Ver agenda' },
   manage_reserved_dates: { en: 'Manage reserved dates', es: 'Gestionar fechas reservadas' },
+  use_workflows: { en: 'Use workflows', es: 'Usar workflows' },
+  manage_workflows: { en: 'Manage workflows', es: 'Gestionar workflows' },
 }
 
 function hasPermissionCheck(
@@ -212,6 +221,8 @@ export function usePermissions() {
   const canViewRoadmap = computed(() => can('view_roadmap'))
   const canViewAgenda = computed(() => can('view_agenda'))
   const canManageReservedDates = computed(() => can('manage_reserved_dates'))
+  const canUseWorkflows = computed(() => can('use_workflows'))
+  const canManageWorkflows = computed(() => can('manage_workflows'))
 
   return {
     can,
@@ -239,5 +250,7 @@ export function usePermissions() {
     canViewRoadmap,
     canViewAgenda,
     canManageReservedDates,
+    canUseWorkflows,
+    canManageWorkflows,
   }
 }

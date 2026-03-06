@@ -1,5 +1,5 @@
 <template>
-  <UModal v-model:open="isOpen" class="sm:max-w-lg w-full">
+  <UModal :open="open" @update:open="(v: boolean) => emit('update:open', v)" class="sm:max-w-lg w-full">
     <template #content>
       <div class="flex flex-col">
         <!-- Header -->
@@ -10,7 +10,7 @@
             </div>
             <h2 class="text-lg font-bold text-gray-900">{{ t.scheduleMeetingTitle }}</h2>
           </div>
-          <UButton variant="ghost" size="xs" icon="i-heroicons-x-mark" @click="isOpen = false" />
+          <UButton variant="ghost" size="xs" icon="i-heroicons-x-mark" @click="closeModal" />
         </div>
 
         <!-- Body -->
@@ -33,13 +33,24 @@
               <UInput v-model="form.scheduled_at" type="datetime-local" class="w-full" required />
             </UFormField>
             <UFormField :label="t.duration">
-              <USelectMenu v-model="form.duration_minutes" :items="durationOptions" value-key="value" class="w-full" />
+              <select
+                v-model="form.duration_minutes"
+                class="w-full text-sm border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1b1b1b] text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              >
+                <option v-for="opt in durationOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+              </select>
             </UFormField>
           </div>
 
           <!-- Project selector (optional) -->
           <UFormField v-if="projects.length > 0" :label="t.projectOptional">
-            <USelectMenu v-model="form.project_id" :items="projectOptions" value-key="value" class="w-full" :placeholder="t.noProjectOption" />
+            <select
+              v-model="form.project_id"
+              class="w-full text-sm border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1b1b1b] text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+            >
+              <option value="">{{ t.noProjectOption }}</option>
+              <option v-for="p in projects" :key="p.id" :value="p.id">{{ p.name }}</option>
+            </select>
           </UFormField>
 
           <!-- Attendees -->
@@ -91,7 +102,7 @@
 
         <!-- Footer -->
         <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 px-6 py-3 border-t border-gray-100">
-          <UButton variant="ghost" @click="isOpen = false" class="w-full sm:w-auto">{{ createdMeeting ? t.close : t.cancel }}</UButton>
+          <UButton variant="ghost" @click="closeModal" class="w-full sm:w-auto">{{ createdMeeting ? t.close : t.cancel }}</UButton>
           <UButton
             v-if="!createdMeeting"
             color="primary"
@@ -128,10 +139,9 @@ const emit = defineEmits<{
   created: [meeting: Meeting]
 }>()
 
-const isOpen = computed({
-  get: () => props.open,
-  set: (v) => emit('update:open', v),
-})
+function closeModal() {
+  emit('update:open', false)
+}
 
 const creating = ref(false)
 const error = ref('')
@@ -204,7 +214,7 @@ async function handleCreate() {
 }
 
 // Reset on open
-watch(isOpen, (v) => {
+watch(() => props.open, (v) => {
   if (v) {
     Object.assign(form, {
       title: '',

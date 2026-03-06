@@ -48,6 +48,8 @@ export default defineNuxtConfig({
     amazonSmtpPassword: '',
     cronSecret: '',
     context7Key: '',
+    n8nBaseUrl: '',
+    n8nApiKey: '',
     firebaseServiceAccountJson: '',
     appUrl: process.env.NUXT_APP_URL || '',
     public: {

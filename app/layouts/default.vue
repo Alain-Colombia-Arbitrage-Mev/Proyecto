@@ -18,17 +18,62 @@
 
       <!-- Main nav -->
       <nav class="py-3 space-y-0.5" :class="collapsed ? 'px-2' : 'px-3'">
-        <NuxtLink
-          v-for="item in mainNav"
-          :key="item.to"
-          :to="item.to"
-          class="group flex items-center gap-2.5 rounded-lg text-[13px] font-medium text-white/50 hover:bg-white/[0.08] hover:text-white/90 transition-all duration-150"
-          :class="collapsed ? 'px-0 py-2 justify-center' : 'px-2.5 py-2'"
-          active-class="!bg-[#75fc96]/10 !text-[#75fc96] font-semibold"
-        >
-          <UIcon :name="item.icon" class="w-[18px] h-[18px] shrink-0" />
-          <span v-if="!collapsed">{{ item.label }}</span>
-        </NuxtLink>
+        <template v-for="item in mainNav" :key="item.to">
+          <!-- Item with children (collapsible group) -->
+          <div v-if="item.children && item.children.length > 0 && !collapsed">
+            <button
+              class="w-full group flex items-center gap-2.5 rounded-lg text-[13px] font-medium transition-all duration-150 px-2.5 py-2 cursor-pointer"
+              :class="isGroupActive(item) ? '!bg-[#75fc96]/10 !text-[#75fc96] font-semibold' : 'text-white/50 hover:bg-white/[0.08] hover:text-white/90'"
+              @click="toggleGroup(item.id!)"
+            >
+              <UIcon :name="item.icon" class="w-[18px] h-[18px] shrink-0" />
+              <span class="flex-1 text-left">{{ item.label }}</span>
+              <UIcon
+                name="i-heroicons-chevron-right-20-solid"
+                class="w-3.5 h-3.5 shrink-0 transition-transform duration-200"
+                :class="isGroupExpanded(item.id!) ? 'rotate-90' : ''"
+              />
+            </button>
+            <Transition name="submenu">
+              <div v-if="isGroupExpanded(item.id!)" class="ml-[26px] mt-0.5 space-y-0.5 border-l border-white/[0.06] pl-2">
+                <NuxtLink
+                  v-for="child in item.children.filter(c => c.show)"
+                  :key="child.to + child.label"
+                  :to="child.to"
+                  class="group flex items-center gap-2.5 rounded-lg text-[12px] font-medium text-white/40 hover:bg-white/[0.06] hover:text-white/80 transition-all duration-150 px-2 py-1.5"
+                  active-class="!text-[#75fc96] !bg-[#75fc96]/10 font-semibold"
+                >
+                  <div class="w-6 h-6 rounded-md bg-white/[0.06] flex items-center justify-center shrink-0 group-hover:bg-white/[0.1] transition-colors">
+                    <UIcon :name="child.icon" class="w-3.5 h-3.5" />
+                  </div>
+                  <span>{{ child.label }}</span>
+                </NuxtLink>
+              </div>
+            </Transition>
+          </div>
+
+          <!-- Collapsed sidebar with children: just icon -->
+          <NuxtLink
+            v-else-if="item.children && item.children.length > 0 && collapsed"
+            :to="item.to"
+            class="group flex items-center gap-2.5 rounded-lg text-[13px] font-medium text-white/50 hover:bg-white/[0.08] hover:text-white/90 transition-all duration-150 px-0 py-2 justify-center"
+            active-class="!bg-[#75fc96]/10 !text-[#75fc96] font-semibold"
+          >
+            <UIcon :name="item.icon" class="w-[18px] h-[18px] shrink-0" />
+          </NuxtLink>
+
+          <!-- Regular nav item -->
+          <NuxtLink
+            v-else
+            :to="item.to"
+            class="group flex items-center gap-2.5 rounded-lg text-[13px] font-medium text-white/50 hover:bg-white/[0.08] hover:text-white/90 transition-all duration-150"
+            :class="collapsed ? 'px-0 py-2 justify-center' : 'px-2.5 py-2'"
+            active-class="!bg-[#75fc96]/10 !text-[#75fc96] font-semibold"
+          >
+            <UIcon :name="item.icon" class="w-[18px] h-[18px] shrink-0" />
+            <span v-if="!collapsed">{{ item.label }}</span>
+          </NuxtLink>
+        </template>
       </nav>
 
       <!-- Spacer -->
@@ -70,14 +115,14 @@
           </NuxtLink>
           <button
             v-if="!collapsed"
-            class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/[0.06] text-white/40 hover:text-white/80 hover:bg-white/[0.12] transition-all shrink-0 border border-white/[0.06]"
+            class="w-8 h-8 flex items-center justify-center rounded-md bg-black text-white/50 hover:text-white hover:bg-black/80 transition-all shrink-0 border border-white/[0.08] shadow-sm"
             @click="collapsed = true"
           >
             <UIcon name="i-heroicons-chevron-double-left-20-solid" class="w-4 h-4" />
           </button>
           <button
             v-if="collapsed"
-            class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/[0.06] text-white/40 hover:text-white/80 hover:bg-white/[0.12] transition-all border border-white/[0.06]"
+            class="w-8 h-8 flex items-center justify-center rounded-md bg-black text-white/50 hover:text-white hover:bg-black/80 transition-all border border-white/[0.08] shadow-sm"
             @click="collapsed = false"
           >
             <UIcon name="i-heroicons-chevron-double-right-20-solid" class="w-4 h-4" />
@@ -210,10 +255,11 @@ const auth = useAuthStore()
 const pomodoro = usePomodoroTimer()
 const { labels: tRef } = useLanguage()
 const t = tRef
-const { canUseAI, canManageMembers, canManageWorkspace, canViewUsageStats, canViewTimesheets, canViewGoals, canViewRoadmap, canViewAgenda } = usePermissions()
+const { canUseAI, canManageMembers, canManageWorkspace, canViewUsageStats, canViewTimesheets, canViewGoals, canViewRoadmap, canViewAgenda, canUseWorkflows } = usePermissions()
 
 const collapsed = ref(false)
 const showMobileMore = ref(false)
+const expandedGroups = ref<Set<string>>(new Set())
 
 const workspaceSlug = computed(() => (route.params.workspace as string) || store.slug || '')
 
@@ -231,22 +277,68 @@ watch(() => route.params.id as string, (id) => {
   store.setCurrentProject(id || null)
 }, { immediate: true })
 
-const allNav = computed(() => [
+interface NavItem {
+  label: string
+  icon: string
+  to: string
+  show: boolean
+  id?: string
+  children?: NavItem[]
+}
+
+const allNav = computed<NavItem[]>(() => [
   { label: t.value.dashboard, icon: 'i-heroicons-squares-2x2', to: `/${workspaceSlug.value}/dashboard`, show: true },
   { label: t.value.projects, icon: 'i-heroicons-folder-open', to: `/${workspaceSlug.value}/projects`, show: true },
   { label: t.value.aiAgents, icon: 'i-heroicons-cpu-chip', to: `/${workspaceSlug.value}/agents`, show: canUseAI.value },
+  { label: t.value.workflows, icon: 'i-heroicons-bolt', to: `/${workspaceSlug.value}/workflows`, show: canUseWorkflows.value },
   { label: t.value.timesheet, icon: 'i-heroicons-clock', to: `/${workspaceSlug.value}/timesheet`, show: canViewTimesheets.value },
   { label: t.value.files, icon: 'i-heroicons-document-duplicate', to: `/${workspaceSlug.value}/files`, show: true },
   { label: t.value.goals, icon: 'i-heroicons-flag', to: `/${workspaceSlug.value}/goals`, show: canViewGoals.value },
   { label: t.value.roadmap, icon: 'i-heroicons-map', to: `/${workspaceSlug.value}/roadmap`, show: canViewRoadmap.value },
-  { label: t.value.agenda, icon: 'i-heroicons-calendar-days', to: `/${workspaceSlug.value}/agenda`, show: canViewAgenda.value },
-  { label: t.value.team, icon: 'i-heroicons-user-group', to: `/${workspaceSlug.value}/team`, show: canManageMembers.value },
-  { label: t.value.roles, icon: 'i-heroicons-shield-check', to: `/${workspaceSlug.value}/roles`, show: canManageMembers.value },
+  {
+    label: t.value.team, icon: 'i-heroicons-user-group', to: `/${workspaceSlug.value}/team`, show: canManageMembers.value, id: 'team',
+    children: [
+      { label: t.value.inviteMember, icon: 'i-heroicons-user-plus', to: `/${workspaceSlug.value}/team`, show: true },
+      { label: t.value.roles, icon: 'i-heroicons-shield-check', to: `/${workspaceSlug.value}/roles`, show: true },
+    ],
+  },
+  {
+    label: t.value.agenda, icon: 'i-heroicons-calendar-days', to: `/${workspaceSlug.value}/agenda`, show: canViewAgenda.value, id: 'agenda',
+    children: [
+      { label: t.value.scheduleMeeting, icon: 'i-heroicons-video-camera', to: `/${workspaceSlug.value}/agenda`, show: true },
+      { label: t.value.reserveTime, icon: 'i-heroicons-clock', to: `/${workspaceSlug.value}/agenda`, show: true },
+    ],
+  },
   { label: t.value.billing, icon: 'i-heroicons-credit-card', to: `/${workspaceSlug.value}/billing`, show: canManageWorkspace.value },
   { label: t.value.settings, icon: 'i-heroicons-cog-6-tooth', to: `/${workspaceSlug.value}/settings`, show: true },
 ])
 
 const mainNav = computed(() => allNav.value.filter(i => i.show))
+
+function toggleGroup(id: string) {
+  if (expandedGroups.value.has(id)) expandedGroups.value.delete(id)
+  else expandedGroups.value.add(id)
+}
+
+function isGroupExpanded(id: string) {
+  return expandedGroups.value.has(id)
+}
+
+// Check if any child route is active
+function isGroupActive(item: NavItem) {
+  if (!item.children) return false
+  const paths = [item.to, ...item.children.map(c => c.to)]
+  return paths.some(p => route.path.startsWith(p))
+}
+
+// Auto-expand group if a child is active
+watch(() => route.path, () => {
+  for (const item of mainNav.value) {
+    if (item.id && item.children && isGroupActive(item)) {
+      expandedGroups.value.add(item.id)
+    }
+  }
+}, { immediate: true })
 
 // Mobile nav: 4 primary items + "More" button for the rest
 const primaryPaths = computed(() => new Set([
@@ -256,10 +348,20 @@ const primaryPaths = computed(() => new Set([
   `/${workspaceSlug.value}/files`,
 ]))
 
-const mobileNavAll = computed(() => allNav.value
-  .filter(i => i.show)
-  .map(i => i.label === t.value.dashboard ? { ...i, label: t.value.home } : i)
-)
+// Flatten nav for mobile (expand children into top-level items)
+const mobileNavAll = computed(() => {
+  const flat: NavItem[] = []
+  for (const item of allNav.value) {
+    if (!item.show) continue
+    flat.push({ ...item, label: item.label === t.value.dashboard ? t.value.home : item.label })
+    if (item.children) {
+      for (const child of item.children) {
+        if (child.show) flat.push(child)
+      }
+    }
+  }
+  return flat
+})
 
 const mobileNavPrimary = computed(() =>
   mobileNavAll.value.filter(i => primaryPaths.value.has(i.to)).slice(0, 4)
@@ -291,5 +393,18 @@ watch(() => route.fullPath, () => { showMobileMore.value = false })
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+.submenu-enter-active,
+.submenu-leave-active {
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+.submenu-enter-from,
+.submenu-leave-to {
+  opacity: 0;
+  max-height: 0;
+}
+.submenu-enter-to {
+  max-height: 200px;
 }
 </style>

@@ -106,6 +106,7 @@ const permissionGroups = computed(() => {
     { key: 'labels', label: en ? 'Labels' : 'Etiquetas', prefixes: ['manage_labels', 'delete_labels'] },
     { key: 'time', label: en ? 'Time & Reports' : 'Tiempo y Reportes', prefixes: ['view_timesheets', 'manage_timesheets', 'view_reports'] },
     { key: 'planning', label: en ? 'Planning' : 'Planificacion', prefixes: ['manage_sprints', 'view_goals', 'manage_goals', 'view_roadmap', 'view_agenda', 'manage_reserved_dates'] },
+    { key: 'workflows', label: 'Workflows', prefixes: ['use_workflows', 'manage_workflows'] },
     { key: 'admin', label: en ? 'Administration' : 'Administracion', prefixes: ['manage_members', 'manage_comments', 'view_usage_stats', 'manage_workspace'] },
   ]
   return groups.map(g => ({

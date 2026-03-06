@@ -37,6 +37,8 @@ export type Permission =
   | 'view_roadmap'
   | 'view_agenda'
   | 'manage_reserved_dates'
+  | 'use_workflows'
+  | 'manage_workflows'
 
 export const ALL_PERMISSIONS: Permission[] = [
   'view_tasks', 'create_tasks', 'edit_tasks', 'delete_tasks', 'import_tasks',
@@ -48,6 +50,7 @@ export const ALL_PERMISSIONS: Permission[] = [
   'manage_comments', 'view_timesheets', 'manage_timesheets',
   'view_reports', 'manage_sprints', 'view_goals', 'manage_goals', 'view_roadmap',
   'view_agenda', 'manage_reserved_dates',
+  'use_workflows', 'manage_workflows',
 ]
 
 export const ALL_ROLES = ['viewer', 'marketing', 'member', 'admin', 'owner', 'superadmin'] as const
@@ -94,6 +97,8 @@ export const DEFAULT_PERMISSION_MIN_ROLE: Record<Permission, number> = {
   view_roadmap: 0,
   view_agenda: 1,
   manage_reserved_dates: 1,
+  use_workflows: 1,
+  manage_workflows: 2,
 }
 
 /**
@@ -115,6 +120,8 @@ export const MARKETING_DEFAULT_PERMISSIONS: Permission[] = [
 const AI_PERMISSIONS = new Set<Permission>([
   'use_ai_basic',
   'use_ai_doc_agents',
+  'use_workflows',
+  'manage_workflows',
 ])
 
 /** Human-readable permission labels */
@@ -146,6 +153,8 @@ export const PERMISSION_LABELS: Record<Permission, { en: string; es: string }> =
   view_roadmap: { en: 'View roadmap', es: 'Ver roadmap' },
   view_agenda: { en: 'View agenda', es: 'Ver agenda' },
   manage_reserved_dates: { en: 'Manage reserved dates', es: 'Gestionar fechas reservadas' },
+  use_workflows: { en: 'Use workflows', es: 'Usar workflows' },
+  manage_workflows: { en: 'Manage workflows', es: 'Gestionar workflows' },
 }
 
 /**
