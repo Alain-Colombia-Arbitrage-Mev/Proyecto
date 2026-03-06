@@ -1,8 +1,10 @@
+import { serverSupabaseUser, serverSupabaseClient } from '#supabase/server'
+
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
   const publicConfig = config.public as any
 
-  return {
+  const diagnostics: Record<string, unknown> = {
     ok: true,
     env: {
       hasSupabaseUrl: !!publicConfig?.supabase?.url,
@@ -10,10 +12,26 @@ export default defineEventHandler(async (event) => {
       hasSupabaseKey: !!publicConfig?.supabase?.key,
       hasServiceRoleKey: !!config.supabaseServiceRoleKey,
       cookiePrefix: publicConfig?.supabase?.cookiePrefix || 'NOT SET',
-      nodeEnv: process.env.NODE_ENV || 'NOT SET',
-      host: process.env.HOST || 'NOT SET',
-      port: process.env.PORT || 'NOT SET',
     },
     cookies: getHeader(event, 'cookie') ? getHeader(event, 'cookie')!.split(';').map(c => c.trim().split('=')[0]) : [],
   }
+
+  // Test serverSupabaseUser
+  try {
+    const user = await serverSupabaseUser(event)
+    diagnostics.user = user ? { id: user.id, email: (user as any).email || (user as any).sub } : null
+  } catch (e: any) {
+    diagnostics.userError = e?.message || String(e)
+  }
+
+  // Test serverSupabaseClient
+  try {
+    const client = await serverSupabaseClient(event)
+    const { data, error } = await (client as any).from('workspaces').select('id').limit(1)
+    diagnostics.dbTest = error ? { error: error.message } : { count: data?.length || 0 }
+  } catch (e: any) {
+    diagnostics.dbError = e?.message || String(e)
+  }
+
+  return diagnostics
 })
