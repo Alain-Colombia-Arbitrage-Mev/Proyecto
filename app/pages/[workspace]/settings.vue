@@ -73,6 +73,87 @@
         </div>
       </div>
 
+      <!-- API Tokens / MCP -->
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 overflow-hidden shadow-card">
+        <div class="px-6 py-4 border-b border-gray-200/80 dark:border-white/10">
+          <div class="flex items-center gap-2">
+            <UIcon name="i-heroicons-key" class="w-5 h-5 text-focusflow-500" />
+            <h2 class="font-bold text-gray-900 dark:text-white">API Tokens (MCP)</h2>
+          </div>
+          <p class="text-xs text-gray-500 dark:text-[#99a0ae] mt-0.5">
+            {{ lang.language.value === 'en' ? 'Create tokens to connect Cursor, Claude or other MCP clients to this workspace' : 'Crea tokens para conectar Cursor, Claude u otros clientes MCP a este workspace' }}
+          </p>
+        </div>
+        <div class="p-6 space-y-4">
+          <!-- Create new token -->
+          <div class="flex flex-col sm:flex-row gap-2">
+            <UInput v-model="newTokenName" :placeholder="lang.language.value === 'en' ? 'Token name (e.g. Cursor IDE)' : 'Nombre del token (ej. Cursor IDE)'" class="flex-1" size="sm" />
+            <div class="flex items-center gap-2">
+              <label class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
+                <input type="checkbox" v-model="newTokenWrite" class="rounded border-gray-300 dark:border-gray-600 text-focusflow-500 focus:ring-focusflow-500" />
+                {{ lang.language.value === 'en' ? 'Write' : 'Escritura' }}
+              </label>
+              <UButton color="primary" size="sm" :loading="creatingToken" :disabled="!newTokenName.trim()" @click="createToken">
+                <UIcon name="i-heroicons-plus" class="w-3.5 h-3.5 mr-1" />
+                {{ lang.language.value === 'en' ? 'Create' : 'Crear' }}
+              </UButton>
+            </div>
+          </div>
+
+          <!-- Show newly created token -->
+          <div v-if="createdToken" class="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-xl p-4">
+            <p class="text-xs font-semibold text-emerald-800 dark:text-emerald-300 mb-2">
+              {{ lang.language.value === 'en' ? 'Token created! Copy it now — it won\'t be shown again.' : 'Token creado! Copialo ahora — no se mostrara de nuevo.' }}
+            </p>
+            <div class="flex items-center gap-2">
+              <code class="flex-1 text-xs bg-white dark:bg-black/30 rounded-lg px-3 py-2 font-mono text-gray-900 dark:text-gray-100 break-all select-all border border-emerald-200 dark:border-emerald-500/20">{{ createdToken }}</code>
+              <UButton variant="soft" size="xs" @click="copyToken">
+                <UIcon name="i-heroicons-clipboard-document" class="w-4 h-4" />
+              </UButton>
+            </div>
+            <div class="mt-3 p-3 bg-white dark:bg-black/20 rounded-lg border border-gray-200 dark:border-white/10">
+              <p class="text-[10px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1.5">MCP Config (claude_desktop_config.json / Cursor)</p>
+              <code class="text-[11px] text-gray-700 dark:text-gray-300 block whitespace-pre font-mono select-all">{{ mcpConfigSnippet }}</code>
+            </div>
+          </div>
+
+          <!-- Token list -->
+          <div v-if="apiTokens.length > 0" class="space-y-2">
+            <div
+              v-for="tk in apiTokens" :key="tk.id"
+              class="flex items-center justify-between bg-gray-50 dark:bg-white/[0.03] rounded-xl px-4 py-3 border border-gray-100 dark:border-white/[0.06]"
+            >
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-8 h-8 rounded-lg bg-focusflow-100 dark:bg-focusflow-500/20 flex items-center justify-center shrink-0">
+                  <UIcon name="i-heroicons-key" class="w-4 h-4 text-focusflow-600 dark:text-focusflow-400" />
+                </div>
+                <div class="min-w-0">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ tk.name }}</p>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <code class="text-[10px] text-gray-400 font-mono">{{ tk.token_prefix }}...</code>
+                    <span v-for="s in tk.scopes" :key="s" class="text-[9px] px-1.5 py-0.5 rounded-full font-semibold"
+                      :class="s === 'write' || s === 'admin' ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400' : 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400'">
+                      {{ s }}
+                    </span>
+                    <span v-if="tk.last_used_at" class="text-[9px] text-gray-400">
+                      {{ lang.language.value === 'en' ? 'Last used' : 'Ultimo uso' }}: {{ new Date(tk.last_used_at).toLocaleDateString() }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <UButton variant="ghost" color="error" size="xs" @click="deleteToken(tk.id)">
+                <UIcon name="i-heroicons-trash" class="w-4 h-4" />
+              </UButton>
+            </div>
+          </div>
+
+          <div v-else-if="!createdToken" class="text-center py-4">
+            <UIcon name="i-heroicons-key" class="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+            <p class="text-xs text-gray-400 dark:text-gray-500">{{ lang.language.value === 'en' ? 'No API tokens yet' : 'Sin tokens API aun' }}</p>
+          </div>
+        </div>
+      </div>
+
       <!-- Danger zone -->
       <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-red-200 dark:border-red-500/30 overflow-hidden shadow-card">
         <div class="px-6 py-4 border-b border-red-200 dark:border-red-500/20">
@@ -118,6 +199,77 @@ const translating = ref(false)
 const translateResult = ref<{ translated: number; remaining: number } | null>(null)
 const translateError = ref('')
 
+// ── API Tokens ──
+const apiTokens = ref<any[]>([])
+const newTokenName = ref('')
+const newTokenWrite = ref(false)
+const creatingToken = ref(false)
+const createdToken = ref('')
+
+const appUrl = computed(() => {
+  if (import.meta.client) return window.location.origin
+  return ''
+})
+
+const mcpConfigSnippet = computed(() => {
+  if (!createdToken.value) return ''
+  return JSON.stringify({
+    "mcpServers": {
+      "focusflow": {
+        "url": `${appUrl.value}/api/mcp`,
+        "headers": { "Authorization": `Bearer ${createdToken.value}` }
+      }
+    }
+  }, null, 2)
+})
+
+async function loadTokens() {
+  if (!store.workspace) return
+  try {
+    apiTokens.value = await $fetch<any[]>(`/api/workspaces/${store.workspace.id}/api-tokens`)
+  } catch {}
+}
+
+async function createToken() {
+  if (!store.workspace || !newTokenName.value.trim()) return
+  creatingToken.value = true
+  createdToken.value = ''
+  try {
+    const scopes = newTokenWrite.value ? ['read', 'write'] : ['read']
+    const result = await $fetch<any>(`/api/workspaces/${store.workspace.id}/api-tokens`, {
+      method: 'POST',
+      body: { name: newTokenName.value.trim(), scopes },
+    })
+    createdToken.value = result.token
+    newTokenName.value = ''
+    newTokenWrite.value = false
+    await loadTokens()
+  } catch (e: any) {
+    console.error('Error creating token:', e)
+  } finally {
+    creatingToken.value = false
+  }
+}
+
+async function deleteToken(tokenId: string) {
+  if (!store.workspace) return
+  const msg = lang.language.value === 'en' ? 'Delete this API token? Any integrations using it will stop working.' : 'Eliminar este token? Las integraciones que lo usen dejaran de funcionar.'
+  if (!confirm(msg)) return
+  try {
+    await $fetch(`/api/workspaces/${store.workspace.id}/api-tokens`, {
+      method: 'DELETE',
+      body: { id: tokenId },
+    })
+    apiTokens.value = apiTokens.value.filter(t => t.id !== tokenId)
+  } catch {}
+}
+
+function copyToken() {
+  if (createdToken.value) {
+    navigator.clipboard.writeText(createdToken.value)
+  }
+}
+
 onMounted(async () => {
   try {
     if (!store.workspace) return
@@ -127,6 +279,7 @@ onMounted(async () => {
     const members = await $fetch<any[]>(`/api/workspaces/${store.workspace.id}/members`)
     const me = members?.find(m => m.user_id === currentUser.value?.id)
     if (me) memberRole.value = me.role
+    loadTokens()
   } catch { } finally {
     loading.value = false
   }
