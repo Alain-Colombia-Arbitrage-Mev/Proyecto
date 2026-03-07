@@ -64,6 +64,36 @@
                 <div class="flex-1 min-w-0">
                   <p class="text-xs font-medium text-gray-900 leading-snug">{{ notif.title }}</p>
                   <p v-if="notif.body" class="text-[10px] text-gray-500 mt-0.5 line-clamp-2">{{ notif.body }}</p>
+                  <!-- RSVP buttons for meeting invitations -->
+                  <div
+                    v-if="notif.type === 'meeting_scheduled' && notif.entity_id && !rsvpStatus[notif.entity_id]"
+                    class="flex gap-2 mt-1.5"
+                    @click.stop
+                  >
+                    <button
+                      class="px-2.5 py-1 text-[10px] font-semibold rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition-colors cursor-pointer"
+                      :disabled="rsvpLoading[notif.entity_id]"
+                      @click="respondRsvp(notif, 'accepted')"
+                    >
+                      {{ lang.current.value === 'es' ? 'Aceptar' : 'Accept' }}
+                    </button>
+                    <button
+                      class="px-2.5 py-1 text-[10px] font-semibold rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-colors cursor-pointer"
+                      :disabled="rsvpLoading[notif.entity_id]"
+                      @click="respondRsvp(notif, 'declined')"
+                    >
+                      {{ lang.current.value === 'es' ? 'Rechazar' : 'Decline' }}
+                    </button>
+                  </div>
+                  <p
+                    v-else-if="notif.type === 'meeting_scheduled' && notif.entity_id && rsvpStatus[notif.entity_id]"
+                    class="text-[10px] font-semibold mt-1.5"
+                    :class="rsvpStatus[notif.entity_id] === 'accepted' ? 'text-green-600' : 'text-red-500'"
+                  >
+                    {{ rsvpStatus[notif.entity_id] === 'accepted'
+                      ? (lang.current.value === 'es' ? 'Aceptada' : 'Accepted')
+                      : (lang.current.value === 'es' ? 'Rechazada' : 'Declined') }}
+                  </p>
                   <p class="text-[9px] text-gray-400 mt-1">{{ timeAgo(notif.created_at) }}</p>
                 </div>
                 <div v-if="!notif.read" class="w-2 h-2 rounded-full bg-focusflow-500 shrink-0 mt-1.5" />
@@ -171,11 +201,33 @@ async function markRead(notif: Notification) {
   } catch {}
 }
 
+const rsvpStatus = ref<Record<string, 'accepted' | 'declined'>>({})
+const rsvpLoading = ref<Record<string, boolean>>({})
+
+async function respondRsvp(notif: Notification, status: 'accepted' | 'declined') {
+  if (!notif.entity_id || !workspaceId.value) return
+  rsvpLoading.value[notif.entity_id] = true
+  try {
+    await $fetch(`/api/workspaces/${workspaceId.value}/meetings/${notif.entity_id}/rsvp`, {
+      method: 'POST',
+      body: { status },
+    })
+    rsvpStatus.value[notif.entity_id] = status
+    // Mark notification as read
+    markRead(notif)
+  } catch (err) {
+    console.error('[NotificationBell] RSVP failed:', err)
+  } finally {
+    rsvpLoading.value[notif.entity_id] = false
+  }
+}
+
 function notifIcon(type: string) {
   if (type === 'deadline_urgent') return 'i-heroicons-exclamation-triangle'
   if (type === 'deadline_approaching') return 'i-heroicons-clock'
   if (type === 'task_assigned') return 'i-heroicons-clipboard-document-check'
   if (type === 'workspace_invitation') return 'i-heroicons-user-plus'
+  if (type === 'meeting_scheduled' || type === 'meeting_rsvp' || type === 'meeting_reminder') return 'i-heroicons-video-camera'
   return 'i-heroicons-bell'
 }
 
@@ -184,6 +236,7 @@ function notifIconBg(type: string) {
   if (type === 'deadline_approaching') return 'bg-amber-50'
   if (type === 'task_assigned') return 'bg-blue-50'
   if (type === 'workspace_invitation') return 'bg-green-50'
+  if (type === 'meeting_scheduled' || type === 'meeting_rsvp' || type === 'meeting_reminder') return 'bg-purple-50'
   return 'bg-gray-50'
 }
 
@@ -192,6 +245,7 @@ function notifIconColor(type: string) {
   if (type === 'deadline_approaching') return 'text-amber-500'
   if (type === 'task_assigned') return 'text-blue-500'
   if (type === 'workspace_invitation') return 'text-green-500'
+  if (type === 'meeting_scheduled' || type === 'meeting_rsvp' || type === 'meeting_reminder') return 'text-purple-500'
   return 'text-gray-400'
 }
 

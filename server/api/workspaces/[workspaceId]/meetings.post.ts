@@ -129,8 +129,17 @@ export default defineEventHandler(async (event) => {
     projectName = proj?.name
   }
 
-  // Send email invitations to all attendees (awaited so emails actually send before response closes)
+  // Create RSVP records for all attendees (creator auto-accepted, others pending)
   const meetingAttendees: string[] = meeting.attendees || []
+  const rsvpRows = meetingAttendees.map(uid => ({
+    meeting_id: meeting.id,
+    user_id: uid,
+    status: uid === user.id ? 'accepted' : 'pending',
+    responded_at: uid === user.id ? new Date().toISOString() : null,
+  }))
+  if (rsvpRows.length > 0) {
+    await supabase.from('meeting_rsvp').upsert(rsvpRows, { onConflict: 'meeting_id,user_id' }).catch(() => {})
+  }
 
   const emailHtml = meetingInvitationEmailHtml({
     title: meeting.title,
