@@ -41,7 +41,7 @@ function sanitize(val: string | undefined, maxLen: number): string | null {
   return String(val).slice(0, maxLen)
 }
 
-const SERVER_INFO = { name: 'focusflow-mcp', version: '2.0.0' }
+const SERVER_INFO = { name: 'FocusFlow by Fidubit', version: '2.0.0' }
 
 // ── Rate limiting (in-memory, per token) ──
 const rateLimits = new Map<string, { count: number; resetAt: number }>()
