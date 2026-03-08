@@ -397,7 +397,7 @@ function onSidebarScroll() {
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
       <div>
         <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ labels.roadmap }}</h1>
-        <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-0.5">
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
           {{ labels.timeline }}
           <span class="text-[10px] text-gray-400 ml-2">{{ language === 'en' ? 'Drag bars to change dates · Right-click for options' : 'Arrastra barras para cambiar fechas · Clic derecho para opciones' }}</span>
         </p>
@@ -634,7 +634,7 @@ function onSidebarScroll() {
           <UIcon name="i-heroicons-arrow-top-right-on-square" class="w-4 h-4 text-gray-400" />
           {{ language === 'en' ? 'Open in board' : 'Abrir en tablero' }}
         </button>
-        <div class="border-t border-gray-100 dark:border-white/10 my-1" />
+        <div class="border-t border-gray-200/80 dark:border-white/10 my-1" />
         <button class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 cursor-pointer" @click="deleteTask(contextMenu.task)">
           <UIcon name="i-heroicons-trash" class="w-4 h-4" />
           {{ labels.deleteTask }}

@@ -4,7 +4,7 @@
     <div class="flex items-center justify-between mb-6 animate-fade-up">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ t.filesTitle }}</h1>
-        <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ t.filesDesc }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{{ t.filesDesc }}</p>
       </div>
       <div class="flex items-center gap-2">
         <UButton size="sm" variant="soft" icon="i-heroicons-arrow-up-tray" @click="triggerUpload" :loading="uploading" class="font-medium">
@@ -16,7 +16,7 @@
     <!-- Breadcrumb -->
     <div class="flex items-center gap-1.5 mb-4 text-sm animate-fade-up">
       <button
-        class="text-gray-500 dark:text-[#99a0ae] hover:text-focusflow-700 dark:hover:text-focusflow-400 font-medium transition-colors cursor-pointer"
+        class="text-gray-500 dark:text-gray-400 hover:text-focusflow-700 dark:hover:text-focusflow-400 font-medium transition-colors cursor-pointer"
         @click="navigateTo('/')"
       >
         <UIcon name="i-heroicons-home" class="w-4 h-4" />
@@ -24,7 +24,7 @@
       <template v-for="(part, i) in breadcrumbs" :key="i">
         <UIcon name="i-heroicons-chevron-right" class="w-3 h-3 text-gray-300 dark:text-gray-600" />
         <button
-          class="text-gray-500 dark:text-[#99a0ae] hover:text-focusflow-700 dark:hover:text-focusflow-400 font-medium transition-colors cursor-pointer"
+          class="text-gray-500 dark:text-gray-400 hover:text-focusflow-700 dark:hover:text-focusflow-400 font-medium transition-colors cursor-pointer"
           @click="navigateTo(breadcrumbPath(i))"
         >
           {{ part }}
@@ -46,7 +46,7 @@
         <UIcon name="i-heroicons-folder-open" class="w-10 h-10 text-gray-300 dark:text-gray-600" />
       </div>
       <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ t.noFiles }}</h2>
-      <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-2 mb-8 max-w-xs mx-auto">{{ t.noFilesDesc }}</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 mb-8 max-w-xs mx-auto">{{ t.noFilesDesc }}</p>
       <UButton icon="i-heroicons-arrow-up-tray" color="primary" size="lg" class="font-semibold" @click="triggerUpload">{{ t.uploadFile }}</UButton>
     </div>
 
@@ -59,7 +59,7 @@
           <button
             v-for="folder in subfolders"
             :key="folder"
-            class="flex items-center gap-3 bg-white dark:bg-[#1b1b1b] rounded-xl p-3.5 border border-gray-100 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30 transition-all cursor-pointer group shadow-card hover:shadow-card-hover"
+            class="flex items-center gap-3 bg-white dark:bg-[#1b1b1b] rounded-xl p-3.5 border border-gray-200/80 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30 transition-all cursor-pointer group shadow-card hover:shadow-card-hover"
             @click="navigateTo(currentFolder === '/' ? `/${folder}` : `${currentFolder}/${folder}`)"
           >
             <div class="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
@@ -73,7 +73,7 @@
       <!-- Files -->
       <div v-if="files.length > 0">
         <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 px-1">{{ t.filesTitle }}</p>
-        <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-100 dark:border-white/10 shadow-card overflow-hidden divide-y divide-gray-50 dark:divide-white/5">
+        <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 shadow-card overflow-hidden divide-y divide-gray-50 dark:divide-white/5">
           <div
             v-for="file in files"
             :key="file.id"

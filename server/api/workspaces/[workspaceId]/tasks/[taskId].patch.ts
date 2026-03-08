@@ -43,10 +43,56 @@ export default defineEventHandler(async (event) => {
     updates.translations = { ...existing, ...body.translations }
   }
 
+  // Move task to another project
+  if (body.project_id !== undefined && body.project_id !== task.project_id) {
+    // Validate target project belongs to same workspace
+    const { data: targetProject } = await supabase
+      .from('projects')
+      .select('id, workspace_id')
+      .eq('id', body.project_id)
+      .maybeSingle()
+
+    if (!targetProject || targetProject.workspace_id !== workspaceId) {
+      throw createError({ statusCode: 400, message: 'Target project not found in this workspace' })
+    }
+
+    updates.project_id = body.project_id
+
+    // If a target column_id was provided (from the same target project), use it
+    // Otherwise reset column to the first column of the target project
+    if (body.target_column_id) {
+      updates.column_id = body.target_column_id
+    } else {
+      const { data: firstCol } = await supabase
+        .from('kanban_columns')
+        .select('id')
+        .eq('project_id', body.project_id)
+        .order('position', { ascending: true })
+        .limit(1)
+        .maybeSingle()
+      updates.column_id = firstCol?.id || null
+    }
+    updates.column_entered_at = new Date().toISOString()
+    updates.last_activity_at = new Date().toISOString()
+    updates.position = 0
+
+    // Move subtasks along with parent
+    const { data: subtasks } = await supabase
+      .from('tasks')
+      .select('id')
+      .eq('parent_task_id', taskId)
+    if (subtasks && subtasks.length > 0) {
+      await supabase
+        .from('tasks')
+        .update({ project_id: body.project_id, column_id: updates.column_id, updated_at: new Date().toISOString() })
+        .in('id', subtasks.map(s => s.id))
+    }
+  }
+
   // Track old column for history
   const oldColumnId = (task as any).column_id as string | null
 
-  if (body.column_id !== undefined) {
+  if (body.column_id !== undefined && body.project_id === undefined) {
     updates.column_id = body.column_id
     updates.column_entered_at = new Date().toISOString()
     updates.last_activity_at = new Date().toISOString()

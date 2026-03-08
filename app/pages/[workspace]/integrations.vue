@@ -12,7 +12,7 @@
 
     <!-- Quick Install Commands -->
     <div class="bg-white dark:bg-[#1b1b1b] rounded-xl border border-gray-200 dark:border-white/10 p-5 mb-5">
-      <h2 class="text-xs font-bold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide mb-4">
+      <h2 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">
         {{ lang.language.value === 'en' ? 'Quick Install' : 'Instalacion Rapida' }}
       </h2>
 
@@ -152,7 +152,7 @@
     <!-- API Tokens -->
     <div class="bg-white dark:bg-[#1b1b1b] rounded-xl border border-gray-200 dark:border-white/10 p-5">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xs font-bold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide">
+        <h2 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
           {{ lang.language.value === 'en' ? 'API Tokens' : 'Tokens API' }}
         </h2>
         <UButton size="xs" variant="soft" @click="showCreateToken = true" class="cursor-pointer">
@@ -228,7 +228,7 @@
           </h3>
           <div class="space-y-3">
             <div>
-              <label class="text-[11px] font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide block mb-1">
+              <label class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-1">
                 {{ lang.language.value === 'en' ? 'Token Name' : 'Nombre del Token' }}
               </label>
               <input
@@ -239,7 +239,7 @@
               />
             </div>
             <div>
-              <label class="text-[11px] font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide block mb-1.5">
+              <label class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-1.5">
                 {{ lang.language.value === 'en' ? 'Permissions' : 'Permisos' }}
               </label>
               <div class="flex gap-2">

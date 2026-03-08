@@ -71,7 +71,7 @@
                 <p class="text-sm font-bold text-gray-900 dark:text-white">{{ agent.name }}</p>
               </div>
             </div>
-            <p class="text-xs text-gray-500 dark:text-[#99a0ae] mb-3.5 leading-relaxed">{{ agent.description }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-3.5 leading-relaxed">{{ agent.description }}</p>
             <div class="flex gap-1.5 flex-wrap mb-3.5">
               <span
                 v-for="tag in agent.tags"
@@ -135,7 +135,7 @@
               </div>
 
               <!-- Bottlenecks -->
-              <div v-if="agentResults[agent.action].bottlenecks?.length" class="space-y-1.5 mt-3 pt-3 border-t border-gray-100 dark:border-white/10">
+              <div v-if="agentResults[agent.action].bottlenecks?.length" class="space-y-1.5 mt-3 pt-3 border-t border-gray-200/80 dark:border-white/10">
                 <p class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
                   <UIcon name="i-heroicons-exclamation-triangle" class="w-3.5 h-3.5 text-amber-400" />
                   {{ t.bottlenecks }}
@@ -150,7 +150,7 @@
               </div>
 
               <!-- Recommendations -->
-              <div v-if="agentResults[agent.action].recommendations?.length" class="space-y-1.5 mt-3 pt-3 border-t border-gray-100 dark:border-white/10">
+              <div v-if="agentResults[agent.action].recommendations?.length" class="space-y-1.5 mt-3 pt-3 border-t border-gray-200/80 dark:border-white/10">
                 <p class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
                   <UIcon name="i-heroicons-light-bulb" class="w-3.5 h-3.5 text-indigo-400" />
                   {{ t.recommendations }}
@@ -162,7 +162,7 @@
               </div>
 
               <!-- Created tasks -->
-              <div v-if="agentResults[agent.action].createdTasks?.length" class="mt-3 pt-3 border-t border-gray-100 dark:border-white/10">
+              <div v-if="agentResults[agent.action].createdTasks?.length" class="mt-3 pt-3 border-t border-gray-200/80 dark:border-white/10">
                 <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                   <UIcon name="i-heroicons-clipboard-document-check" class="w-3.5 h-3.5 text-emerald-400" />
                   {{ t.tasksCreated }}
@@ -235,7 +235,7 @@
           </div>
 
           <!-- Description -->
-          <p class="text-xs text-gray-500 dark:text-[#99a0ae] mb-3.5 leading-relaxed">{{ agent.description }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-3.5 leading-relaxed">{{ agent.description }}</p>
 
           <!-- Tags -->
           <div class="flex gap-1.5 flex-wrap mb-4">
@@ -272,7 +272,7 @@
               <UIcon name="i-heroicons-check-badge" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
               <p class="text-xs font-bold text-gray-900 dark:text-white">{{ agentResults[agent.action].title }}</p>
             </div>
-            <p class="text-[10px] text-gray-500 dark:text-[#99a0ae] italic pl-6">{{ agentResults[agent.action].summary }}</p>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400 italic pl-6">{{ agentResults[agent.action].summary }}</p>
 
             <div class="flex items-center gap-2 flex-wrap">
               <span v-if="agentResults[agent.action].tasksCreated > 0" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-100 dark:ring-emerald-500/30">
@@ -287,7 +287,7 @@
             </div>
 
             <!-- Sections preview -->
-            <div v-if="agentResults[agent.action].sections?.length" class="space-y-1.5 mt-3 pt-3 border-t border-gray-100 dark:border-white/10">
+            <div v-if="agentResults[agent.action].sections?.length" class="space-y-1.5 mt-3 pt-3 border-t border-gray-200/80 dark:border-white/10">
               <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
                 <UIcon name="i-heroicons-list-bullet" class="w-3.5 h-3.5 text-blue-400" />
                 {{ t.sections }}
@@ -302,7 +302,7 @@
             </div>
 
             <!-- Created tasks -->
-            <div v-if="agentResults[agent.action].createdTasks?.length" class="mt-3 pt-3 border-t border-gray-100 dark:border-white/10">
+            <div v-if="agentResults[agent.action].createdTasks?.length" class="mt-3 pt-3 border-t border-gray-200/80 dark:border-white/10">
               <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                 <UIcon name="i-heroicons-clipboard-document-check" class="w-3.5 h-3.5 text-emerald-400" />
                 {{ t.tasksCreated }}

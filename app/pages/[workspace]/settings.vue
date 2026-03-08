@@ -3,7 +3,7 @@
     <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight mb-8 animate-fade-up">{{ t.settingsTitle }}</h1>
 
     <div v-if="loading" class="flex justify-center py-16">
-      <div class="flex items-center gap-3 text-gray-400">
+      <div class="flex items-center gap-3 text-gray-500 dark:text-gray-400">
         <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 animate-spin" />
         <span class="text-sm">{{ t.loading }}</span>
       </div>
@@ -14,7 +14,7 @@
       <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 overflow-hidden shadow-card">
         <div class="px-6 py-4 border-b border-gray-200/80 dark:border-white/10">
           <h2 class="font-bold text-gray-900 dark:text-white">Workspace</h2>
-          <p class="text-xs text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ t.workspaceConfig }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t.workspaceConfig }}</p>
         </div>
         <div class="p-6 space-y-4">
           <UFormField :label="t.name">
@@ -36,7 +36,7 @@
       <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 overflow-hidden shadow-card">
         <div class="px-6 py-4 border-b border-gray-200/80 dark:border-white/10">
           <h2 class="font-bold text-gray-900 dark:text-white">{{ t.yourProfile }}</h2>
-          <p class="text-xs text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ t.accountInfo }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t.accountInfo }}</p>
         </div>
         <div class="p-6 space-y-4">
           <div class="flex items-center gap-4">
@@ -45,7 +45,7 @@
             </div>
             <div>
               <p class="font-semibold text-gray-900 dark:text-white">{{ currentUser?.email }}</p>
-              <p class="text-xs text-gray-500 dark:text-[#99a0ae]">{{ memberRole }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ memberRole }}</p>
             </div>
           </div>
         </div>
@@ -55,7 +55,7 @@
       <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 overflow-hidden shadow-card">
         <div class="px-6 py-4 border-b border-gray-200/80 dark:border-white/10">
           <h2 class="font-bold text-gray-900 dark:text-white">{{ lang.language.value === 'en' ? 'Auto-Translate Tasks' : lang.language.value === 'ur' ? 'ٹاسک خودکار ترجمہ' : 'Auto-Traducir Tareas' }}</h2>
-          <p class="text-xs text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ lang.language.value === 'en' ? 'Translate all existing tasks that are missing translations (EN/UR)' : lang.language.value === 'ur' ? 'تمام موجودہ ٹاسک جن میں ترجمہ نہیں ہے ان کا ترجمہ کریں' : 'Traducir todas las tareas existentes sin traduccion (EN/UR)' }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ lang.language.value === 'en' ? 'Translate all existing tasks that are missing translations (EN/UR)' : lang.language.value === 'ur' ? 'تمام موجودہ ٹاسک جن میں ترجمہ نہیں ہے ان کا ترجمہ کریں' : 'Traducir todas las tareas existentes sin traduccion (EN/UR)' }}</p>
         </div>
         <div class="p-6">
           <div class="flex items-center justify-between">
@@ -87,7 +87,7 @@
               <UIcon name="i-heroicons-arrow-right" class="w-3 h-3" />
             </NuxtLink>
           </div>
-          <p class="text-xs text-gray-500 dark:text-[#99a0ae] mt-0.5">
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
             {{ lang.language.value === 'en' ? 'Create tokens to connect Claude, Cursor, Windsurf, Cline, Gemini or other MCP clients' : 'Crea tokens para conectar Claude, Cursor, Windsurf, Cline, Gemini u otros clientes MCP' }}
           </p>
         </div>
@@ -186,13 +186,13 @@
       <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-red-200 dark:border-red-500/30 overflow-hidden shadow-card">
         <div class="px-6 py-4 border-b border-red-200 dark:border-red-500/20">
           <h2 class="font-bold text-red-600">{{ t.dangerZone }}</h2>
-          <p class="text-xs text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ t.irreversibleActions }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t.irreversibleActions }}</p>
         </div>
         <div class="p-6 space-y-4">
           <div class="flex items-center justify-between">
             <div>
               <p class="font-medium text-sm text-gray-900 dark:text-white">{{ t.logout }}</p>
-              <p class="text-xs text-gray-500 dark:text-[#99a0ae]">{{ t.logoutDesc }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ t.logoutDesc }}</p>
             </div>
             <UButton variant="outline" color="error" size="sm" @click="handleLogout">
               {{ t.logout }}

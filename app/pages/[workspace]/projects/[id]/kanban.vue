@@ -5,7 +5,7 @@
       <div>
         <NuxtLink
           :to="`/${$route.params.workspace}/projects`"
-          class="text-xs text-gray-400 hover:text-focusflow-700 dark:text-[#99a0ae] dark:hover:text-focusflow-400 mb-1 inline-flex items-center gap-1 font-medium transition-colors"
+          class="text-xs text-gray-500 hover:text-focusflow-700 dark:text-gray-400 dark:hover:text-focusflow-400 mb-1 inline-flex items-center gap-1 font-medium transition-colors"
         >
           <UIcon name="i-heroicons-arrow-left" class="w-3.5 h-3.5" />
           {{ t.projects }}
@@ -32,8 +32,8 @@
 
     <!-- Stat Cards Row -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 animate-fade-up">
-      <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-100 dark:border-white/10 p-3.5">
-        <p class="text-[11px] text-gray-500 dark:text-[#99a0ae] mb-0.5">{{ language === 'en' ? 'Total Tasks' : 'Tareas Totales' }}</p>
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-200/80 dark:border-white/10 p-3.5">
+        <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5">{{ language === 'en' ? 'Total Tasks' : 'Tareas Totales' }}</p>
         <div class="flex items-end justify-between">
           <span class="text-[28px] font-bold text-[#0D0D0D] dark:text-gray-100 leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -1.5px;">{{ tasks.length }}</span>
           <div class="flex items-end gap-[2px] h-[32px]">
@@ -42,8 +42,8 @@
           </div>
         </div>
       </div>
-      <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-100 dark:border-white/10 p-3.5">
-        <p class="text-[11px] text-gray-500 dark:text-[#99a0ae] mb-0.5">{{ t.inProgress }}</p>
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-200/80 dark:border-white/10 p-3.5">
+        <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5">{{ t.inProgress }}</p>
         <div class="flex items-end justify-between">
           <span class="text-[28px] font-bold text-[#0D0D0D] dark:text-gray-100 leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -1.5px;">{{ inProgressCount }}</span>
           <div class="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center">
@@ -51,8 +51,8 @@
           </div>
         </div>
       </div>
-      <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-100 dark:border-white/10 p-3.5">
-        <p class="text-[11px] text-gray-500 dark:text-[#99a0ae] mb-0.5">{{ t.dueToday }}</p>
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-200/80 dark:border-white/10 p-3.5">
+        <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5">{{ t.dueToday }}</p>
         <div class="flex items-end justify-between">
           <span class="text-[28px] font-bold leading-none tabular-nums" :class="dueTodayCount > 0 ? 'text-red-600' : 'text-[#0D0D0D] dark:text-gray-100'" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -1.5px;">{{ dueTodayCount }}</span>
           <div class="w-8 h-8 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
@@ -60,8 +60,8 @@
           </div>
         </div>
       </div>
-      <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-100 dark:border-white/10 p-3.5">
-        <p class="text-[11px] text-gray-500 dark:text-[#99a0ae] mb-0.5">{{ t.completed }}</p>
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-200/80 dark:border-white/10 p-3.5">
+        <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5">{{ t.completed }}</p>
         <div class="flex items-end justify-between">
           <span class="text-[28px] font-bold text-[#10B981] leading-none tabular-nums" style="font-family: 'Space Grotesk', sans-serif; letter-spacing: -1.5px;">{{ completedCount }}</span>
           <div class="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
@@ -79,14 +79,14 @@
         <div class="flex items-center bg-gray-100 dark:bg-white/10 rounded-lg p-0.5">
           <button
             class="text-xs font-medium px-2.5 py-2 rounded-md transition-all cursor-pointer"
-            :class="viewMode === 'columns' ? 'bg-white dark:bg-white/15 text-[#0D0D0D] dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-[#99a0ae] hover:text-gray-700 dark:hover:text-gray-300'"
+            :class="viewMode === 'columns' ? 'bg-white dark:bg-white/15 text-[#0D0D0D] dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
             @click="setViewMode('columns')"
           >
             <UIcon name="i-heroicons-view-columns" class="w-4 h-4" />
           </button>
           <button
             class="text-xs font-medium px-2.5 py-2 rounded-md transition-all cursor-pointer"
-            :class="viewMode === 'list' ? 'bg-white dark:bg-white/15 text-[#0D0D0D] dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-[#99a0ae] hover:text-gray-700 dark:hover:text-gray-300'"
+            :class="viewMode === 'list' ? 'bg-white dark:bg-white/15 text-[#0D0D0D] dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
             @click="setViewMode('list')"
           >
             <UIcon name="i-heroicons-bars-3" class="w-4 h-4" />
@@ -107,7 +107,7 @@
         <!-- Kanban filter -->
         <button
           class="text-xs font-medium px-3.5 py-2 rounded-full transition-all cursor-pointer"
-          :class="showKanbanFilter ? 'bg-[#0D0D0D] dark:bg-white/20 text-white' : 'text-gray-500 dark:text-[#99a0ae] bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/15'"
+          :class="showKanbanFilter ? 'bg-[#0D0D0D] dark:bg-white/20 text-white' : 'text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/15'"
           @click="showKanbanFilter = !showKanbanFilter"
         >
           <span class="flex items-center gap-1.5">
@@ -130,7 +130,7 @@
     <div v-if="showKanbanFilter" class="flex items-center gap-2 mb-4 animate-fade-up flex-wrap">
       <select
         v-model="kanbanFilterPriority"
-        class="text-xs font-medium text-gray-600 dark:text-[#99a0ae] bg-gray-100 dark:bg-white/10 rounded-full px-3 py-2 border-0 outline-none cursor-pointer"
+        class="text-xs font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-white/10 rounded-full px-3 py-2 border-0 outline-none cursor-pointer"
       >
         <option value="">{{ t.priority }}</option>
         <option value="critical">{{ t.priorityCritical }}</option>
@@ -140,7 +140,7 @@
       </select>
       <select
         v-model="kanbanFilterAssignee"
-        class="text-xs font-medium text-gray-600 dark:text-[#99a0ae] bg-gray-100 dark:bg-white/10 rounded-full px-3 py-2 border-0 outline-none cursor-pointer"
+        class="text-xs font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-white/10 rounded-full px-3 py-2 border-0 outline-none cursor-pointer"
       >
         <option value="">{{ t.assignedTo }}</option>
         <option v-for="m in workspaceMembers" :key="m.user_id" :value="m.user_id">{{ m.email || m.user_id.slice(0, 12) }}</option>
@@ -156,7 +156,7 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex justify-center py-16">
-      <div class="flex items-center gap-3 text-gray-400">
+      <div class="flex items-center gap-3 text-gray-500 dark:text-gray-400">
         <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 animate-spin" />
         <span class="text-sm">{{ t.loadingBoard }}</span>
       </div>
@@ -176,7 +176,7 @@
           :style="{ backgroundColor: columnBgColor(column.color), borderLeft: `3px solid ${column.color}` }"
         >
           <div class="flex items-center gap-2">
-            <div class="w-2.5 h-2.5 rounded-full ring-2 ring-white/80 dark:ring-white/20" :style="{ backgroundColor: column.color }" />
+            <div class="w-2.5 h-2.5 rounded-full ring-2 ring-white dark:ring-white/20" :style="{ backgroundColor: column.color }" />
             <h3 class="font-bold text-xs uppercase tracking-wider" :style="{ color: column.color }">{{ column.title }}</h3>
             <span
               class="text-[10px] rounded-full px-1.5 py-0.5 font-semibold tabular-nums"
@@ -232,7 +232,7 @@
             v-for="task in filteredTasksByColumn(column.id)"
             :key="task.id"
             draggable="true"
-            class="group/card bg-white dark:bg-[#1b1b1b] rounded-xl p-2.5 sm:p-3.5 cursor-grab active:cursor-grabbing border border-gray-100 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30 transition-all duration-200 shadow-card hover:shadow-card-hover active:scale-[0.98] relative overflow-hidden"
+            class="group/card bg-white dark:bg-[#1b1b1b] rounded-xl p-2.5 sm:p-3.5 cursor-grab active:cursor-grabbing border border-gray-200/70 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30 transition-all duration-200 shadow-card hover:shadow-card-hover active:scale-[0.98] relative overflow-hidden"
             :class="taskAgingClass(task)"
             :style="task.color ? { borderLeftWidth: '4px', borderLeftColor: task.color } : {}"
             @dragstart="onDragStart($event, task)"
@@ -315,7 +315,7 @@
             </div>
 
             <!-- Description preview -->
-            <p v-if="localizedDescription(task)" class="text-[11px] text-gray-500 dark:text-[#99a0ae] leading-relaxed mb-2 line-clamp-2">{{ htmlToPlainText(localizedDescription(task)).slice(0, 100) }}</p>
+            <p v-if="localizedDescription(task)" class="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed mb-2 line-clamp-2">{{ htmlToPlainText(localizedDescription(task)).slice(0, 100) }}</p>
 
             <!-- Time progress bar -->
             <div v-if="getTaskProgress(task.due_date, task.created_at, task.estimated_hours)" class="mb-2.5">
@@ -329,7 +329,7 @@
                     }"
                   />
                 </div>
-                <span class="text-[9px] font-medium text-gray-400 whitespace-nowrap tabular-nums">
+                <span class="text-[9px] font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap tabular-nums">
                   {{ getTaskProgress(task.due_date, task.created_at, task.estimated_hours)!.label }}
                 </span>
               </div>
@@ -344,7 +344,7 @@
                   <UIcon name="i-heroicons-clock" class="w-3 h-3" />
                   {{ getDeadlineInfo(task.due_date)!.label }}
                 </span>
-                <span v-else-if="task.due_date" class="text-[10px] flex items-center gap-1 font-medium text-gray-500 dark:text-[#99a0ae]">
+                <span v-else-if="task.due_date" class="text-[10px] flex items-center gap-1 font-medium text-gray-500 dark:text-gray-400">
                   <UIcon name="i-heroicons-calendar" class="w-3 h-3" />
                   {{ formatDate(task.due_date) }}
                 </span>
@@ -353,7 +353,7 @@
                   :class="{
                     'bg-red-50 dark:bg-red-500/10 text-red-600': task.priority === 'critical' || task.priority === 'high',
                     'bg-blue-50 dark:bg-blue-500/10 text-blue-600': task.priority === 'medium',
-                    'bg-gray-50 dark:bg-white/5 text-gray-400': task.priority === 'low',
+                    'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400': task.priority === 'low',
                   }"
                 >
                   {{ { critical: t.priorityCritical, high: t.priorityHigh, medium: t.priorityMedium, low: t.priorityLow }[task.priority] || task.priority }}
@@ -371,7 +371,7 @@
                 </div>
                 <div
                   v-if="task.assignees.length > 3"
-                  class="w-5 h-5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-[#99a0ae] flex items-center justify-center text-[8px] font-bold ring-2 ring-white dark:ring-[#1b1b1b]"
+                  class="w-5 h-5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 flex items-center justify-center text-[8px] font-bold ring-2 ring-white dark:ring-[#1b1b1b]"
                 >
                   +{{ task.assignees.length - 3 }}
                 </div>
@@ -382,7 +382,7 @@
           <!-- Drop hint -->
           <div
             v-if="filteredTasksByColumn(column.id).length === 0"
-            class="flex items-center justify-center h-24 border border-dashed border-gray-300 dark:border-white/10 rounded-xl"
+            class="flex items-center justify-center h-24 border border-dashed border-gray-300 dark:border-white/10 rounded-xl bg-white/50 dark:bg-transparent"
           >
             <p class="text-[10px] text-gray-400 font-medium"><span class="hidden sm:inline">{{ t.noTasksDrag }}</span><span class="sm:hidden">{{ t.noTasksMobile }}</span></p>
           </div>
@@ -410,11 +410,11 @@
             {{ language === 'en' ? 'Add column' : 'Agregar columna' }}
           </button>
         </div>
-        <div v-else class="bg-white dark:bg-[#1b1b1b] rounded-xl p-4 border border-gray-100 dark:border-white/10 shadow-card">
+        <div v-else class="bg-white dark:bg-[#1b1b1b] rounded-xl p-4 border border-gray-200/80 dark:border-white/10 shadow-card">
           <form @submit.prevent="handleAddColumn" class="space-y-3">
             <UInput v-model="newColumnTitle" :placeholder="t.columnName" required class="w-full" size="sm" autofocus />
             <div class="flex items-center gap-2">
-              <label class="text-xs text-gray-500 dark:text-[#99a0ae]">{{ language === 'en' ? 'Color:' : 'Color:' }}</label>
+              <label class="text-xs text-gray-500 dark:text-gray-400">{{ language === 'en' ? 'Color:' : 'Color:' }}</label>
               <div class="flex gap-1.5">
                 <button
                   v-for="c in columnColors"
@@ -438,9 +438,9 @@
 
     <!-- List View -->
     <div v-if="!loading && viewMode === 'list'" class="animate-fade-up delay-100">
-      <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-100 dark:border-white/10 overflow-hidden">
+      <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-200/80 dark:border-white/10 overflow-hidden">
         <!-- Table header -->
-        <div class="grid grid-cols-[2fr_1fr_1fr_auto] md:grid-cols-[2fr_1fr_0.8fr_0.8fr_0.8fr_0.6fr_auto] px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-white/5">
+        <div class="grid grid-cols-[2fr_1fr_1fr_auto] md:grid-cols-[2fr_1fr_0.8fr_0.8fr_0.8fr_0.6fr_auto] px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-gray-400 border-b border-gray-200/80 dark:border-white/10 bg-gray-50/50 dark:bg-white/5">
           <span>{{ language === 'en' ? 'Task' : 'Tarea' }}</span>
           <span class="hidden md:block">{{ t.column }}</span>
           <span>{{ t.deadline }}</span>
@@ -483,7 +483,7 @@
               <span class="text-gray-900 dark:text-gray-100 font-medium truncate">{{ localizedTitle(task) }}</span>
             </div>
             <!-- Column (hidden mobile) -->
-            <span class="text-gray-500 dark:text-[#99a0ae] truncate flex items-center gap-1 hidden md:flex">
+            <span class="text-gray-500 dark:text-gray-400 truncate flex items-center gap-1 hidden md:flex">
               <span class="w-1.5 h-1.5 rounded-full shrink-0" :style="{ backgroundColor: column.color }" />
               {{ column.title }}
             </span>
@@ -495,8 +495,8 @@
                   :class="getDeadlineInfo(task.due_date)!.bgClass + ' ' + getDeadlineInfo(task.due_date)!.colorClass">
                   {{ getDeadlineInfo(task.due_date)!.label }}
                 </span>
-                <span v-else-if="task.due_date" class="font-medium text-gray-500 dark:text-[#99a0ae]">{{ formatDate(task.due_date) }}</span>
-                <span v-else-if="task.estimated_hours" class="text-[10px] font-medium text-gray-500 dark:text-[#99a0ae]">~{{ task.estimated_hours }}h</span>
+                <span v-else-if="task.due_date" class="font-medium text-gray-500 dark:text-gray-400">{{ formatDate(task.due_date) }}</span>
+                <span v-else-if="task.estimated_hours" class="text-[10px] font-medium text-gray-500 dark:text-gray-400">~{{ task.estimated_hours }}h</span>
                 <span v-else class="text-gray-300">—</span>
               </span>
               <div v-if="getTaskProgress(task.due_date, task.created_at, task.estimated_hours)" class="flex items-center gap-1.5">
@@ -518,7 +518,7 @@
                 :class="{
                   'bg-red-50 text-red-600': task.priority === 'critical' || task.priority === 'high',
                   'bg-blue-50 text-blue-600': task.priority === 'medium',
-                  'bg-gray-50 dark:bg-white/5 text-gray-400': task.priority === 'low',
+                  'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400': task.priority === 'low',
                 }">
                 {{ { critical: t.priorityCritical, high: t.priorityHigh, medium: t.priorityMedium, low: t.priorityLow }[task.priority] || task.priority }}
               </span>
@@ -603,7 +603,7 @@
               <UInput v-model="editColumnData.title" required class="w-full" size="lg" autofocus />
             </UFormField>
             <div class="flex items-center gap-2">
-              <label class="text-xs text-gray-500 dark:text-[#99a0ae]">{{ language === 'en' ? 'Color:' : 'Color:' }}</label>
+              <label class="text-xs text-gray-500 dark:text-gray-400">{{ language === 'en' ? 'Color:' : 'Color:' }}</label>
               <div class="flex gap-1.5">
                 <button
                   v-for="c in columnColors"

@@ -4,7 +4,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-8 animate-fade-up">
       <div>
         <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ t.teamTitle }}</h1>
-        <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ members.length }} {{ members.length !== 1 ? t.membersCount : t.memberSingular }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{{ members.length }} {{ members.length !== 1 ? t.membersCount : t.memberSingular }}</p>
       </div>
       <div class="flex items-center gap-2">
         <UButton v-if="auth.isSuperadmin || auth.isOwner" icon="i-heroicons-shield-check" variant="outline" size="md" class="font-semibold hidden sm:inline-flex" @click="showPermEditor = true">
@@ -24,12 +24,12 @@
 
     <!-- Upcoming meetings -->
     <div v-if="meetings.length > 0" class="mb-8 animate-fade-up">
-      <h2 class="text-sm font-bold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wider mb-3">{{ t.upcomingMeetings }}</h2>
+      <h2 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{{ t.upcomingMeetings }}</h2>
       <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         <div
           v-for="meeting in meetings"
           :key="meeting.id"
-          class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-4 border border-gray-100 dark:border-white/10 hover:border-blue-200 dark:hover:border-blue-500/30 transition-all shadow-card"
+          class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-4 border border-gray-200/80 dark:border-white/10 hover:border-blue-200 dark:hover:border-blue-500/30 transition-all shadow-card"
         >
           <div class="flex items-start gap-3">
             <div class="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center shrink-0 mt-0.5">
@@ -37,7 +37,7 @@
             </div>
             <div class="flex-1 min-w-0">
               <p class="font-semibold text-sm text-gray-900 dark:text-white truncate">{{ meeting.title }}</p>
-              <p class="text-[11px] text-gray-500 dark:text-[#99a0ae] mt-0.5">
+              <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
                 {{ formatMeetingDate(meeting.scheduled_at) }} · {{ meeting.duration_minutes }} min
               </p>
               <div class="flex items-center gap-2 mt-2">
@@ -67,7 +67,7 @@
 
     <!-- Pending Invitations -->
     <div v-if="!loading && pendingInvitations.length > 0 && isAdmin" class="mb-6 animate-fade-up">
-      <h2 class="text-sm font-bold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wider mb-3">
+      <h2 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
         {{ t.pendingInvitations }} ({{ pendingInvitations.length }})
       </h2>
       <div class="space-y-2">
@@ -107,7 +107,7 @@
       <div
         v-for="member in members"
         :key="member.id"
-        class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-4 border border-gray-100 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30 transition-all shadow-card group"
+        class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-4 border border-gray-200/80 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30 transition-all shadow-card group"
       >
         <div class="flex items-start sm:items-center gap-3 sm:gap-4 flex-wrap sm:flex-nowrap">
           <!-- Avatar -->
@@ -174,7 +174,7 @@
                   <!-- Quick add dropdown -->
                   <div
                     v-if="quickAddMemberId === member.id"
-                    class="absolute left-0 sm:left-0 right-0 sm:right-auto top-full mt-1 z-20 bg-white dark:bg-[#1b1b1b] rounded-xl shadow-lg border border-gray-100 dark:border-white/10 py-1 min-w-[180px]"
+                    class="absolute left-0 sm:left-0 right-0 sm:right-auto top-full mt-1 z-20 bg-white dark:bg-[#1b1b1b] rounded-xl shadow-lg border border-gray-200/80 dark:border-white/10 py-1 min-w-[180px]"
                   >
                     <div class="px-2 py-1.5 border-b border-gray-50 dark:border-white/10">
                       <p class="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">{{ t.addToProject }}</p>
@@ -253,7 +253,7 @@
       <!-- Procrastination Metrics Section -->
       <div v-if="canSeeMetrics" class="mt-8 animate-fade-up delay-200">
         <button
-          class="flex items-center gap-2 text-sm font-semibold text-gray-500 dark:text-[#99a0ae] hover:text-gray-700 dark:hover:text-gray-300 transition-colors cursor-pointer mb-4"
+          class="flex items-center gap-2 text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors cursor-pointer mb-4"
           @click="toggleMetrics"
         >
           <UIcon :name="showProcMetrics ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-right'" class="w-4 h-4" />
@@ -280,7 +280,7 @@
               <div
                 v-for="pm in procrastinationData"
                 :key="pm.user_id"
-                class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-4 border border-gray-100 dark:border-white/10 shadow-card"
+                class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-4 border border-gray-200/80 dark:border-white/10 shadow-card"
               >
                 <!-- Header: avatar + email + SVG ring -->
                 <div class="flex items-center gap-3 mb-3">
@@ -340,7 +340,7 @@
           <UIcon name="i-heroicons-user-group" class="w-8 h-8 text-gray-400 dark:text-gray-500" />
         </div>
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t.noMembers }}</h3>
-        <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-1">{{ t.inviteTeam }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ t.inviteTeam }}</p>
       </div>
     </div>
 
@@ -349,7 +349,7 @@
       <template #content>
         <div class="p-6">
           <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-1">{{ t.inviteMember }}</h2>
-          <p class="text-sm text-gray-500 dark:text-[#99a0ae] mb-5">{{ t.inviteDesc }}</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">{{ t.inviteDesc }}</p>
 
           <form class="space-y-4" @submit.prevent="handleInvite">
             <UFormField :label="t.userEmail">
@@ -400,7 +400,7 @@
       <template #content>
         <div class="p-6">
           <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-1">{{ t.projectAccess }}</h2>
-          <p class="text-sm text-gray-500 dark:text-[#99a0ae] mb-5">{{ editingMember?.email || t.member }}</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">{{ editingMember?.email || t.member }}</p>
 
           <div class="space-y-2 max-h-64 overflow-y-auto border border-gray-200 dark:border-white/10 rounded-lg p-3">
             <label

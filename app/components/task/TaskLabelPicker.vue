@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-2">
-    <h4 class="text-xs font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide">{{ t.labels }}</h4>
+    <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t.labels }}</h4>
 
     <!-- Current labels -->
     <div class="flex flex-wrap gap-1.5">

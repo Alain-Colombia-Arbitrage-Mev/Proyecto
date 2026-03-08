@@ -158,6 +158,9 @@
 .ProseMirror code {
   background: #f1f5f9;
   color: #0f172a;
+  padding: 0.15rem 0.35rem;
+  border-radius: 0.25rem;
+  font-size: 0.85em;
 }
 .dark .ProseMirror code {
   background: #374151;

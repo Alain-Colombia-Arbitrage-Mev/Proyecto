@@ -4,7 +4,7 @@
 
     <!-- Existing links -->
     <div v-for="(link, i) in modelValue" :key="i" class="flex items-center gap-2 group">
-      <div class="flex items-center gap-2 flex-1 min-w-0 bg-gray-50 dark:bg-white/[0.05] rounded-lg px-2.5 py-1.5 border border-gray-100 dark:border-white/10">
+      <div class="flex items-center gap-2 flex-1 min-w-0 bg-gray-50 dark:bg-white/[0.05] rounded-lg px-2.5 py-1.5 border border-gray-200/80 dark:border-white/10">
         <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 38 57" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M19 28.5C19 23.2533 23.2533 19 28.5 19C33.7467 19 38 23.2533 38 28.5C38 33.7467 33.7467 38 28.5 38C23.2533 38 19 33.7467 19 28.5Z" fill="#1ABCFE"/>
           <path d="M0 47.5C0 42.2533 4.25329 38 9.5 38H19V47.5C19 52.7467 14.7467 57 9.5 57C4.25329 57 0 52.7467 0 47.5Z" fill="#0ACF83"/>

@@ -28,7 +28,7 @@
     <UModal :open="showCreateModal" @update:open="(v: boolean) => showCreateModal = v" class="sm:max-w-lg w-full">
       <template #content>
         <div class="flex flex-col">
-          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/10">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200/80 dark:border-white/10">
             <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ t.newWorkflow }}</h2>
             <UButton variant="ghost" size="xs" icon="i-heroicons-x-mark" @click="showCreateModal = false" />
           </div>
@@ -49,7 +49,7 @@
                   class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all cursor-pointer"
                   :class="createForm.type === wt.value
                     ? 'border-violet-500 bg-violet-50 dark:bg-violet-500/10'
-                    : 'border-gray-100 dark:border-white/10 hover:border-gray-200 dark:hover:border-white/20'"
+                    : 'border-gray-200/80 dark:border-white/10 hover:border-gray-200 dark:hover:border-white/20'"
                   @click="createForm.type = wt.value"
                 >
                   <div class="w-10 h-10 rounded-xl flex items-center justify-center" :class="wt.bg">
@@ -68,7 +68,7 @@
                   v-for="tmpl in filteredTemplates"
                   :key="tmpl.id"
                   type="button"
-                  class="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-white/10 hover:border-violet-300 dark:hover:border-violet-500/30 hover:bg-violet-50/50 dark:hover:bg-violet-500/5 transition-all cursor-pointer text-left"
+                  class="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-200/80 dark:border-white/10 hover:border-violet-300 dark:hover:border-violet-500/30 hover:bg-violet-50/50 dark:hover:bg-violet-500/5 transition-all cursor-pointer text-left"
                   @click="applyTemplate(tmpl)"
                 >
                   <div class="w-8 h-8 rounded-lg flex items-center justify-center" :class="tmpl.bg">
@@ -83,7 +83,7 @@
               </div>
             </div>
           </div>
-          <div class="flex justify-end gap-3 px-6 py-3 border-t border-gray-100 dark:border-white/10">
+          <div class="flex justify-end gap-3 px-6 py-3 border-t border-gray-200/80 dark:border-white/10">
             <UButton variant="ghost" @click="showCreateModal = false">{{ t.cancel }}</UButton>
             <UButton color="primary" :disabled="!createForm.name.trim()" :loading="creating" class="font-semibold bg-gradient-to-r from-violet-600 to-fuchsia-600" @click="handleCreate">
               {{ t.create }}
@@ -97,7 +97,7 @@
     <div v-if="!editingWorkflow">
       <!-- Stats bar -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
-        <div v-for="stat in stats" :key="stat.label" class="bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10 p-3 sm:p-4">
+        <div v-for="stat in stats" :key="stat.label" class="bg-white dark:bg-white/5 rounded-xl border border-gray-200/80 dark:border-white/10 p-3 sm:p-4">
           <p class="text-[10px] sm:text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{{ stat.label }}</p>
           <p class="text-xl sm:text-2xl font-bold mt-1" :class="stat.color">{{ stat.value }}</p>
         </div>
@@ -120,14 +120,14 @@
           />
         </button>
         <Transition name="fade">
-          <div v-if="showApiKeys" class="mt-3 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10 p-4 sm:p-5">
+          <div v-if="showApiKeys" class="mt-3 bg-white dark:bg-white/5 rounded-xl border border-gray-200/80 dark:border-white/10 p-4 sm:p-5">
             <div class="flex items-center gap-2 mb-4">
               <UIcon name="i-heroicons-key" class="w-4 h-4 text-violet-500" />
               <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ t.apiKeys }}</h3>
               <span class="text-[10px] text-gray-400 hidden sm:inline">{{ t.apiKeysDesc }}</span>
             </div>
             <!-- n8n Connection -->
-            <div class="mb-5 p-4 rounded-xl border-2 transition-colors" :class="n8nStatus?.connected ? 'border-emerald-200 dark:border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-500/5' : 'border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-white/[0.02]'">
+            <div class="mb-5 p-4 rounded-xl border-2 transition-colors" :class="n8nStatus?.connected ? 'border-emerald-200 dark:border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-500/5' : 'border-gray-200/80 dark:border-white/10 bg-gray-50/50 dark:bg-white/[0.02]'">
               <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center gap-2">
                   <div class="w-8 h-8 rounded-lg bg-[#FF6D5A] flex items-center justify-center">
@@ -213,7 +213,7 @@
         <div
           v-for="wf in workflows"
           :key="wf.id"
-          class="group bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10 hover:border-violet-200 dark:hover:border-violet-500/30 hover:shadow-lg hover:shadow-violet-500/5 transition-all cursor-pointer overflow-hidden"
+          class="group bg-white dark:bg-white/5 rounded-xl border border-gray-200/80 dark:border-white/10 hover:border-violet-200 dark:hover:border-violet-500/30 hover:shadow-lg hover:shadow-violet-500/5 transition-all cursor-pointer overflow-hidden"
           @click="editingWorkflow = wf"
         >
           <div class="h-1.5" :class="typeGradient(wf.type)"></div>
@@ -235,7 +235,7 @@
               <span
                 v-for="node in (wf.nodes || []).slice(0, 5)"
                 :key="node.id"
-                class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-white/10"
+                class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 border border-gray-200/80 dark:border-white/10"
               >{{ node.label }}</span>
               <span v-if="(wf.nodes || []).length > 5" class="text-[10px] text-gray-400">+{{ (wf.nodes || []).length - 5 }}</span>
             </div>
@@ -264,7 +264,7 @@
     <!-- ═══ Workflow Editor (when editing) ═══ -->
     <div v-else class="space-y-4 sm:space-y-6">
       <!-- Editor toolbar -->
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10 px-4 sm:px-5 py-3">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white dark:bg-white/5 rounded-xl border border-gray-200/80 dark:border-white/10 px-4 sm:px-5 py-3">
         <div class="flex items-center gap-3 w-full sm:w-auto">
           <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" :class="typeConfig(editingWorkflow.type).bg">
             <UIcon :name="typeConfig(editingWorkflow.type).icon" class="w-4.5 h-4.5 text-white" />
@@ -340,7 +340,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
         <!-- Left: Node pipeline canvas -->
         <div class="lg:col-span-3">
-          <div class="relative bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10 min-h-[400px] sm:min-h-[500px] overflow-hidden">
+          <div class="relative bg-white dark:bg-white/5 rounded-xl border border-gray-200/80 dark:border-white/10 min-h-[400px] sm:min-h-[500px] overflow-hidden">
             <div class="absolute inset-0 opacity-30 dark:opacity-10" style="background-image: radial-gradient(circle, #cbd5e1 1px, transparent 1px); background-size: 24px 24px;"></div>
 
             <div class="relative p-4 sm:p-6">
@@ -360,7 +360,7 @@
                       <button
                         v-for="nt in cat.nodes"
                         :key="nt.type"
-                        class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-100 dark:border-white/10 text-left hover:border-violet-300 dark:hover:border-violet-500/30 hover:bg-violet-50/50 dark:hover:bg-violet-500/5 transition-all cursor-pointer"
+                        class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200/80 dark:border-white/10 text-left hover:border-violet-300 dark:hover:border-violet-500/30 hover:bg-violet-50/50 dark:hover:bg-violet-500/5 transition-all cursor-pointer"
                         @click="addNode(nt.type)"
                       >
                         <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" :class="nt.bg">
@@ -392,7 +392,7 @@
                     class="relative flex items-start gap-3 bg-white dark:bg-[#1b1b1b] rounded-xl border-2 transition-all p-3 sm:p-4 max-w-2xl mx-auto"
                     :class="selectedNodeId === node.id
                       ? 'border-violet-400 dark:border-violet-500 shadow-lg shadow-violet-500/10'
-                      : 'border-gray-100 dark:border-white/10 hover:border-violet-200 dark:hover:border-violet-500/20'"
+                      : 'border-gray-200/80 dark:border-white/10 hover:border-violet-200 dark:hover:border-violet-500/20'"
                     @click="selectedNodeId = selectedNodeId === node.id ? null : node.id"
                   >
                     <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0" :class="nodeTypeConfig(node.type).bg">
@@ -456,7 +456,7 @@
                                 class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer"
                                 :class="node.config.platform === sp.value
                                   ? 'border-violet-300 bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300'
-                                  : 'border-gray-100 dark:border-white/10 text-gray-500 hover:border-gray-200'"
+                                  : 'border-gray-200/80 dark:border-white/10 text-gray-500 hover:border-gray-200'"
                                 @click="node.config.platform = sp.value; saveWorkflow()"
                               >
                                 <UIcon :name="sp.icon" class="w-3.5 h-3.5" />
@@ -655,9 +655,9 @@
 
         <!-- Right: AI Chat Assistant Panel -->
         <div class="lg:col-span-2">
-          <div class="bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10 flex flex-col h-[500px] sm:h-[600px] relative overflow-hidden">
+          <div class="bg-white dark:bg-white/5 rounded-xl border border-gray-200/80 dark:border-white/10 flex flex-col h-[500px] sm:h-[600px] relative overflow-hidden">
             <!-- Chat header -->
-            <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-100 dark:border-white/10 shrink-0">
+            <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-200/80 dark:border-white/10 shrink-0">
               <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center">
                 <UIcon name="i-heroicons-sparkles" class="w-4 h-4 text-white" />
               </div>
@@ -688,7 +688,7 @@
 
             <!-- Session list overlay -->
             <div v-if="showSessionList" class="absolute inset-x-0 top-[52px] bottom-0 z-10 bg-white dark:bg-[#1b1b1b] flex flex-col">
-              <div class="px-4 py-3 border-b border-gray-100 dark:border-white/10 flex items-center justify-between">
+              <div class="px-4 py-3 border-b border-gray-200/80 dark:border-white/10 flex items-center justify-between">
                 <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t.chatHistory }}</span>
                 <button class="text-xs text-violet-600 dark:text-violet-400 font-semibold hover:underline" @click="showSessionList = false">{{ t.close }}</button>
               </div>
@@ -784,7 +784,7 @@
             </div>
 
             <!-- Chat input -->
-            <div class="border-t border-gray-100 dark:border-white/10 p-3 shrink-0">
+            <div class="border-t border-gray-200/80 dark:border-white/10 p-3 shrink-0">
               <div class="flex gap-2">
                 <input
                   v-model="chatInput"

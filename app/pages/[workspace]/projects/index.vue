@@ -38,7 +38,7 @@
     <div class="flex items-center justify-between mb-6 animate-fade-up">
       <div>
         <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">{{ t.projects }}</h1>
-        <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-0.5">
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
           {{ store.projects.length }} {{ store.projects.length !== 1 ? t.projects.toLowerCase() : t.project.toLowerCase() }}
           <span v-if="totalTasks > 0" class="ml-1">&middot; {{ totalTasks }} {{ lang.language.value === 'en' ? 'tasks' : 'tareas' }}</span>
         </p>
@@ -53,7 +53,7 @@
     <div v-if="store.projects.length > 0" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 animate-fade-up">
       <!-- Proyectos Totales -->
       <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-5 border border-gray-200/80 dark:border-white/10 shadow-card hover:shadow-card-hover transition-all">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">{{ t.totalProjects }}</p>
+        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ t.totalProjects }}</p>
         <div class="flex items-end justify-between">
           <span class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 tabular-nums">{{ store.projects.length }}</span>
           <div class="flex items-end gap-0.5 h-10 w-20">
@@ -63,7 +63,7 @@
       </div>
       <!-- Tareas Totales -->
       <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-5 border border-gray-200/80 dark:border-white/10 shadow-card hover:shadow-card-hover transition-all">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">{{ t.totalTasks }}</p>
+        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ t.totalTasks }}</p>
         <div class="flex items-end justify-between">
           <span class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 tabular-nums">{{ totalTasks }}</span>
           <div class="flex items-end gap-0.5 h-10 w-20">
@@ -73,7 +73,7 @@
       </div>
       <!-- Vencen Hoy -->
       <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-5 border border-gray-200/80 dark:border-white/10 shadow-card hover:shadow-card-hover transition-all">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">{{ t.dueToday }}</p>
+        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ t.dueToday }}</p>
         <div class="flex items-end justify-between">
           <span class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 tabular-nums">{{ dueTodayCount }}</span>
           <div class="flex items-end gap-0.5 h-10 w-20">
@@ -83,7 +83,7 @@
       </div>
       <!-- Completadas -->
       <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl p-5 border border-gray-200/80 dark:border-white/10 shadow-card hover:shadow-card-hover transition-all">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">{{ t.completed }}</p>
+        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ t.completed }}</p>
         <div class="flex items-end justify-between">
           <span class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 tabular-nums">{{ completedTaskCount }}</span>
           <div class="flex items-end gap-0.5 h-10 w-20">
@@ -108,7 +108,7 @@
 
     <!-- Loading -->
     <div v-if="store.loading" class="flex justify-center py-16">
-      <div class="flex items-center gap-3 text-gray-400">
+      <div class="flex items-center gap-3 text-gray-500 dark:text-gray-400">
         <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 animate-spin" />
         <span class="text-sm">{{ lang.language.value === 'en' ? 'Loading projects...' : 'Cargando proyectos...' }}</span>
       </div>
@@ -120,7 +120,7 @@
         <UIcon name="i-heroicons-building-office" class="w-8 h-8 text-gray-400" />
       </div>
       <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ t.workspaceNotFound }}</h2>
-      <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-2 mb-6">{{ t.createWorkspaceFirst }}</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 mb-6">{{ t.createWorkspaceFirst }}</p>
       <UButton color="primary" size="lg" class="font-semibold" @click="router.push('/')">{{ t.createWorkspace }}</UButton>
     </div>
 
@@ -132,7 +132,7 @@
       <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">
         {{ lang.language.value === 'en' ? 'Launch your first project' : 'Lanza tu primer proyecto' }}
       </h2>
-      <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-2 max-w-sm mx-auto leading-relaxed">
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 max-w-sm mx-auto leading-relaxed">
         {{ lang.language.value === 'en'
           ? 'Projects are your workspace for organizing tasks, tracking progress, and collaborating with your team using Kanban boards.'
           : 'Los proyectos son tu espacio para organizar tareas, rastrear progreso y colaborar con tu equipo usando tableros Kanban.' }}
@@ -154,7 +154,7 @@
               <div class="w-4 h-4 rounded-full mt-0.5 shrink-0" :style="{ backgroundColor: project.color }" />
               <div class="min-w-0 flex-1">
                 <h3 class="font-bold text-gray-900 dark:text-gray-100 truncate group-hover:text-focusflow-600 transition-colors">{{ project.name }}</h3>
-                <p v-if="project.description" class="text-sm text-gray-500 dark:text-[#99a0ae] mt-1.5 line-clamp-2 leading-relaxed">{{ project.description }}</p>
+                <p v-if="project.description" class="text-sm text-gray-500 dark:text-gray-400 mt-1.5 line-clamp-2 leading-relaxed">{{ project.description }}</p>
                 <div class="flex items-center gap-2 mt-3 flex-wrap">
                   <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider" :class="statusClasses(project.status)">
                     {{ statusLabel(project.status) }}
@@ -209,7 +209,7 @@
             <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 text-red-600" />
           </div>
           <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">{{ t.deleteConfirmProject }}</h3>
-          <p class="text-sm text-gray-500 dark:text-[#99a0ae] mb-6">
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
             <strong>{{ projectToDelete?.name }}</strong><br/>
             {{ t.deleteProjectWarning }}
           </p>
@@ -247,7 +247,7 @@
           <!-- Header -->
           <div class="px-5 pt-5 pb-3 shrink-0">
             <h2 class="text-base font-bold text-gray-900 dark:text-gray-100">{{ t.newProject }}</h2>
-            <p class="text-xs text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ t.configureProject }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t.configureProject }}</p>
           </div>
 
           <!-- Scrollable form -->
@@ -270,7 +270,7 @@
                   class="w-full text-left px-3 py-2 rounded-lg border transition-all cursor-pointer"
                   :class="newProject.template === tpl.value
                     ? 'border-focusflow-400 bg-focusflow-50/60 dark:bg-focusflow-950/30 shadow-sm'
-                    : 'border-gray-100 dark:border-white/10 hover:border-focusflow-200 hover:bg-gray-50 dark:hover:bg-white/5'"
+                    : 'border-gray-200/80 dark:border-white/10 hover:border-focusflow-200 hover:bg-gray-50 dark:hover:bg-white/5'"
                   @click="newProject.template = tpl.value"
                 >
                   <div class="flex items-center justify-between mb-1">
@@ -290,7 +290,7 @@
             </UFormField>
 
             <!-- CSV Import Section -->
-            <div class="border-t border-gray-100 dark:border-white/10 pt-3">
+            <div class="border-t border-gray-200/80 dark:border-white/10 pt-3">
               <div class="flex items-center gap-2 mb-1.5">
                 <UIcon name="i-heroicons-arrow-up-tray" class="w-3.5 h-3.5 text-focusflow-600" />
                 <span class="text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-widest">

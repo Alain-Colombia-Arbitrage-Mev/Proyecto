@@ -11,10 +11,10 @@
   <transition name="slide">
     <div
       v-if="showAiPanel"
-      class="fixed bottom-36 md:bottom-20 inset-x-4 md:inset-x-auto md:right-6 w-auto md:w-96 max-h-[560px] bg-white dark:bg-[#1b1b1b] border border-gray-100 dark:border-white/10 rounded-2xl shadow-card-lg z-50 flex flex-col overflow-hidden"
+      class="fixed bottom-36 md:bottom-20 inset-x-4 md:inset-x-auto md:right-6 w-auto md:w-96 max-h-[560px] bg-white dark:bg-[#1b1b1b] border border-gray-200/80 dark:border-white/10 rounded-2xl shadow-card-lg z-50 flex flex-col overflow-hidden"
     >
       <!-- Panel header -->
-      <div class="px-4 py-3 border-b border-gray-100 dark:border-white/10 flex items-center gap-2">
+      <div class="px-4 py-3 border-b border-gray-200/80 dark:border-white/10 flex items-center gap-2">
         <div class="w-7 h-7 rounded-lg bg-focusflow-600 flex items-center justify-center">
           <UIcon name="i-heroicons-sparkles" class="w-3.5 h-3.5 text-white" />
         </div>
@@ -32,7 +32,7 @@
       </div>
 
       <!-- Tabs -->
-      <div class="px-3 py-1.5 border-b border-gray-100 dark:border-white/10 flex gap-1">
+      <div class="px-3 py-1.5 border-b border-gray-200/80 dark:border-white/10 flex gap-1">
         <button
           class="text-[10px] font-semibold px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
           :class="aiTab === 'chat' ? 'bg-focusflow-50 dark:bg-focusflow-500/10 text-focusflow-700 dark:text-focusflow-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
@@ -51,7 +51,7 @@
       </div>
 
       <!-- Quick actions (chat tab) -->
-      <div v-if="aiTab === 'chat'" class="px-3 py-2 border-b border-gray-100 dark:border-white/10 flex gap-1.5 flex-wrap">
+      <div v-if="aiTab === 'chat'" class="px-3 py-2 border-b border-gray-200/80 dark:border-white/10 flex gap-1.5 flex-wrap">
         <button class="text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-focusflow-50 text-focusflow-700 hover:bg-focusflow-100 transition-colors cursor-pointer" @click="handleSuggestTasks" :disabled="aiLoading">
           {{ language === 'en' ? 'Suggest tasks' : 'Sugerir tareas' }}
         </button>
@@ -135,7 +135,7 @@
                 :style="{ width: `${Math.min(tokenStats.percentUsed, 100)}%` }"
               />
             </div>
-            <p class="text-[10px] text-gray-500 dark:text-[#99a0ae]">{{ formatTokens(tokenStats.totalTokens) }} / {{ formatTokens(tokenStats.limit) }} tokens</p>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ formatTokens(tokenStats.totalTokens) }} / {{ formatTokens(tokenStats.limit) }} tokens</p>
           </div>
 
           <!-- Today stats -->
@@ -155,11 +155,11 @@
             <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">{{ language === 'en' ? 'By action' : 'Por acción' }}</p>
             <div class="space-y-1.5">
               <div v-for="(tokens, actionName) in tokenStats.byAction" :key="actionName" class="flex items-center gap-2">
-                <span class="text-[10px] text-gray-600 dark:text-[#99a0ae] w-24 truncate">{{ actionName }}</span>
+                <span class="text-[10px] text-gray-600 dark:text-gray-400 w-24 truncate">{{ actionName }}</span>
                 <div class="flex-1 h-1.5 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
                   <div class="h-full bg-emerald-400 dark:bg-emerald-500 rounded-full" :style="{ width: `${(tokens / tokenStats.totalTokens) * 100}%` }" />
                 </div>
-                <span class="text-[10px] text-gray-500 dark:text-[#99a0ae] tabular-nums w-14 text-right">{{ formatTokens(tokens) }}</span>
+                <span class="text-[10px] text-gray-500 dark:text-gray-400 tabular-nums w-14 text-right">{{ formatTokens(tokens) }}</span>
               </div>
             </div>
           </div>
@@ -202,7 +202,7 @@
               <div
                 v-for="(s, si) in msg.suggestions"
                 :key="si"
-                class="flex items-start gap-2 bg-white dark:bg-[#1b1b1b] rounded-lg p-2 transition-all border border-gray-100 dark:border-white/10"
+                class="flex items-start gap-2 bg-white dark:bg-[#1b1b1b] rounded-lg p-2 transition-all border border-gray-200/80 dark:border-white/10"
                 :class="addedSuggestions.has(s.title) ? 'opacity-50' : 'cursor-pointer hover:ring-1 hover:ring-focusflow-300'"
                 @click="!addedSuggestions.has(s.title) && addSuggestedTask(s)"
               >
@@ -211,9 +211,12 @@
                   class="w-3.5 h-3.5 mt-0.5 shrink-0"
                   :class="addedSuggestions.has(s.title) ? 'text-emerald-500' : 'text-focusflow-700'"
                 />
-                <div>
+                <div class="min-w-0">
                   <p class="font-medium text-gray-900 dark:text-gray-100">{{ s.title }}</p>
-                  <p class="text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ s.description }}</p>
+                  <p class="text-gray-500 dark:text-gray-400 mt-0.5">{{ s.description }}</p>
+                  <span v-if="s.column" class="inline-block mt-1 text-[9px] font-semibold px-1.5 py-0.5 rounded bg-focusflow-50 dark:bg-focusflow-500/10 text-focusflow-600 dark:text-focusflow-400">
+                    {{ columns.find(c => c.id === matchColumn(s.column))?.title || s.column }}
+                  </span>
                 </div>
               </div>
               <button
@@ -246,7 +249,7 @@
                 {{ msg.plan.pomodoro_suggestion }}
               </div>
               <p v-if="msg.plan.procrastination_tip" class="mt-2 text-amber-700 font-medium">{{ msg.plan.procrastination_tip }}</p>
-              <p class="mt-2 text-gray-500 dark:text-[#99a0ae] italic">{{ msg.plan.tip }}</p>
+              <p class="mt-2 text-gray-500 dark:text-gray-400 italic">{{ msg.plan.tip }}</p>
             </div>
 
             <!-- Anti-procrastination -->
@@ -264,9 +267,9 @@
               </div>
               <div v-if="msg.analysis.techniques?.length" class="mt-2 space-y-1">
                 <p class="font-semibold text-focusflow-700 text-[10px] uppercase tracking-wider mb-1">{{ language === 'en' ? 'Recommended techniques:' : 'Técnicas recomendadas:' }}</p>
-                <div v-for="(tech, ti) in msg.analysis.techniques" :key="ti" class="bg-white dark:bg-[#1b1b1b] rounded-lg p-2 border border-gray-100 dark:border-white/10">
+                <div v-for="(tech, ti) in msg.analysis.techniques" :key="ti" class="bg-white dark:bg-[#1b1b1b] rounded-lg p-2 border border-gray-200/80 dark:border-white/10">
                   <p class="font-medium text-gray-900 dark:text-gray-100">{{ tech.name }}</p>
-                  <p class="text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ tech.description }}</p>
+                  <p class="text-gray-500 dark:text-gray-400 mt-0.5">{{ tech.description }}</p>
                 </div>
               </div>
               <p v-if="msg.analysis.motivation" class="mt-2 text-focusflow-700 font-medium italic">{{ msg.analysis.motivation }}</p>
@@ -353,12 +356,12 @@
       </div>
 
       <!-- Chat input (chat tab only) -->
-      <div v-if="aiTab === 'chat'" class="px-3 py-2 border-t border-gray-100 dark:border-white/10">
+      <div v-if="aiTab === 'chat'" class="px-3 py-2 border-t border-gray-200/80 dark:border-white/10">
         <form class="flex gap-2" @submit.prevent="handleChat">
           <input
             v-model="chatInput"
             :placeholder="language === 'en' ? 'Ask something...' : 'Pregunta algo...'"
-            class="flex-1 bg-gray-50 dark:bg-white/10 rounded-lg px-3 py-2 text-xs text-gray-900 dark:text-gray-100 placeholder-gray-400 outline-none focus:ring-1 focus:ring-focusflow-300 border border-gray-100 dark:border-white/10"
+            class="flex-1 bg-gray-50 dark:bg-white/10 rounded-lg px-3 py-2 text-xs text-gray-900 dark:text-gray-100 placeholder-gray-400 outline-none focus:ring-1 focus:ring-focusflow-300 border border-gray-200/80 dark:border-white/10"
             :disabled="aiLoading"
           />
           <button
@@ -533,6 +536,29 @@ function findColumn(type: 'todo' | 'progress'): string {
   return cols[Math.floor(cols.length / 2)]?.id || cols[1]?.id || cols[0]!.id
 }
 
+/** Match AI's column name hint to an actual column. Falls back to findColumn('todo'). */
+function matchColumn(hint?: string): string {
+  const cols = props.columns
+  if (!hint || !cols.length) return findColumn('todo')
+  const h = hint.toLowerCase().trim()
+  // Exact match
+  const exact = cols.find(c => c.title.toLowerCase() === h)
+  if (exact) return exact.id
+  // Partial match (column title contains hint or hint contains column title)
+  const partial = cols.find(c => c.title.toLowerCase().includes(h) || h.includes(c.title.toLowerCase()))
+  if (partial) return partial.id
+  // Word overlap match
+  const hWords = h.split(/\s+/)
+  let bestMatch = { id: '', score: 0 }
+  for (const c of cols) {
+    const cWords = c.title.toLowerCase().split(/\s+/)
+    const score = hWords.filter(w => cWords.some(cw => cw.includes(w) || w.includes(cw))).length
+    if (score > bestMatch.score) bestMatch = { id: c.id, score }
+  }
+  if (bestMatch.score > 0) return bestMatch.id
+  return findColumn('todo')
+}
+
 async function handleSuggestTasks() {
   showAiPanel.value = true
   aiTab.value = 'chat'
@@ -541,6 +567,7 @@ async function handleSuggestTasks() {
   const res = await callAI('suggest_tasks', {
     projectName: props.project?.name || '',
     projectDescription: props.project?.description || '',
+    projectId: props.projectId,
   })
   if (res?.type === 'json' && Array.isArray(res.data)) {
     aiMessages.value.push({ role: 'assistant', type: 'suggestions', suggestions: res.data })
@@ -551,7 +578,7 @@ async function handleSuggestTasks() {
 }
 
 async function addSuggestedTask(suggestion: any) {
-  const columnId = findColumn('todo')
+  const columnId = matchColumn(suggestion.column)
   if (!columnId) return
   try {
     await $fetch(`/api/workspaces/${props.workspaceId}/tasks`, {
@@ -577,12 +604,13 @@ async function addSuggestedTask(suggestion: any) {
 }
 
 async function addAllSuggestedTasks(suggestions: any[]) {
-  const columnId = findColumn('todo')
-  if (!columnId) return
   const pending = suggestions.filter(s => !addedSuggestions.value.has(s.title))
   if (!pending.length) return
   let added = 0
+  const columnNames = new Set<string>()
   for (const s of pending) {
+    const columnId = matchColumn(s.column)
+    if (!columnId) continue
     try {
       await $fetch(`/api/workspaces/${props.workspaceId}/tasks`, {
         method: 'POST',
@@ -596,12 +624,13 @@ async function addAllSuggestedTasks(suggestions: any[]) {
         },
       })
       addedSuggestions.value.add(s.title)
+      columnNames.add(props.columns.find(c => c.id === columnId)?.title || '')
       added++
     } catch { /* continue */ }
   }
   emit('loadTasks')
-  const colName = props.columns.find(c => c.id === columnId)?.title || ''
-  aiMessages.value.push({ role: 'assistant', text: props.language === 'en' ? `${added} tasks created in ${colName}` : `${added} tareas creadas en ${colName}`, type: 'text' })
+  const colList = [...columnNames].filter(Boolean).join(', ')
+  aiMessages.value.push({ role: 'assistant', text: props.language === 'en' ? `${added} tasks created in: ${colList}` : `${added} tareas creadas en: ${colList}`, type: 'text' })
   scrollChat()
 }
 

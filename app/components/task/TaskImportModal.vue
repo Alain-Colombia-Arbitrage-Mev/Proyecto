@@ -23,7 +23,7 @@
         </div>
 
         <!-- Header -->
-        <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 dark:border-white/10 shrink-0">
+        <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-200/80 dark:border-white/10 shrink-0">
           <div class="flex items-center gap-2">
             <UIcon name="i-heroicons-arrow-up-tray" class="w-5 h-5 text-focusflow-600" />
             <h2 class="text-base font-bold text-gray-900 dark:text-gray-100">{{ t.importTasks }}</h2>
@@ -39,7 +39,7 @@
           <div>
             <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">{{ t.compatiblePlatforms }}</p>
             <div class="flex flex-wrap gap-1">
-              <span v-for="p in platforms" :key="p" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-[#99a0ae]">{{ p }}</span>
+              <span v-for="p in platforms" :key="p" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400">{{ p }}</span>
             </div>
           </div>
 
@@ -52,7 +52,7 @@
           <!-- Map columns toggle -->
           <label class="flex items-center gap-2 cursor-pointer">
             <input v-model="mapColumns" type="checkbox" class="rounded border-gray-300 dark:border-white/20 text-focusflow-600 focus:ring-focusflow-500 dark:bg-white/10" />
-            <span class="text-xs text-gray-600 dark:text-[#99a0ae]">{{ t.mapColumnsLabel }}</span>
+            <span class="text-xs text-gray-600 dark:text-gray-400">{{ t.mapColumnsLabel }}</span>
           </label>
 
           <!-- Drop zone / CSV input -->
@@ -117,10 +117,10 @@
           </div>
 
           <!-- Preview -->
-          <div v-if="preview" class="rounded-lg border border-gray-100 dark:border-white/10 overflow-hidden">
+          <div v-if="preview" class="rounded-lg border border-gray-200/80 dark:border-white/10 overflow-hidden">
             <div class="bg-gray-50 dark:bg-white/5 px-3 py-1.5 flex items-center gap-2">
               <UIcon name="i-heroicons-check-circle" class="w-3.5 h-3.5 text-emerald-500" />
-              <span class="text-[11px] font-semibold text-gray-600 dark:text-[#99a0ae]">
+              <span class="text-[11px] font-semibold text-gray-600 dark:text-gray-400">
                 {{ preview.tasks.length }} {{ t.tasks }}
                 <span v-if="preview.platform !== 'generic'" class="text-focusflow-600 ml-1">({{ preview.platform }})</span>
               </span>
@@ -155,7 +155,7 @@
         </div>
 
         <!-- Footer -->
-        <div class="flex items-center justify-end gap-2 px-5 py-3 border-t border-gray-100 dark:border-white/10 shrink-0">
+        <div class="flex items-center justify-end gap-2 px-5 py-3 border-t border-gray-200/80 dark:border-white/10 shrink-0">
           <UButton variant="ghost" size="sm" @click="isOpen = false">{{ t.close }}</UButton>
           <UButton
             color="primary"

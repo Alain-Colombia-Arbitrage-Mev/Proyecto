@@ -15,7 +15,7 @@
       <div class="lg:col-span-2 space-y-5">
         <!-- Project selector -->
         <div class="bg-white dark:bg-[#1b1b1b] rounded-xl border border-gray-200 dark:border-white/10 p-5">
-          <label class="text-[11px] font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide block mb-2">
+          <label class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-2">
             {{ lang.language.value === 'en' ? 'Target Project' : 'Proyecto Destino' }}
           </label>
           <div class="flex flex-wrap gap-2">
@@ -35,7 +35,7 @@
 
         <!-- Prompt input -->
         <div class="bg-white dark:bg-[#1b1b1b] rounded-xl border border-gray-200 dark:border-white/10 p-5">
-          <label class="text-[11px] font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide block mb-2">
+          <label class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-2">
             {{ lang.language.value === 'en' ? 'What needs to be done?' : 'Que necesitas hacer?' }}
           </label>
           <textarea
@@ -119,7 +119,7 @@
       <div class="space-y-5">
         <!-- Agent types -->
         <div class="bg-white dark:bg-[#1b1b1b] rounded-xl border border-gray-200 dark:border-white/10 p-4">
-          <h3 class="text-xs font-bold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide mb-3">
+          <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
             {{ lang.language.value === 'en' ? 'Available Agents' : 'Agentes Disponibles' }}
           </h3>
           <div class="space-y-2">
@@ -137,7 +137,7 @@
 
         <!-- Recent runs -->
         <div class="bg-white dark:bg-[#1b1b1b] rounded-xl border border-gray-200 dark:border-white/10 p-4">
-          <h3 class="text-xs font-bold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide mb-3">
+          <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
             {{ lang.language.value === 'en' ? 'Recent Runs' : 'Ejecuciones Recientes' }}
           </h3>
           <div v-if="recentRuns.length === 0" class="text-xs text-gray-400 py-4 text-center">

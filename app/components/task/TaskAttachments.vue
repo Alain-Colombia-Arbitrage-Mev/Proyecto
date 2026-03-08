@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-3">
     <div class="flex items-center justify-between">
-      <h4 class="text-xs font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide">{{ t.attachments }}</h4>
+      <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ t.attachments }}</h4>
       <button v-if="!readonly" type="button" class="text-xs text-focusflow-600 hover:text-focusflow-700 font-medium cursor-pointer" @click="triggerUpload">
         {{ t.addAttachment }}
       </button>
@@ -23,14 +23,14 @@
     <input ref="fileInput" type="file" multiple class="hidden" @change="handleFileSelect" />
 
     <!-- Uploading indicator -->
-    <div v-if="uploading" class="flex items-center gap-2 text-xs text-gray-500 dark:text-[#99a0ae]">
+    <div v-if="uploading" class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
       <UIcon name="i-heroicons-arrow-path" class="w-3.5 h-3.5 animate-spin" />
       {{ t.uploading }}
     </div>
 
     <!-- Attachment grid -->
     <div v-if="attachments.length" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-      <div v-for="att in attachments" :key="att.id" class="group relative bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-100 dark:border-white/10 overflow-hidden">
+      <div v-for="att in attachments" :key="att.id" class="group relative bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-200/80 dark:border-white/10 overflow-hidden">
         <!-- Image thumbnail -->
         <a v-if="isImage(att.mime_type)" :href="att.url" target="_blank" class="block">
           <img :src="att.url" :alt="att.file_name" class="w-full h-20 object-cover" />
@@ -41,7 +41,7 @@
         </div>
         <!-- File name + delete -->
         <div class="px-2 py-1.5 flex items-center justify-between">
-          <span class="text-[10px] text-gray-600 dark:text-[#99a0ae] truncate flex-1">{{ att.file_name }}</span>
+          <span class="text-[10px] text-gray-600 dark:text-gray-400 truncate flex-1">{{ att.file_name }}</span>
           <button v-if="!readonly" type="button" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 cursor-pointer ml-1" @click="handleDelete(att)">
             <UIcon name="i-heroicons-x-mark" class="w-3.5 h-3.5" />
           </button>

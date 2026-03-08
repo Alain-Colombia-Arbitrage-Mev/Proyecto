@@ -86,12 +86,26 @@ export default defineEventHandler(async (event) => {
       if (!context.projectName || typeof context.projectName !== 'string') {
         throw createError({ statusCode: 400, message: 'projectName is required' })
       }
-      systemPrompt = `PM experto. Genera 5 tareas JSON array. Cada: {title,description,priority:"low"|"medium"|"high"|"critical",tags:[],estimated_hours:N}. ES. Empieza por las más pequeñas. Solo JSON.`
-      userPrompt = `${String(context.projectName).slice(0, 2000)}|${String(context.projectDescription || '').slice(0, 3000)}`
       if (context.workspaceId) {
         resolvedWorkspaceId = String(context.workspaceId)
         await requirePermission(event, resolvedWorkspaceId, 'use_ai_basic')
       }
+
+      // Fetch project columns for intelligent assignment
+      let columnsHint = ''
+      if (context.projectId && typeof context.projectId === 'string') {
+        const { data: suggestCols } = await supabase
+          .from('kanban_columns')
+          .select('title')
+          .eq('project_id', context.projectId)
+          .order('position')
+        if (suggestCols?.length) {
+          columnsHint = `|Columnas:${suggestCols.map((c: any) => c.title).join(',')}`
+        }
+      }
+
+      systemPrompt = `PM experto. Genera 5 tareas JSON array. Cada: {title,description,priority:"low"|"medium"|"high"|"critical",tags:[],estimated_hours:N,column:"nombre columna"}. Asigna cada tarea a la columna más apropiada según su naturaleza${columnsHint ? '' : ' (usa "Por hacer" por defecto)'}. ES. Empieza por las más pequeñas. Solo JSON.`
+      userPrompt = `${String(context.projectName).slice(0, 2000)}|${String(context.projectDescription || '').slice(0, 3000)}${columnsHint}`
       break
     }
 
@@ -280,7 +294,7 @@ Específico, basado en datos reales. Solo JSON.`
       systemPrompt = `Asistente PM FocusFlow.${projectContext}${memoryContext}
 
 REGLAS:
-1. Crear/sugerir/generar tareas → JSON array: [{title,title_en,description,description_en,priority,tags:[],estimated_hours}]. Description detallado: objetivo, pasos implementación, archivos, criterios aceptación ✅, notas técnicas. Bilingüe ES+EN. Solo JSON.
+1. Crear/sugerir/generar tareas → JSON array: [{title,title_en,description,description_en,priority,tags:[],estimated_hours,column:"nombre columna"}]. Asigna cada tarea a la columna más apropiada según su naturaleza. Description detallado: objetivo, pasos implementación, archivos, criterios aceptación ✅, notas técnicas. Bilingüe ES+EN. Solo JSON.
 2. Otra consulta → texto plano ES, max 5 líneas.
 
 No <think>. No markdown.`
@@ -622,7 +636,8 @@ ${JSON.stringify((tasksFull || []).map((t: any) => ({
                     {
                       role: 'system',
                       content: `Tech lead. Genera 8 tareas JSON array del doc arquitectura: 3 Backend, 3 DevOps, 2 Docs.
-Cada: {title,title_en,description,description_en,priority,tags:[],estimated_hours}
+Cada: {title,title_en,description,description_en,priority,tags:[],estimated_hours,column:"nombre columna"}
+Columnas disponibles: ${(allColumns || []).map((c: any) => c.title).join(', ')}. Asigna cada tarea a la columna más apropiada.
 Description: objetivo + pasos implementación + archivos + criterios ✅ + notas técnicas. Detallado y ejecutable. Bilingüe ES+EN. Solo JSON.`,
                     },
                     {
@@ -663,21 +678,29 @@ Description: objetivo + pasos implementación + archivos + criterios ✅ + notas
 
             // Batch insert tasks
             if (aiTasks.length > 0) {
-              const { data: maxPosData } = await supabase
-                .from('tasks')
-                .select('position')
-                .eq('column_id', firstColumn.id)
-                .order('position', { ascending: false })
-                .limit(1)
+              // Build column lookup for AI column matching
+              const colMap = new Map((allColumns || []).map((c: any) => [c.title.toLowerCase(), c.id]))
+              function resolveColumnId(hint?: string): string {
+                if (hint) {
+                  const h = hint.toLowerCase().trim()
+                  // Exact match
+                  if (colMap.has(h)) return colMap.get(h)!
+                  // Partial match
+                  for (const [title, id] of colMap) {
+                    if (title.includes(h) || h.includes(title)) return id
+                  }
+                }
+                return firstColumn.id
+              }
 
-              let nextPosition = (maxPosData && maxPosData.length > 0) ? maxPosData[0].position + 1 : 0
+              let nextPosition = 0
 
               const taskRows = aiTasks
                 .filter((t: any) => t.title && typeof t.title === 'string')
                 .map((aiTask: any) => {
                   const row: Record<string, unknown> = {
                     project_id: meta.projectId,
-                    column_id: firstColumn.id,
+                    column_id: resolveColumnId(aiTask.column),
                     title: String(aiTask.title).slice(0, 500),
                     description: aiTask.description ? String(aiTask.description).slice(0, 10000) : null,
                     priority: VALID_PRIORITIES.includes(aiTask.priority) ? aiTask.priority : 'medium',

@@ -3,7 +3,7 @@
     <template #content>
       <div class="p-6 max-h-[85vh] overflow-y-auto bg-white dark:bg-[#1b1b1b]">
         <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">{{ t.newTask }}</h2>
-        <p class="text-sm text-gray-500 dark:text-[#99a0ae] mb-5">{{ t.addToBoard }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">{{ t.addToBoard }}</p>
 
         <form class="space-y-4" @submit.prevent="handleCreate">
           <UFormField :label="t.title">
@@ -46,7 +46,7 @@
                 class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border"
                 :class="form.assignees.includes(m.user_id)
                   ? 'bg-focusflow-50 dark:bg-focusflow-950 text-focusflow-700 dark:text-focusflow-300 border-focusflow-200'
-                  : 'bg-white dark:bg-white/5 text-gray-500 dark:text-[#99a0ae] border-gray-100 dark:border-white/10 hover:border-gray-200 dark:hover:border-white/20'"
+                  : 'bg-white dark:bg-white/5 text-gray-500 dark:text-gray-400 border-gray-200/80 dark:border-white/10 hover:border-gray-200 dark:hover:border-white/20'"
                 @click="toggleAssignee(m.user_id)"
               >
                 <div class="w-4 h-4 rounded-full bg-focusflow-100 dark:bg-focusflow-950 text-focusflow-700 dark:text-focusflow-300 flex items-center justify-center text-[7px] font-bold">

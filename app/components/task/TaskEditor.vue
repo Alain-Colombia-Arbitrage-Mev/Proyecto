@@ -1,7 +1,7 @@
 <template>
   <div class="task-editor">
     <!-- Toolbar -->
-    <div v-if="editable && editor" class="flex items-center gap-0.5 px-2 py-1.5 border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-white/[0.03] rounded-t-lg flex-wrap">
+    <div v-if="editable && editor" class="flex items-center gap-0.5 px-2 py-1.5 border-b border-gray-200/80 dark:border-white/10 bg-gray-50/50 dark:bg-white/[0.03] rounded-t-lg flex-wrap">
       <button type="button" class="toolbar-btn" :class="{ active: editor.isActive('bold') }" @click="editor.chain().focus().toggleBold().run()" title="Negrita">
         <UIcon name="i-heroicons-bold" class="w-3.5 h-3.5" />
       </button>

@@ -15,7 +15,7 @@
 
         <!-- Agent selection -->
         <div class="mb-5">
-          <label class="text-[11px] font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide block mb-2">
+          <label class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-2">
             {{ lang.language.value === 'en' ? 'Select Agent' : 'Seleccionar Agente' }}
           </label>
           <div class="grid grid-cols-2 gap-2">

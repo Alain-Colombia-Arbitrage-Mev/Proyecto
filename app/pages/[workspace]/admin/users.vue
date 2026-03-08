@@ -52,7 +52,7 @@
 
       <!-- Loading -->
       <div v-if="loading" class="flex items-center justify-center py-16">
-        <div class="flex items-center gap-3 text-gray-400">
+        <div class="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <div class="w-5 h-5 border-2 border-gray-300 dark:border-gray-600 border-t-focusflow-500 rounded-full animate-spin" />
           <span class="text-sm">{{ t.loadingUsers }}</span>
         </div>

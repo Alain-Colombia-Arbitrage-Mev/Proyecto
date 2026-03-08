@@ -14,7 +14,7 @@
     <p v-if="errorMsg" class="text-sm text-red-600 dark:text-red-400 mb-4">{{ errorMsg }}</p>
 
     <div v-if="loading" class="flex justify-center py-16">
-      <div class="flex items-center gap-3 text-gray-400">
+      <div class="flex items-center gap-3 text-gray-500 dark:text-gray-400">
         <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 animate-spin" />
         <span class="text-sm">{{ t.loading }}</span>
       </div>

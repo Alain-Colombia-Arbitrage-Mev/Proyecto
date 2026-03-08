@@ -261,7 +261,7 @@ tags: [${config.tags.join(', ')}]
           messages: [
             {
               role: 'system',
-              content: `Tech lead. 6 tareas JSON array del doc "${config.name}": [{title,description,priority,tags:[],estimated_hours}]. Tags: ${config.tags.join(',')}. ES. Solo JSON.`,
+              content: `Tech lead. 6 tareas JSON array del doc "${config.name}": [{title,description,priority,tags:[],estimated_hours,column:"nombre columna"}]. Columnas: ${(allColumns || []).map((c: any) => c.title).join(', ')}. Asigna cada tarea a la columna más apropiada. Tags: ${config.tags.join(',')}. ES. Solo JSON.`,
             },
             {
               role: 'user',
@@ -303,21 +303,27 @@ tags: [${config.tags.join(', ')}]
 
       if (aiTasks.length > 0) {
         const VALID_PRIORITIES = ['low', 'medium', 'high', 'critical']
-        const { data: maxPosData } = await supabase
-          .from('tasks')
-          .select('position')
-          .eq('column_id', firstColumn.id)
-          .order('position', { ascending: false })
-          .limit(1)
+        // Build column lookup for AI column matching
+        const colMap = new Map((allColumns || []).map((c: any) => [c.title.toLowerCase(), c.id]))
+        function resolveColId(hint?: string): string {
+          if (hint) {
+            const h = hint.toLowerCase().trim()
+            if (colMap.has(h)) return colMap.get(h)!
+            for (const [title, id] of colMap) {
+              if (title.includes(h) || h.includes(title)) return id
+            }
+          }
+          return firstColumn.id
+        }
 
-        let nextPosition = (maxPosData && maxPosData.length > 0) ? maxPosData[0].position + 1 : 0
+        let nextPosition = 0
 
         const taskRows = aiTasks
           .filter((t: any) => t.title && typeof t.title === 'string')
           .map((aiTask: any) => {
             const row = {
               project_id: projectId,
-              column_id: firstColumn.id,
+              column_id: resolveColId(aiTask.column),
               title: String(aiTask.title).slice(0, 500),
               description: aiTask.description ? String(aiTask.description).slice(0, 5000) : null,
               priority: VALID_PRIORITIES.includes(aiTask.priority) ? aiTask.priority : 'medium',
