@@ -1,65 +1,88 @@
 /**
  * GET /api/mcp-config
- * Returns connection instructions and quick-install commands for MCP clients.
+ * Returns connection instructions and quick-install commands for all MCP clients.
  */
 export default defineEventHandler((event) => {
   const host = getRequestURL(event).origin
+  const endpoint = `${host}/api/mcp`
+  const token = 'ff_YOUR_TOKEN'
+
+  const npxRemoteArgs = (t: string) => ['-y', 'mcp-remote', endpoint, '--header', `Authorization:Bearer ${t}`]
 
   return {
     server: {
       name: 'FocusFlow by Fidubit',
       version: '2.0.0',
-      endpoint: `${host}/api/mcp`,
+      endpoint,
       discovery: `${host}/.well-known/mcp.json`,
+      readme: `${host}/MCP_README.md`,
     },
     quick_install: {
-      claude_code: `claude mcp add focusflow --transport http ${host}/api/mcp --header "Authorization: Bearer ff_YOUR_TOKEN"`,
-      claude_desktop: `npx -y @anthropic-ai/claude-code mcp add focusflow -- npx -y mcp-remote ${host}/api/mcp --header "Authorization:Bearer ff_YOUR_TOKEN"`,
+      claude_code: `claude mcp add focusflow --transport http ${endpoint} --header "Authorization: Bearer ${token}"`,
+      claude_desktop_npx: `npx -y @anthropic-ai/claude-code mcp add focusflow -- npx -y mcp-remote ${endpoint} --header "Authorization:Bearer ${token}"`,
     },
-    manual_setup: {
-      cursor: {
-        description: 'Add to .cursor/mcp.json in your project root',
-        config: {
-          mcpServers: {
-            focusflow: {
-              url: `${host}/api/mcp`,
-              headers: {
-                Authorization: 'Bearer ff_YOUR_TOKEN',
-              },
-            },
-          },
-        },
+    clients: {
+      claude_code: {
+        name: 'Claude Code',
+        description: 'Run in your terminal',
+        command: `claude mcp add focusflow --transport http ${endpoint} --header "Authorization: Bearer ${token}"`,
       },
       claude_desktop: {
-        description: 'Add to claude_desktop_config.json (requires Node.js)',
+        name: 'Claude Desktop',
+        description: 'Add to claude_desktop_config.json',
         config: {
           mcpServers: {
             focusflow: {
               command: 'npx',
-              args: [
-                '-y',
-                'mcp-remote',
-                `${host}/api/mcp`,
-                '--header',
-                'Authorization:\${AUTH_HEADER}',
-              ],
-              env: {
-                AUTH_HEADER: 'Bearer ff_YOUR_TOKEN',
-              },
+              args: npxRemoteArgs(token),
             },
           },
         },
       },
-      claude_code: {
-        description: 'Add to .mcp.json in your project root',
+      cursor: {
+        name: 'Cursor',
+        description: 'Add to .cursor/mcp.json in your project root',
         config: {
           mcpServers: {
             focusflow: {
-              type: 'url',
-              url: `${host}/api/mcp`,
-              headers: {
-                Authorization: 'Bearer ff_YOUR_TOKEN',
-              },
+              url: endpoint,
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          },
+        },
+      },
+      windsurf: {
+        name: 'Windsurf',
+        description: 'Add to ~/.codeium/windsurf/mcp_config.json',
+        config: {
+          mcpServers: {
+            focusflow: {
+              command: 'npx',
+              args: npxRemoteArgs(token),
+            },
+          },
+        },
+      },
+      cline: {
+        name: 'Cline',
+        description: 'VS Code > Cline > MCP Servers',
+        config: {
+          mcpServers: {
+            focusflow: {
+              command: 'npx',
+              args: npxRemoteArgs(token),
+            },
+          },
+        },
+      },
+      gemini: {
+        name: 'Gemini CLI',
+        description: 'Add to ~/.gemini/settings.json',
+        config: {
+          mcpServers: {
+            focusflow: {
+              command: 'npx',
+              args: npxRemoteArgs(token),
             },
           },
         },
