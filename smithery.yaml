@@ -1,0 +1,49 @@
+name: focusflow-mcp
+description: MCP server for FocusFlow project management — manage workspaces, projects, kanban boards, tasks, AI agent delegation, and orchestration via JSON-RPC 2.0
+version: 2.0.0
+license: MIT
+
+icon: https://focusflow.app/icon.png
+
+author:
+  name: FocusFlow
+  url: https://focusflow.app
+
+repository:
+  type: git
+  url: https://github.com/focusflow/focusflow
+
+tags:
+  - project-management
+  - kanban
+  - task-management
+  - ai-agents
+  - orchestrator
+  - team-collaboration
+
+# MCP Server Configuration
+startCommand:
+  type: http
+  configSchema:
+    type: object
+    properties:
+      url:
+        type: string
+        description: "FocusFlow instance URL (e.g. https://your-domain.com)"
+        default: "https://focusflow.app"
+      apiToken:
+        type: string
+        description: "API token starting with ff_ (generate in Settings > API Tokens)"
+    required:
+      - url
+      - apiToken
+  commandFunction:
+    # HTTP-based MCP — no local process needed
+    |-
+    (config) => ({
+      url: `${config.url}/api/mcp`,
+      headers: {
+        "Authorization": `Bearer ${config.apiToken}`,
+        "Content-Type": "application/json"
+      }
+    })
