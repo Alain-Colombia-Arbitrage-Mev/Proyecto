@@ -14,8 +14,8 @@ export const useWorkspaceStore = defineStore('workspace', () => {
 
   const slug = computed(() => workspace.value?.slug || '')
 
-  async function loadWorkspace(workspaceSlug: string) {
-    if (workspace.value?.slug === workspaceSlug) return workspace.value
+  async function loadWorkspace(workspaceSlug: string, force = false) {
+    if (!force && workspace.value?.slug === workspaceSlug) return workspace.value
     loading.value = true
     try {
       const ws = await $fetch<Workspace>(`/api/workspaces/by-slug/${workspaceSlug}`)

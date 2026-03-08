@@ -56,17 +56,23 @@ export function useModules() {
     const def = MODULE_DEFINITIONS.find(m => m.key === key)
     if (def?.core) return // can't disable core modules
 
-    const config = { ...((store.workspace.ai_config as Record<string, any>) || {}) }
+    // Deep clone to avoid reactivity issues
+    const prevConfig = (store.workspace.ai_config as Record<string, any>) || {}
+    const config = JSON.parse(JSON.stringify(prevConfig))
     if (!config.modules) config.modules = {}
     config.modules[key] = enabled
 
-    await $fetch(`/api/workspaces/${store.workspace.id}`, {
+    const res = await $fetch<any>(`/api/workspaces/${store.workspace.id}`, {
       method: 'PATCH',
       body: { ai_config: config },
     })
 
-    // Update local store
-    store.workspace = { ...store.workspace, ai_config: config }
+    // Update local store with server response to ensure sync
+    if (res?.ai_config) {
+      store.workspace = { ...store.workspace, ai_config: res.ai_config }
+    } else {
+      store.workspace = { ...store.workspace, ai_config: config }
+    }
   }
 
   return { modules, isEnabled, enabledModules, toggleModule, definitions: MODULE_DEFINITIONS }

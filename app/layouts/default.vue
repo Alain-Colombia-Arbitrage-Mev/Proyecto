@@ -397,9 +397,11 @@ async function switchWorkspace(ws: any) {
 
 const workspaceSlug = computed(() => (route.params.workspace as string) || store.slug || '')
 
-watch(workspaceSlug, async (slug) => {
+watch(workspaceSlug, async (slug, oldSlug) => {
   if (slug) {
-    await store.loadWorkspace(slug)
+    // Force reload when navigating back (e.g. after login) to get fresh ai_config
+    const force = !oldSlug
+    await store.loadWorkspace(slug, force)
     // Load user's role for this workspace
     if (store.workspace?.id) {
       await auth.loadRole(store.workspace.id)
