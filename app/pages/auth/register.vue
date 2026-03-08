@@ -147,22 +147,7 @@ async function handleRegister() {
 
     sessionStorage.setItem('focusflow_just_logged_in', '1')
 
-    // For invited users: wait for session to be ready, then accept invitation
-    if (inviteId.value) {
-      // Wait for auth cookie to propagate (signUp just happened)
-      await new Promise(r => setTimeout(r, 1000))
-      // Retry accept-invitation up to 3 times
-      for (let i = 0; i < 3; i++) {
-        try {
-          const result = await $fetch<any>('/api/auth/accept-invitation', {
-            method: 'POST',
-            body: { inviteId: inviteId.value, email: email.value },
-          })
-          if (result?.processed) break
-        } catch {}
-        if (i < 2) await new Promise(r => setTimeout(r, 800))
-      }
-    }
+    // Invitations are handled via InvitationBanner after login
     await router.push('/')
   } catch (e: any) {
     errorMsg.value = e.message || t.value.registerError
@@ -188,14 +173,6 @@ async function handleWalletRegister() {
   try {
     await signInWithWallet()
     sessionStorage.setItem('focusflow_just_logged_in', '1')
-    if (inviteId.value) {
-      try {
-        await $fetch('/api/auth/accept-invitation', {
-          method: 'POST',
-          body: { inviteId: inviteId.value, email: email.value },
-        })
-      } catch {}
-    }
     await router.push('/')
   } catch (e: any) {
     errorMsg.value = e.message || 'Error connecting wallet'

@@ -101,15 +101,7 @@ async function handleLogin() {
   try {
     await signIn(email.value, password.value)
     sessionStorage.setItem('focusflow_just_logged_in', '1')
-    // Accept specific invitation if present
-    if (inviteId.value) {
-      try {
-        await $fetch('/api/auth/accept-invitation', {
-          method: 'POST',
-          body: { inviteId: inviteId.value, email: email.value },
-        })
-      } catch {}
-    }
+    // Invitations are handled via InvitationBanner after login
     await router.push('/')
   } catch (e: any) {
     errorMsg.value = e.message || t.value.loginError

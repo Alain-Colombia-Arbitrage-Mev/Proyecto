@@ -755,8 +755,7 @@ async function loadAssessment() {
     sessionStorage.removeItem('focusflow_just_logged_in')
     // Always show quiz on fresh login
     setTimeout(() => { showQuiz.value = true }, 1500)
-    // Process any pending workspace invitations for this user
-    $fetch('/api/auth/process-invitations', { method: 'POST' }).catch(() => {})
+    // Invitations are now handled via the InvitationBanner component
   }
   try {
     const data = await $fetch<any>(`/api/workspaces/${store.workspace.id}/assessment`)

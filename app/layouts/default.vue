@@ -211,6 +211,9 @@
       </div>
     </main>
 
+    <!-- Workspace Invitation Banner -->
+    <InvitationBanner />
+
     <!-- Floating Pomodoro Indicator -->
     <Transition name="slide-up">
       <div

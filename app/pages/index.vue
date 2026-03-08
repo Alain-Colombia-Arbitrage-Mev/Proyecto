@@ -36,35 +36,8 @@ async function redirectToWorkspace() {
   if (handled.value) return
   handled.value = true
 
-  // Process any pending invitations before checking workspaces
-  let invitationsProcessed = 0
-  try {
-    const headers: Record<string, string> = {}
-    if (import.meta.server) {
-      const reqHeaders = useRequestHeaders(['cookie'])
-      if (reqHeaders.cookie) headers.cookie = reqHeaders.cookie
-    }
-    const result = await $fetch<any>('/api/auth/process-invitations', { method: 'POST', headers })
-    invitationsProcessed = result?.processed || 0
-  } catch { /* ignore — user may have no invitations */ }
-
   // Clean up invite session marker
   if (import.meta.client) {
-    sessionStorage.removeItem('focusflow_invite_id')
-  }
-
-  // Also try accept-invitation if we have an inviteId stored from register/login
-  if (import.meta.client) {
-    const storedInvite = sessionStorage.getItem('focusflow_invite_id')
-    if (storedInvite && invitationsProcessed === 0) {
-      try {
-        const result = await $fetch<any>('/api/auth/accept-invitation', {
-          method: 'POST',
-          body: { inviteId: storedInvite },
-        })
-        if (result?.processed) invitationsProcessed = 1
-      } catch {}
-    }
     sessionStorage.removeItem('focusflow_invite_id')
   }
 
@@ -73,17 +46,7 @@ async function redirectToWorkspace() {
   if (workspaces && workspaces.length > 0) {
     await router.push(`/${workspaces[0].slug}/dashboard`)
   } else if (workspaces && workspaces.length === 0) {
-    // If invitations were processed, workspace should exist — retry harder
-    if (invitationsProcessed > 0) {
-      for (let i = 0; i < 3; i++) {
-        await new Promise(r => setTimeout(r, 1000))
-        const retry = await fetchWorkspacesWithRetry()
-        if (retry && retry.length > 0) {
-          await router.push(`/${retry[0].slug}/dashboard`)
-          return
-        }
-      }
-    }
+    // Check if there are pending invitations — if so, go to dashboard of first available or onboarding
     await router.push('/onboarding')
   } else {
     // All retries failed — likely cookie not synced yet

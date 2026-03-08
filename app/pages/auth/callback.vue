@@ -59,18 +59,7 @@ onMounted(async () => {
 
     sessionStorage.setItem('focusflow_just_logged_in', '1')
 
-    // Accept pending invitation if exists
-    const inviteId = sessionStorage.getItem('focusflow_invite_id')
-    if (inviteId && user.value?.email) {
-      try {
-        await $fetch('/api/auth/accept-invitation', {
-          method: 'POST',
-          body: { inviteId, email: user.value.email },
-        })
-        sessionStorage.removeItem('focusflow_invite_id')
-      } catch {}
-    }
-
+    // Invitations are handled via InvitationBanner — no auto-accept
     await router.replace('/')
   } catch (err: any) {
     console.error('[callback] Error:', err)
