@@ -5,15 +5,65 @@
       class="hidden md:flex fixed inset-y-0 left-0 z-30 flex-col bg-[#0d0d0d]/80 backdrop-blur-xl border-r border-white/10 transition-all duration-300 ease-out"
       :class="collapsed ? 'w-[68px]' : 'w-[252px]'"
     >
-      <!-- Logo + workspace -->
-      <div class="h-14 flex items-center gap-2.5 shrink-0 border-b border-white/[0.06]" :class="collapsed ? 'px-4 justify-center' : 'px-4'">
+      <!-- Logo + workspace switcher -->
+      <div class="h-14 flex items-center gap-2.5 shrink-0 border-b border-white/[0.06] relative" :class="collapsed ? 'px-4 justify-center' : 'px-4'">
         <div class="w-8 h-8 rounded-lg bg-[#75fc96] flex items-center justify-center shrink-0 shadow-lg shadow-[#75fc96]/20">
           <span class="text-[#17191c] font-bold text-sm" style="font-family: 'Space Grotesk', monospace;">F</span>
         </div>
-        <div v-if="!collapsed" class="min-w-0">
-          <p class="font-semibold text-[13px] text-white/90 truncate leading-tight">{{ store.workspace?.name || 'FocusFlow' }}</p>
+        <button
+          v-if="!collapsed"
+          class="min-w-0 flex-1 text-left cursor-pointer hover:bg-white/[0.06] rounded-lg px-1.5 py-1 -mx-1.5 transition-colors group"
+          @click="toggleWsSwitcher"
+        >
+          <div class="flex items-center gap-1">
+            <p class="font-semibold text-[13px] text-white/90 truncate leading-tight flex-1">{{ store.workspace?.name || 'FocusFlow' }}</p>
+            <UIcon name="i-heroicons-chevron-up-down" class="w-3.5 h-3.5 text-white/30 group-hover:text-white/60 shrink-0 transition-colors" />
+          </div>
           <p class="text-[10px] text-white/40 truncate">{{ store.slug }}</p>
-        </div>
+        </button>
+
+        <!-- Workspace switcher dropdown -->
+        <Teleport to="body">
+          <Transition
+            enter-active-class="transition duration-150 ease-out"
+            enter-from-class="opacity-0 translate-y-1"
+            enter-to-class="opacity-100 translate-y-0"
+            leave-active-class="transition duration-100 ease-in"
+            leave-from-class="opacity-100 translate-y-0"
+            leave-to-class="opacity-0 translate-y-1"
+          >
+            <div
+              v-if="showWsSwitcher"
+              class="fixed z-[200] w-64 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl shadow-black/40 overflow-hidden"
+              :style="wsSwitcherStyle"
+            >
+              <div class="px-3 py-2 border-b border-white/[0.06]">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-white/30">Workspaces</p>
+              </div>
+              <div class="max-h-[280px] overflow-y-auto py-1">
+                <button
+                  v-for="ws in userWorkspaces" :key="ws.id"
+                  class="w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-white/[0.06] transition-colors cursor-pointer"
+                  :class="ws.id === store.workspace?.id ? 'bg-[#75fc96]/10' : ''"
+                  @click="switchWorkspace(ws)"
+                >
+                  <div
+                    class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-[10px] font-bold"
+                    :class="ws.id === store.workspace?.id ? 'bg-[#75fc96]/20 text-[#75fc96]' : 'bg-white/[0.06] text-white/50'"
+                  >
+                    {{ ws.name?.charAt(0)?.toUpperCase() || 'W' }}
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[12px] font-medium truncate" :class="ws.id === store.workspace?.id ? 'text-[#75fc96]' : 'text-white/80'">{{ ws.name }}</p>
+                    <p class="text-[10px] truncate" :class="ws.id === store.workspace?.id ? 'text-[#75fc96]/60' : 'text-white/30'">{{ ws.slug }}</p>
+                  </div>
+                  <UIcon v-if="ws.id === store.workspace?.id" name="i-heroicons-check" class="w-4 h-4 text-[#75fc96] shrink-0" />
+                </button>
+              </div>
+            </div>
+          </Transition>
+          <div v-if="showWsSwitcher" class="fixed inset-0 z-[199]" @click="showWsSwitcher = false" />
+        </Teleport>
       </div>
 
       <!-- Main nav -->
@@ -133,14 +183,15 @@
 
     <!-- Mobile Header -->
     <header class="md:hidden fixed top-0 inset-x-0 z-30 h-14 flex items-center justify-between px-4 bg-white/90 dark:bg-[#111]/90 backdrop-blur-xl border-b border-gray-200/60 dark:border-white/10">
-      <div class="flex items-center gap-2.5">
+      <button class="flex items-center gap-2.5 cursor-pointer" @click="toggleMobileWsSwitcher">
         <div class="w-8 h-8 rounded-lg bg-[#75fc96] flex items-center justify-center shadow-sm shadow-[#75fc96]/20">
           <span class="text-[#17191c] font-bold text-sm" style="font-family: 'Space Grotesk', monospace;">F</span>
         </div>
         <div class="min-w-0">
           <p class="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate leading-tight">{{ store.workspace?.name || 'FocusFlow' }}</p>
         </div>
-      </div>
+        <UIcon name="i-heroicons-chevron-up-down" class="w-3.5 h-3.5 text-gray-400 shrink-0" />
+      </button>
       <div class="flex items-center gap-1.5">
         <ClientOnly><DarkModeToggle sidebar-style /></ClientOnly>
         <LazyNotificationBell />
@@ -186,6 +237,48 @@
     <div class="md:hidden">
       <LazyLofiPlayer />
     </div>
+
+    <!-- Mobile Workspace Switcher -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition duration-150 ease-out"
+        enter-from-class="opacity-0 -translate-y-2"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition duration-100 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="showMobileWsSwitcher"
+          class="fixed z-[200] left-3 right-3 top-[60px] bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-white/10 rounded-xl shadow-2xl shadow-black/20 dark:shadow-black/50 overflow-hidden"
+        >
+          <div class="px-3 py-2 border-b border-gray-100 dark:border-white/[0.06]">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-white/30">Workspaces</p>
+          </div>
+          <div class="max-h-[300px] overflow-y-auto py-1">
+            <button
+              v-for="ws in userWorkspaces" :key="ws.id"
+              class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+              :class="ws.id === store.workspace?.id ? 'bg-focusflow-50 dark:bg-[#75fc96]/10' : ''"
+              @click="switchWorkspace(ws); showMobileWsSwitcher = false"
+            >
+              <div
+                class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-xs font-bold"
+                :class="ws.id === store.workspace?.id ? 'bg-focusflow-100 dark:bg-[#75fc96]/20 text-focusflow-700 dark:text-[#75fc96]' : 'bg-gray-100 dark:bg-white/[0.06] text-gray-500 dark:text-white/50'"
+              >
+                {{ ws.name?.charAt(0)?.toUpperCase() || 'W' }}
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium truncate" :class="ws.id === store.workspace?.id ? 'text-focusflow-700 dark:text-[#75fc96]' : 'text-gray-900 dark:text-white/80'">{{ ws.name }}</p>
+                <p class="text-[10px] truncate text-gray-400 dark:text-white/30">{{ ws.slug }}</p>
+              </div>
+              <UIcon v-if="ws.id === store.workspace?.id" name="i-heroicons-check" class="w-4 h-4 text-focusflow-600 dark:text-[#75fc96] shrink-0" />
+            </button>
+          </div>
+        </div>
+      </Transition>
+      <div v-if="showMobileWsSwitcher" class="fixed inset-0 z-[199]" @click="showMobileWsSwitcher = false" />
+    </Teleport>
 
     <!-- Mobile Bottom Nav -->
     <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/80 dark:bg-[#111]/80 backdrop-blur-xl border-t border-gray-200 dark:border-white/10">
@@ -260,6 +353,43 @@ const { canUseAI, canManageMembers, canManageWorkspace, canViewUsageStats, canVi
 const collapsed = ref(false)
 const showMobileMore = ref(false)
 const expandedGroups = ref<Set<string>>(new Set())
+const router = useRouter()
+
+// ── Workspace Switcher ──
+const showWsSwitcher = ref(false)
+const userWorkspaces = ref<any[]>([])
+
+const wsSwitcherStyle = computed(() => ({
+  left: '12px',
+  top: '58px',
+}))
+
+async function loadUserWorkspaces() {
+  try {
+    userWorkspaces.value = await $fetch<any[]>('/api/user/workspaces')
+  } catch {}
+}
+
+function toggleWsSwitcher() {
+  if (!showWsSwitcher.value) {
+    loadUserWorkspaces()
+  }
+  showWsSwitcher.value = !showWsSwitcher.value
+}
+
+const showMobileWsSwitcher = ref(false)
+
+function toggleMobileWsSwitcher() {
+  if (!showMobileWsSwitcher.value) loadUserWorkspaces()
+  showMobileWsSwitcher.value = !showMobileWsSwitcher.value
+}
+
+async function switchWorkspace(ws: any) {
+  showWsSwitcher.value = false
+  showMobileWsSwitcher.value = false
+  if (ws.slug === store.slug) return
+  await router.push(`/${ws.slug}/dashboard`)
+}
 
 const workspaceSlug = computed(() => (route.params.workspace as string) || store.slug || '')
 
