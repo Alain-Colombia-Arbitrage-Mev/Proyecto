@@ -349,8 +349,8 @@ const route = useRoute()
 const store = useWorkspaceStore()
 const auth = useAuthStore()
 const pomodoro = usePomodoroTimer()
-const { labels: tRef } = useLanguage()
-const t = tRef
+const lang = useLanguage()
+const t = lang.labels
 const { canUseAI, canManageMembers, canManageWorkspace, canViewUsageStats, canViewTimesheets, canViewGoals, canViewRoadmap, canViewAgenda, canUseWorkflows } = usePermissions()
 
 const collapsed = ref(false)
@@ -444,7 +444,12 @@ const allNav = computed<NavItem[]>(() => [
   },
   { label: t.value.adminUsers, icon: 'i-heroicons-shield-exclamation', to: `/${workspaceSlug.value}/admin/users`, show: auth.isSuperadmin },
   { label: t.value.billing, icon: 'i-heroicons-credit-card', to: `/${workspaceSlug.value}/billing`, show: canManageWorkspace.value },
-  { label: t.value.settings, icon: 'i-heroicons-cog-6-tooth', to: `/${workspaceSlug.value}/settings`, show: true },
+  { label: t.value.settings, icon: 'i-heroicons-cog-6-tooth', to: `/${workspaceSlug.value}/settings`, show: true, id: 'settings',
+    children: [
+      { label: lang.language.value === 'en' ? 'General' : 'General', icon: 'i-heroicons-cog-6-tooth', to: `/${workspaceSlug.value}/settings`, show: true },
+      { label: 'Workspaces', icon: 'i-heroicons-building-office-2', to: `/${workspaceSlug.value}/workspaces`, show: true },
+    ],
+  },
 ])
 
 const mainNav = computed(() => allNav.value.filter(i => i.show))
