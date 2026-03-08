@@ -7,7 +7,7 @@ export default defineEventHandler((event) => {
 
   return {
     server: {
-      name: 'focusflow-mcp',
+      name: 'FocusFlow by Fidubit',
       version: '2.0.0',
       endpoint: `${host}/api/mcp`,
       discovery: `${host}/.well-known/mcp.json`,

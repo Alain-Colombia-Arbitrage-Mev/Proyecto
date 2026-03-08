@@ -1,12 +1,12 @@
-name: focusflow-mcp
-description: MCP server for FocusFlow project management — manage workspaces, projects, kanban boards, tasks, AI agent delegation, and orchestration via JSON-RPC 2.0
+name: FocusFlow by Fidubit
+description: MCP server for FocusFlow by Fidubit — manage workspaces, projects, kanban boards, tasks, AI agent delegation, and orchestration via JSON-RPC 2.0
 version: 2.0.0
 license: MIT
 
 icon: https://focusflow.app/icon.png
 
 author:
-  name: FocusFlow
+  name: Fidubit
   url: https://focusflow.app
 
 repository:

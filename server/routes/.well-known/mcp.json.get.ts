@@ -7,9 +7,9 @@
  */
 export default defineEventHandler(() => {
   return {
-    name: 'focusflow-mcp',
+    name: 'FocusFlow by Fidubit',
     version: '2.0.0',
-    description: 'FocusFlow Project Management MCP Server — manage workspaces, projects, kanban boards, tasks, AI agents, and orchestration.',
+    description: 'FocusFlow by Fidubit — manage workspaces, projects, kanban boards, tasks, AI agents, and orchestration.',
     protocol: 'json-rpc-2.0',
     transport: 'http',
     endpoint: '/api/mcp',
