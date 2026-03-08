@@ -1,6 +1,6 @@
 /**
  * GET /api/mcp-config
- * Returns connection instructions for MCP clients.
+ * Returns connection instructions and quick-install commands for MCP clients.
  */
 export default defineEventHandler((event) => {
   const host = getRequestURL(event).origin
@@ -12,7 +12,11 @@ export default defineEventHandler((event) => {
       endpoint: `${host}/api/mcp`,
       discovery: `${host}/.well-known/mcp.json`,
     },
-    setup: {
+    quick_install: {
+      claude_code: `claude mcp add focusflow --transport http ${host}/api/mcp --header "Authorization: Bearer ff_YOUR_TOKEN"`,
+      claude_desktop: `npx -y @anthropic-ai/claude-code mcp add focusflow -- npx -y mcp-remote ${host}/api/mcp --header "Authorization:Bearer ff_YOUR_TOKEN"`,
+    },
+    manual_setup: {
       cursor: {
         description: 'Add to .cursor/mcp.json in your project root',
         config: {
@@ -20,14 +24,14 @@ export default defineEventHandler((event) => {
             focusflow: {
               url: `${host}/api/mcp`,
               headers: {
-                Authorization: 'Bearer ff_YOUR_TOKEN_HERE',
+                Authorization: 'Bearer ff_YOUR_TOKEN',
               },
             },
           },
         },
       },
       claude_desktop: {
-        description: 'Add to claude_desktop_config.json (requires Node.js installed)',
+        description: 'Add to claude_desktop_config.json (requires Node.js)',
         config: {
           mcpServers: {
             focusflow: {
@@ -40,7 +44,7 @@ export default defineEventHandler((event) => {
                 'Authorization:\${AUTH_HEADER}',
               ],
               env: {
-                AUTH_HEADER: 'Bearer ff_YOUR_TOKEN_HERE',
+                AUTH_HEADER: 'Bearer ff_YOUR_TOKEN',
               },
             },
           },
@@ -54,7 +58,7 @@ export default defineEventHandler((event) => {
               type: 'url',
               url: `${host}/api/mcp`,
               headers: {
-                Authorization: 'Bearer ff_YOUR_TOKEN_HERE',
+                Authorization: 'Bearer ff_YOUR_TOKEN',
               },
             },
           },
