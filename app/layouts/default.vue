@@ -449,6 +449,7 @@ const allNav = computed<NavItem[]>(() => [
     children: [
       { label: lang.language.value === 'en' ? 'General' : 'General', icon: 'i-heroicons-cog-6-tooth', to: `/${workspaceSlug.value}/settings`, show: true },
       { label: 'Workspaces', icon: 'i-heroicons-building-office-2', to: `/${workspaceSlug.value}/workspaces`, show: true },
+      { label: lang.language.value === 'en' ? 'MCP / API' : 'MCP / API', icon: 'i-heroicons-puzzle-piece', to: `/${workspaceSlug.value}/integrations`, show: true },
     ],
   },
 ])
