@@ -27,14 +27,20 @@ export default defineEventHandler((event) => {
         },
       },
       claude_desktop: {
-        description: 'Add to claude_desktop_config.json',
+        description: 'Add to claude_desktop_config.json (requires Node.js installed)',
         config: {
           mcpServers: {
             focusflow: {
               command: 'npx',
-              args: ['-y', 'mcp-remote', `${host}/api/mcp`],
+              args: [
+                '-y',
+                'mcp-remote',
+                `${host}/api/mcp`,
+                '--header',
+                'Authorization:\${AUTH_HEADER}',
+              ],
               env: {
-                API_TOKEN: 'ff_YOUR_TOKEN_HERE',
+                AUTH_HEADER: 'Bearer ff_YOUR_TOKEN_HERE',
               },
             },
           },

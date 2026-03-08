@@ -11,7 +11,7 @@ author:
 
 repository:
   type: git
-  url: https://github.com/focusflow/focusflow
+  url: https://github.com/Alain-Colombia-Arbitrage-Mev/Proyecto
 
 tags:
   - project-management
@@ -46,4 +46,26 @@ startCommand:
         "Authorization": `Bearer ${config.apiToken}`,
         "Content-Type": "application/json"
       }
+    })
+
+# Claude Desktop (npx) configuration
+stdioCommand:
+  configSchema:
+    type: object
+    properties:
+      url:
+        type: string
+        description: "FocusFlow instance URL"
+        default: "https://focusflow.app"
+      apiToken:
+        type: string
+        description: "API token starting with ff_"
+    required:
+      - apiToken
+  commandFunction:
+    |-
+    (config) => ({
+      command: "npx",
+      args: ["-y", "mcp-remote", `${config.url || 'https://focusflow.app'}/api/mcp`, "--header", `Authorization:Bearer ${config.apiToken}`],
+      env: {}
     })
