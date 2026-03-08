@@ -8,54 +8,42 @@ Connect your AI assistant to FocusFlow and manage workspaces, projects, Kanban b
 
 ## One-Click Install
 
-> **Before installing:** generate your API token at [focus.nexaru.net](https://focus.nexaru.net) in **Settings > MCP/API**, then replace `ff_YOUR_TOKEN` in the config with your actual token.
+> Generate your API token first at [focus.nexaru.net](https://focus.nexaru.net) → **Settings > MCP/API**
 
 <table>
 <tr>
 <td>
 
-<a href="https://insiders.vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%7B%22name%22%3A%22focusflow%22%2C%22config%22%3A%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Ffocus.nexaru.net%2Fapi%2Fmcp%22%2C%22headers%22%3A%7B%22Authorization%22%3A%22Bearer%20ff_YOUR_TOKEN%22%7D%7D%7D">
-  <img src="https://img.shields.io/badge/VS_Code-Install_FocusFlow_MCP-0098FF?style=for-the-badge&logo=visualstudiocode&logoColor=white" alt="Install in VS Code" />
-</a>
+[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_FocusFlow_MCP-0098FF?style=for-the-badge&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=focusflow&inputs=%5B%7B%22id%22%3A%22focusflow_token%22%2C%22type%22%3A%22promptString%22%2C%22description%22%3A%22FocusFlow%20API%20Token%20(ff_...)%22%2C%22password%22%3Atrue%7D%5D&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Ffocus.nexaru.net%2Fapi%2Fmcp%22%2C%22headers%22%3A%7B%22Authorization%22%3A%22Bearer%20%24%7Binput%3Afocusflow_token%7D%22%7D%7D)
 
 </td>
 <td>
 
-<a href="cursor://anysphere.cursor-deeplink/mcp/install?name=focusflow&config=eyJ1cmwiOiJodHRwczovL2ZvY3VzLm5leGFydS5uZXQvYXBpL21jcCIsImhlYWRlcnMiOnsiQXV0aG9yaXphdGlvbiI6IkJlYXJlciBmZl9ZT1VSX1RPS0VOIn19">
-  <img src="https://img.shields.io/badge/Cursor-Install_FocusFlow_MCP-000000?style=for-the-badge&logo=cursor&logoColor=white" alt="Install in Cursor" />
-</a>
+[![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://focus.nexaru.net/mcp-install?client=cursor)
 
 </td>
 </tr>
 <tr>
 <td>
 
-<a href="#windsurf">
-  <img src="https://img.shields.io/badge/Windsurf-Setup_Guide-06B6D4?style=for-the-badge&logo=codeium&logoColor=white" alt="Windsurf Setup" />
-</a>
+[![Install in Windsurf](https://img.shields.io/badge/Windsurf-Install_FocusFlow_MCP-06B6D4?style=for-the-badge&logo=codeium&logoColor=white)](https://focus.nexaru.net/mcp-install?client=windsurf)
 
 </td>
 <td>
 
-<a href="#cline-vs-code">
-  <img src="https://img.shields.io/badge/Cline-Setup_Guide-22C55E?style=for-the-badge&logo=visualstudiocode&logoColor=white" alt="Cline Setup" />
-</a>
+[![Install in Cline](https://img.shields.io/badge/Cline-Install_FocusFlow_MCP-22C55E?style=for-the-badge&logo=visualstudiocode&logoColor=white)](https://focus.nexaru.net/mcp-install?client=cline)
 
 </td>
 </tr>
 <tr>
 <td>
 
-<a href="#claude-code">
-  <img src="https://img.shields.io/badge/Claude_Code-Copy_Command-F97316?style=for-the-badge&logo=anthropic&logoColor=white" alt="Claude Code" />
-</a>
+[![Claude Code](https://img.shields.io/badge/Claude_Code-Install_FocusFlow_MCP-F97316?style=for-the-badge&logo=anthropic&logoColor=white)](#claude-code)
 
 </td>
 <td>
 
-<a href="#gemini-cli">
-  <img src="https://img.shields.io/badge/Gemini_CLI-Setup_Guide-F59E0B?style=for-the-badge&logo=google&logoColor=white" alt="Gemini CLI Setup" />
-</a>
+[![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-Install_FocusFlow_MCP-F59E0B?style=for-the-badge&logo=google&logoColor=white)](#gemini-cli)
 
 </td>
 </tr>
@@ -92,6 +80,8 @@ Connect your AI assistant to FocusFlow and manage workspaces, projects, Kanban b
 | `manage_checklist` | Add, toggle, or remove checklist items |
 | `create_project` | Create a new project with Kanban template |
 | `delegate_to_agent` | Delegate a task to an AI agent |
+
+---
 
 ## Install Guide
 
@@ -136,8 +126,7 @@ Add to `claude_desktop_config.json`:
 
 ### Cursor
 
-> **One-click:** Click the badge above, or use the deep link:
-> `cursor://anysphere.cursor-deeplink/mcp/install?name=focusflow&config=eyJ1cmwiOiJodHRwczovL2ZvY3VzLm5leGFydS5uZXQvYXBpL21jcCIsImhlYWRlcnMiOnsiQXV0aG9yaXphdGlvbiI6IkJlYXJlciBmZl9ZT1VSX1RPS0VOIn19`
+> **One-click:** Click the [Install in Cursor](https://focus.nexaru.net/mcp-install?client=cursor) badge above — it opens Cursor and configures the MCP automatically.
 
 Or add manually to `.cursor/mcp.json`:
 
@@ -158,7 +147,7 @@ Or add manually to `.cursor/mcp.json`:
 
 ### VS Code (Copilot)
 
-> **One-click:** Click the **VS Code** badge above to install directly.
+> **One-click:** Click the [Install in VS Code](https://insiders.vscode.dev/redirect/mcp/install?name=focusflow&inputs=%5B%7B%22id%22%3A%22focusflow_token%22%2C%22type%22%3A%22promptString%22%2C%22description%22%3A%22FocusFlow%20API%20Token%20(ff_...)%22%2C%22password%22%3Atrue%7D%5D&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Ffocus.nexaru.net%2Fapi%2Fmcp%22%2C%22headers%22%3A%7B%22Authorization%22%3A%22Bearer%20%24%7Binput%3Afocusflow_token%7D%22%7D%7D) badge above — VS Code will prompt you for your token.
 
 Or add to `.vscode/mcp.json`:
 
@@ -180,7 +169,9 @@ Or add to `.vscode/mcp.json`:
 
 ### Windsurf
 
-Open **Windsurf Settings > Cascade > MCP Servers**, click "Add custom server", or edit `~/.codeium/windsurf/mcp_config.json`:
+> **One-click:** Click the [Install in Windsurf](https://focus.nexaru.net/mcp-install?client=windsurf) badge above to get a ready-to-copy config.
+
+Or edit `~/.codeium/windsurf/mcp_config.json`:
 
 ```json
 {
@@ -201,7 +192,9 @@ Open **Windsurf Settings > Cascade > MCP Servers**, click "Add custom server", o
 
 ### Cline (VS Code)
 
-Open **VS Code > Cline > MCP Servers**, add:
+> **One-click:** Click the [Install in Cline](https://focus.nexaru.net/mcp-install?client=cline) badge above to get a ready-to-copy config.
+
+Or open **VS Code > Cline > MCP Servers**, add:
 
 ```json
 {
