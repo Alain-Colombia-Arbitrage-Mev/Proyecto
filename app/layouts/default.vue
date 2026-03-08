@@ -453,7 +453,7 @@ const allNav = computed<NavItem[]>(() => [
       { label: lang.language.value === 'en' ? 'General' : 'General', icon: 'i-heroicons-cog-6-tooth', to: `/${workspaceSlug.value}/settings`, show: true },
       { label: 'Workspaces', icon: 'i-heroicons-building-office-2', to: `/${workspaceSlug.value}/workspaces`, show: true },
       { label: lang.language.value === 'en' ? 'Modules' : 'Modulos', icon: 'i-heroicons-square-3-stack-3d', to: `/${workspaceSlug.value}/modules`, show: canManageWorkspace.value },
-      { label: lang.language.value === 'en' ? 'MCP / API' : 'MCP / API', icon: 'i-heroicons-puzzle-piece', to: `/${workspaceSlug.value}/integrations`, show: moduleEnabled('integrations') },
+      { label: 'MCP/API', icon: 'i-heroicons-puzzle-piece', to: `/${workspaceSlug.value}/integrations`, show: moduleEnabled('integrations') },
     ],
   },
 ])

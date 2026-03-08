@@ -926,10 +926,6 @@ const motivationalQuotesEn = [
 ]
 const currentQuoteIndex = ref(0)
 const quoteReady = ref(false)
-onMounted(() => {
-  currentQuoteIndex.value = Math.floor(Math.random() * motivationalQuotesEs.length)
-  quoteReady.value = true
-})
 const motivationalQuote = computed(() => {
   if (!quoteReady.value) return '\u00A0'
   const quotes = lang.language.value === 'en' ? motivationalQuotesEn : motivationalQuotesEs
@@ -938,8 +934,11 @@ const motivationalQuote = computed(() => {
 
 let quoteInterval: ReturnType<typeof setInterval> | null = null
 onMounted(() => {
+  currentQuoteIndex.value = Math.floor(Math.random() * motivationalQuotesEs.length)
+  quoteReady.value = true
   quoteInterval = setInterval(() => {
-    currentQuoteIndex.value = (currentQuoteIndex.value + 1) % motivationalQuotesEs.length
+    const quotes = lang.language.value === 'en' ? motivationalQuotesEn : motivationalQuotesEs
+    currentQuoteIndex.value = (currentQuoteIndex.value + 1) % quotes.length
   }, 15000)
 })
 onUnmounted(() => {

@@ -27,7 +27,7 @@ export const MODULE_DEFINITIONS: ModuleDef[] = [
   { key: 'roadmap', labelEn: 'Roadmap', labelEs: 'Roadmap', icon: 'i-heroicons-map', description_en: 'Product roadmap & timeline', description_es: 'Hoja de ruta del producto', default: true },
   { key: 'agenda', labelEn: 'Agenda', labelEs: 'Agenda', icon: 'i-heroicons-calendar-days', description_en: 'Meetings & calendar', description_es: 'Reuniones y calendario', default: true },
   { key: 'billing', labelEn: 'Billing', labelEs: 'Facturacion', icon: 'i-heroicons-credit-card', description_en: 'Plans & billing', description_es: 'Planes y facturacion', default: true },
-  { key: 'integrations', labelEn: 'MCP / API', labelEs: 'MCP / API', icon: 'i-heroicons-puzzle-piece', description_en: 'MCP server & API tokens', description_es: 'Servidor MCP y tokens API', default: true },
+  { key: 'integrations', labelEn: 'MCP/API', labelEs: 'MCP/API', icon: 'i-heroicons-puzzle-piece', description_en: 'MCP server & API tokens', description_es: 'Servidor MCP y tokens API', default: true },
 ]
 
 export function useModules() {

@@ -17,11 +17,31 @@
       </div>
     </Transition>
 
+    <!-- Action Toast (success / error feedback) -->
+    <Transition name="toast-slide">
+      <div v-if="actionToast.show"
+        class="fixed top-20 right-4 z-50 max-w-sm rounded-xl px-4 py-3 shadow-lg"
+        :class="actionToast.type === 'success'
+          ? 'bg-emerald-500 text-white shadow-emerald-500/20'
+          : 'bg-red-500 text-white shadow-red-500/20'">
+        <div class="flex items-start gap-2">
+          <UIcon :name="actionToast.type === 'success' ? 'i-heroicons-check-circle' : 'i-heroicons-exclamation-triangle'" class="w-5 h-5 shrink-0 mt-0.5" />
+          <p class="text-sm font-medium">{{ actionToast.message }}</p>
+          <button @click="actionToast.show = false" class="text-white/60 hover:text-white shrink-0 ml-1">
+            <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Header -->
     <div class="flex items-center justify-between mb-6 animate-fade-up">
       <div>
         <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">{{ t.projects }}</h1>
-        <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-0.5">{{ store.projects.length }} {{ store.projects.length !== 1 ? t.projects.toLowerCase() : t.project.toLowerCase() }}</p>
+        <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-0.5">
+          {{ store.projects.length }} {{ store.projects.length !== 1 ? t.projects.toLowerCase() : t.project.toLowerCase() }}
+          <span v-if="totalTasks > 0" class="ml-1">&middot; {{ totalTasks }} {{ lang.language.value === 'en' ? 'tasks' : 'tareas' }}</span>
+        </p>
       </div>
       <UButton icon="i-heroicons-plus" color="primary" size="md" class="font-semibold hidden sm:inline-flex" @click="showCreate = true">
         {{ t.newProject }}
@@ -106,11 +126,22 @@
 
     <!-- Empty state -->
     <div v-else-if="store.projects.length === 0" class="text-center py-20 animate-fade-up">
-      <div class="w-20 h-20 rounded-2xl bg-focusflow-50 flex items-center justify-center mx-auto mb-5">
-        <UIcon name="i-heroicons-folder-plus" class="w-10 h-10 text-focusflow-500" />
+      <div class="w-20 h-20 rounded-2xl bg-focusflow-50 dark:bg-focusflow-950/30 flex items-center justify-center mx-auto mb-5">
+        <UIcon name="i-heroicons-rocket-launch" class="w-10 h-10 text-focusflow-500" />
       </div>
-      <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ t.noProjects }}</h2>
-      <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-2 mb-8 max-w-xs mx-auto">{{ t.noProjectsDesc }}</p>
+      <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">
+        {{ lang.language.value === 'en' ? 'Launch your first project' : 'Lanza tu primer proyecto' }}
+      </h2>
+      <p class="text-sm text-gray-500 dark:text-[#99a0ae] mt-2 max-w-sm mx-auto leading-relaxed">
+        {{ lang.language.value === 'en'
+          ? 'Projects are your workspace for organizing tasks, tracking progress, and collaborating with your team using Kanban boards.'
+          : 'Los proyectos son tu espacio para organizar tareas, rastrear progreso y colaborar con tu equipo usando tableros Kanban.' }}
+      </p>
+      <p class="text-xs text-gray-400 dark:text-gray-500 mt-2 mb-8 max-w-xs mx-auto">
+        {{ lang.language.value === 'en'
+          ? 'Choose from 14 board templates — Simple, Scrum, DevOps, Marketing, and more.'
+          : 'Elige entre 14 plantillas — Simple, Scrum, DevOps, Marketing y más.' }}
+      </p>
       <UButton icon="i-heroicons-plus" color="primary" size="lg" class="font-semibold" @click="showCreate = true">{{ t.createFirstProject }}</UButton>
     </div>
 
@@ -343,6 +374,17 @@ const auth = useAuthStore()
 
 const canDeleteProjects = computed(() => auth.isAdmin)
 
+// Action toast for CRUD feedback
+const actionToast = reactive({ show: false, message: '', type: 'success' as 'success' | 'error' })
+let actionToastTimer: ReturnType<typeof setTimeout> | null = null
+function showActionToast(message: string, type: 'success' | 'error' = 'success') {
+  if (actionToastTimer) clearTimeout(actionToastTimer)
+  actionToast.show = true
+  actionToast.message = message
+  actionToast.type = type
+  actionToastTimer = setTimeout(() => { actionToast.show = false }, 3500)
+}
+
 const showCreate = ref(false)
 const creating = ref(false)
 const createError = ref('')
@@ -541,12 +583,18 @@ function confirmDeleteProject(project: any) {
 async function handleDeleteProject() {
   if (!projectToDelete.value) return
   deleting.value = true
+  const deletedName = projectToDelete.value.name
   try {
     await store.deleteProject(projectToDelete.value.id)
     showDeleteConfirm.value = false
     projectToDelete.value = null
+    showActionToast(lang.language.value === 'en'
+      ? `"${deletedName}" deleted`
+      : `"${deletedName}" eliminado`)
   } catch (e: any) {
-    console.error('Error deleting project:', e)
+    showActionToast(lang.language.value === 'en'
+      ? `Could not delete "${deletedName}". Try again.`
+      : `No se pudo eliminar "${deletedName}". Intenta de nuevo.`, 'error')
   } finally {
     deleting.value = false
   }
@@ -786,8 +834,12 @@ async function handleCreateProject() {
       // Reload projects list (loadWorkspace short-circuits if slug unchanged)
       await store.loadProjects()
       showCreate.value = false
+      const importedName = newProject.name
       Object.assign(newProject, { name: '', description: '', priority: 'medium', template: 'simple' })
       clearImportCsv()
+      showActionToast(lang.language.value === 'en'
+        ? `"${importedName}" created with imported tasks`
+        : `"${importedName}" creado con tareas importadas`)
       // Navigate to the new project
       if (res.project?.id) {
         navigateTo(`/${store.slug}/projects/${res.project.id}/kanban`)
@@ -801,10 +853,15 @@ async function handleCreateProject() {
         kanban_template: newProject.template,
       })
       showCreate.value = false
+      const createdName = newProject.name
       Object.assign(newProject, { name: '', description: '', priority: 'medium', template: 'simple' })
+      showActionToast(lang.language.value === 'en'
+        ? `"${createdName}" created successfully`
+        : `"${createdName}" creado exitosamente`)
     }
   } catch (e: any) {
     createError.value = e.data?.message || e.message || (lang.language.value === 'en' ? 'Error creating project' : 'Error al crear el proyecto')
+    showActionToast(createError.value, 'error')
   } finally {
     creating.value = false
   }
@@ -848,7 +905,10 @@ const motivationalQuotesEn = [
   'Small consistent steps create big results.',
 ]
 const quoteIndex = ref(0)
-onMounted(() => { quoteIndex.value = Math.floor(Math.random() * motivationalQuotesEs.length) })
+onMounted(() => {
+  const quotes = lang.language.value === 'en' ? motivationalQuotesEn : motivationalQuotesEs
+  quoteIndex.value = Math.floor(Math.random() * quotes.length)
+})
 const motivationalToastQuote = computed(() => {
   const quotes = lang.language.value === 'en' ? motivationalQuotesEn : motivationalQuotesEs
   return quotes[quoteIndex.value % quotes.length]

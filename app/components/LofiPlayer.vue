@@ -274,11 +274,19 @@ const sidebarCollapsed = computed(() => props.collapsed ?? false)
 
 // Prevent duplicate expanded panels: sidebar renders it on md+, mobile renders it on <md
 const isMdScreen = ref(true)
+let _mql: MediaQueryList | null = null
+let _mqlHandler: ((e: MediaQueryListEvent) => void) | null = null
 if (import.meta.client) {
-  const mql = window.matchMedia('(min-width: 768px)')
-  isMdScreen.value = mql.matches
-  mql.addEventListener('change', (e) => { isMdScreen.value = e.matches })
+  _mql = window.matchMedia('(min-width: 768px)')
+  isMdScreen.value = _mql.matches
+  _mqlHandler = (e) => { isMdScreen.value = e.matches }
+  _mql.addEventListener('change', _mqlHandler)
 }
+onBeforeUnmount(() => {
+  if (_mql && _mqlHandler) {
+    _mql.removeEventListener('change', _mqlHandler)
+  }
+})
 const showExpandedDesktop = computed(() => isMdScreen.value)
 const showExpandedMobile = computed(() => !isMdScreen.value)
 

@@ -76,12 +76,19 @@
       <!-- API Tokens / MCP -->
       <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 overflow-hidden shadow-card">
         <div class="px-6 py-4 border-b border-gray-200/80 dark:border-white/10">
-          <div class="flex items-center gap-2">
-            <UIcon name="i-heroicons-key" class="w-5 h-5 text-focusflow-500" />
-            <h2 class="font-bold text-gray-900 dark:text-white">API Tokens (MCP)</h2>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <UIcon name="i-heroicons-key" class="w-5 h-5 text-focusflow-500" />
+              <h2 class="font-bold text-gray-900 dark:text-white">API Tokens (MCP)</h2>
+            </div>
+            <NuxtLink :to="`/${store.slug}/integrations`" class="text-xs text-focusflow-600 dark:text-focusflow-400 hover:underline flex items-center gap-1">
+              <UIcon name="i-heroicons-puzzle-piece" class="w-3.5 h-3.5" />
+              {{ lang.language.value === 'en' ? 'Full setup guide' : 'Guia completa' }}
+              <UIcon name="i-heroicons-arrow-right" class="w-3 h-3" />
+            </NuxtLink>
           </div>
           <p class="text-xs text-gray-500 dark:text-[#99a0ae] mt-0.5">
-            {{ lang.language.value === 'en' ? 'Create tokens to connect Cursor, Claude or other MCP clients to this workspace' : 'Crea tokens para conectar Cursor, Claude u otros clientes MCP a este workspace' }}
+            {{ lang.language.value === 'en' ? 'Create tokens to connect Claude, Cursor, Windsurf, Cline, Gemini or other MCP clients' : 'Crea tokens para conectar Claude, Cursor, Windsurf, Cline, Gemini u otros clientes MCP' }}
           </p>
         </div>
         <div class="p-6 space-y-4">
@@ -100,20 +107,41 @@
             </div>
           </div>
 
-          <!-- Show newly created token -->
-          <div v-if="createdToken" class="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-xl p-4">
-            <p class="text-xs font-semibold text-emerald-800 dark:text-emerald-300 mb-2">
-              {{ lang.language.value === 'en' ? 'Token created! Copy it now — it won\'t be shown again.' : 'Token creado! Copialo ahora — no se mostrara de nuevo.' }}
-            </p>
-            <div class="flex items-center gap-2">
-              <code class="flex-1 text-xs bg-white dark:bg-black/30 rounded-lg px-3 py-2 font-mono text-gray-900 dark:text-gray-100 break-all select-all border border-emerald-200 dark:border-emerald-500/20">{{ createdToken }}</code>
-              <UButton variant="soft" size="xs" @click="copyToken">
-                <UIcon name="i-heroicons-clipboard-document" class="w-4 h-4" />
-              </UButton>
+          <!-- Show newly created token + ALL client configs -->
+          <div v-if="createdToken" class="space-y-3">
+            <div class="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-xl p-4">
+              <p class="text-xs font-semibold text-emerald-800 dark:text-emerald-300 mb-2">
+                {{ lang.language.value === 'en' ? 'Token created! Copy it now — it won\'t be shown again.' : 'Token creado! Copialo ahora — no se mostrara de nuevo.' }}
+              </p>
+              <div class="flex items-center gap-2">
+                <code class="flex-1 text-xs bg-white dark:bg-black/30 rounded-lg px-3 py-2 font-mono text-gray-900 dark:text-gray-100 break-all select-all border border-emerald-200 dark:border-emerald-500/20">{{ createdToken }}</code>
+                <UButton variant="soft" size="xs" @click="copyToClipboard(createdToken)">
+                  <UIcon name="i-heroicons-clipboard-document" class="w-4 h-4" />
+                </UButton>
+              </div>
             </div>
-            <div class="mt-3 p-3 bg-white dark:bg-black/20 rounded-lg border border-gray-200 dark:border-white/10">
-              <p class="text-[10px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1.5">MCP Config (claude_desktop_config.json / Cursor)</p>
-              <code class="text-[11px] text-gray-700 dark:text-gray-300 block whitespace-pre font-mono select-all">{{ mcpConfigSnippet }}</code>
+
+            <!-- Client configs grid -->
+            <div class="grid grid-cols-1 gap-2">
+              <div v-for="client in mcpClientConfigs" :key="client.key"
+                class="bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.06] rounded-xl p-3">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <div class="w-5 h-5 rounded flex items-center justify-center" :class="client.iconBg">
+                      <UIcon :name="client.icon" class="w-3 h-3" :class="client.iconColor" />
+                    </div>
+                    <span class="text-xs font-semibold text-gray-900 dark:text-white">{{ client.name }}</span>
+                    <span class="text-[9px] text-gray-400 font-mono">{{ client.file }}</span>
+                  </div>
+                  <button
+                    class="w-6 h-6 rounded-md hover:bg-gray-200 dark:hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer"
+                    @click="copyToClipboard(client.config, client.key)"
+                  >
+                    <UIcon :name="copiedKey === client.key ? 'i-heroicons-check' : 'i-heroicons-clipboard'" class="w-3.5 h-3.5 text-gray-400" />
+                  </button>
+                </div>
+                <pre class="bg-gray-900 dark:bg-black/50 text-emerald-400 text-[10px] leading-relaxed rounded-lg px-3 py-2 overflow-x-auto font-mono select-all">{{ client.config }}</pre>
+              </div>
             </div>
           </div>
 
@@ -211,16 +239,87 @@ const appUrl = computed(() => {
   return ''
 })
 
-const mcpConfigSnippet = computed(() => {
-  if (!createdToken.value) return ''
-  return JSON.stringify({
-    "mcpServers": {
-      "focusflow": {
-        "url": `${appUrl.value}/api/mcp`,
-        "headers": { "Authorization": `Bearer ${createdToken.value}` }
-      }
-    }
+const copiedKey = ref('')
+function copyToClipboard(text: string, key = '') {
+  navigator.clipboard.writeText(text)
+  copiedKey.value = key
+  setTimeout(() => { copiedKey.value = '' }, 2000)
+}
+
+const mcpClientConfigs = computed(() => {
+  const token = createdToken.value
+  const url = `${appUrl.value}/api/mcp`
+  if (!token) return []
+
+  const httpConfig = (name: string) => JSON.stringify({
+    mcpServers: { focusflow: { url, headers: { Authorization: `Bearer ${token}` } } }
   }, null, 2)
+
+  const npxConfig = () => JSON.stringify({
+    mcpServers: {
+      focusflow: {
+        command: 'npx',
+        args: ['-y', 'mcp-remote', url, '--header', `Authorization:Bearer ${token}`],
+      },
+    },
+  }, null, 2)
+
+  return [
+    {
+      key: 'claude-code',
+      name: 'Claude Code',
+      file: 'Terminal',
+      icon: 'i-heroicons-command-line',
+      iconBg: 'bg-orange-100 dark:bg-orange-500/20',
+      iconColor: 'text-orange-600 dark:text-orange-400',
+      config: `claude mcp add focusflow --transport http ${url} --header "Authorization: Bearer ${token}"`,
+    },
+    {
+      key: 'claude-desktop',
+      name: 'Claude Desktop',
+      file: 'claude_desktop_config.json',
+      icon: 'i-heroicons-window',
+      iconBg: 'bg-violet-100 dark:bg-violet-500/20',
+      iconColor: 'text-violet-600 dark:text-violet-400',
+      config: npxConfig(),
+    },
+    {
+      key: 'cursor',
+      name: 'Cursor',
+      file: '.cursor/mcp.json',
+      icon: 'i-heroicons-cursor-arrow-rays',
+      iconBg: 'bg-blue-100 dark:bg-blue-500/20',
+      iconColor: 'text-blue-600 dark:text-blue-400',
+      config: httpConfig('cursor'),
+    },
+    {
+      key: 'windsurf',
+      name: 'Windsurf',
+      file: '~/.codeium/windsurf/mcp_config.json',
+      icon: 'i-heroicons-globe-alt',
+      iconBg: 'bg-cyan-100 dark:bg-cyan-500/20',
+      iconColor: 'text-cyan-600 dark:text-cyan-400',
+      config: npxConfig(),
+    },
+    {
+      key: 'cline',
+      name: 'Cline',
+      file: 'VS Code → Cline → MCP Servers',
+      icon: 'i-heroicons-code-bracket',
+      iconBg: 'bg-green-100 dark:bg-green-500/20',
+      iconColor: 'text-green-600 dark:text-green-400',
+      config: npxConfig(),
+    },
+    {
+      key: 'gemini',
+      name: 'Gemini CLI',
+      file: '~/.gemini/settings.json',
+      icon: 'i-heroicons-sparkles',
+      iconBg: 'bg-amber-100 dark:bg-amber-500/20',
+      iconColor: 'text-amber-600 dark:text-amber-400',
+      config: npxConfig(),
+    },
+  ]
 })
 
 async function loadTokens() {
@@ -264,11 +363,6 @@ async function deleteToken(tokenId: string) {
   } catch {}
 }
 
-function copyToken() {
-  if (createdToken.value) {
-    navigator.clipboard.writeText(createdToken.value)
-  }
-}
 
 onMounted(async () => {
   try {

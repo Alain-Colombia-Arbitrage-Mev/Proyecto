@@ -3,10 +3,10 @@
     <div class="mb-6">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
         <UIcon name="i-heroicons-puzzle-piece" class="w-7 h-7 text-purple-600 dark:text-purple-400" />
-        {{ lang.language.value === 'en' ? 'MCP Integration' : 'Integracion MCP' }}
+        MCP/API
       </h1>
       <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-        {{ lang.language.value === 'en' ? 'Connect FocusFlow to Claude, Cursor, and other AI tools via MCP' : 'Conecta FocusFlow a Claude, Cursor y otras herramientas AI via MCP' }}
+        {{ lang.language.value === 'en' ? 'Connect FocusFlow to Claude, Cursor, Windsurf, Cline, Gemini and other AI tools via MCP' : 'Conecta FocusFlow a Claude, Cursor, Windsurf, Cline, Gemini y otras herramientas AI via MCP' }}
       </p>
     </div>
 
@@ -83,6 +83,66 @@
               @click="copyCmd(cursorConfig, 'cursor')"
             >
               <UIcon :name="copied === 'cursor' ? 'i-heroicons-check' : 'i-heroicons-clipboard'" class="w-3.5 h-3.5 text-white" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Windsurf -->
+        <div>
+          <div class="flex items-center gap-2 mb-1.5">
+            <div class="w-6 h-6 rounded-md bg-cyan-100 dark:bg-cyan-500/20 flex items-center justify-center">
+              <UIcon name="i-heroicons-globe-alt" class="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+            </div>
+            <span class="text-xs font-semibold text-gray-900 dark:text-white">Windsurf</span>
+            <span class="text-[9px] text-gray-400">~/.codeium/windsurf/mcp_config.json</span>
+          </div>
+          <div class="relative group">
+            <pre class="bg-gray-900 dark:bg-black/50 text-emerald-400 text-[11px] leading-relaxed rounded-lg px-3 py-2.5 overflow-x-auto font-mono">{{ windsurfConfig }}</pre>
+            <button
+              class="absolute top-1.5 right-1.5 w-7 h-7 rounded-md bg-white/10 hover:bg-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              @click="copyCmd(windsurfConfig, 'windsurf')"
+            >
+              <UIcon :name="copied === 'windsurf' ? 'i-heroicons-check' : 'i-heroicons-clipboard'" class="w-3.5 h-3.5 text-white" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Cline -->
+        <div>
+          <div class="flex items-center gap-2 mb-1.5">
+            <div class="w-6 h-6 rounded-md bg-green-100 dark:bg-green-500/20 flex items-center justify-center">
+              <UIcon name="i-heroicons-code-bracket" class="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+            </div>
+            <span class="text-xs font-semibold text-gray-900 dark:text-white">Cline</span>
+            <span class="text-[9px] text-gray-400">VS Code → Cline → MCP Servers</span>
+          </div>
+          <div class="relative group">
+            <pre class="bg-gray-900 dark:bg-black/50 text-emerald-400 text-[11px] leading-relaxed rounded-lg px-3 py-2.5 overflow-x-auto font-mono">{{ clineConfig }}</pre>
+            <button
+              class="absolute top-1.5 right-1.5 w-7 h-7 rounded-md bg-white/10 hover:bg-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              @click="copyCmd(clineConfig, 'cline')"
+            >
+              <UIcon :name="copied === 'cline' ? 'i-heroicons-check' : 'i-heroicons-clipboard'" class="w-3.5 h-3.5 text-white" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Gemini (Google AI Studio) -->
+        <div>
+          <div class="flex items-center gap-2 mb-1.5">
+            <div class="w-6 h-6 rounded-md bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center">
+              <UIcon name="i-heroicons-sparkles" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+            </div>
+            <span class="text-xs font-semibold text-gray-900 dark:text-white">Gemini CLI</span>
+            <span class="text-[9px] text-gray-400">~/.gemini/settings.json</span>
+          </div>
+          <div class="relative group">
+            <pre class="bg-gray-900 dark:bg-black/50 text-emerald-400 text-[11px] leading-relaxed rounded-lg px-3 py-2.5 overflow-x-auto font-mono">{{ geminiConfig }}</pre>
+            <button
+              class="absolute top-1.5 right-1.5 w-7 h-7 rounded-md bg-white/10 hover:bg-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              @click="copyCmd(geminiConfig, 'gemini')"
+            >
+              <UIcon :name="copied === 'gemini' ? 'i-heroicons-check' : 'i-heroicons-clipboard'" class="w-3.5 h-3.5 text-white" />
             </button>
           </div>
         </div>
@@ -246,12 +306,62 @@ const createForm = reactive({
   scopes: ['read', 'write'] as string[],
 })
 
+const tokenOrPlaceholder = computed(() => activeToken.value || 'ff_YOUR_TOKEN')
+
 const cursorConfig = computed(() => {
   return JSON.stringify({
     mcpServers: {
       focusflow: {
         url: `${host.value}/api/mcp`,
-        headers: { Authorization: `Bearer ${activeToken.value || 'ff_YOUR_TOKEN'}` },
+        headers: { Authorization: `Bearer ${tokenOrPlaceholder.value}` },
+      },
+    },
+  }, null, 2)
+})
+
+const windsurfConfig = computed(() => {
+  return JSON.stringify({
+    mcpServers: {
+      focusflow: {
+        command: 'npx',
+        args: [
+          '-y', 'mcp-remote',
+          `${host.value}/api/mcp`,
+          '--header',
+          `Authorization:Bearer ${tokenOrPlaceholder.value}`,
+        ],
+      },
+    },
+  }, null, 2)
+})
+
+const clineConfig = computed(() => {
+  return JSON.stringify({
+    mcpServers: {
+      focusflow: {
+        command: 'npx',
+        args: [
+          '-y', 'mcp-remote',
+          `${host.value}/api/mcp`,
+          '--header',
+          `Authorization:Bearer ${tokenOrPlaceholder.value}`,
+        ],
+      },
+    },
+  }, null, 2)
+})
+
+const geminiConfig = computed(() => {
+  return JSON.stringify({
+    mcpServers: {
+      focusflow: {
+        command: 'npx',
+        args: [
+          '-y', 'mcp-remote',
+          `${host.value}/api/mcp`,
+          '--header',
+          `Authorization:Bearer ${tokenOrPlaceholder.value}`,
+        ],
       },
     },
   }, null, 2)
