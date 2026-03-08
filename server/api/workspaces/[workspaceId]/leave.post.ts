@@ -31,14 +31,20 @@ export default defineEventHandler(async (event) => {
 
   if (error) throw createError({ statusCode: 500, message: error.message })
 
-  // Also remove from project_members
-  await supabase
-    .from('project_members')
-    .delete()
-    .eq('user_id', user.id)
-    .in('project_id',
-      supabase.from('projects').select('id').eq('workspace_id', workspaceId)
-    )
+  // Also remove from project_members for projects in this workspace
+  const { data: wsProjects } = await supabase
+    .from('projects')
+    .select('id')
+    .eq('workspace_id', workspaceId)
+
+  const projectIds = (wsProjects || []).map((p: any) => p.id)
+  if (projectIds.length > 0) {
+    await supabase
+      .from('project_members')
+      .delete()
+      .eq('user_id', user.id)
+      .in('project_id', projectIds)
+  }
 
   return { success: true }
 })

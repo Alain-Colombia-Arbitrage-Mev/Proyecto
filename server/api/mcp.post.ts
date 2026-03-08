@@ -341,7 +341,7 @@ async function handleTool(
         throw new Error('project_id, column_id, and title are required')
       }
 
-      // Verify project
+      // Verify project belongs to workspace
       const { data: proj } = await supabase
         .from('projects')
         .select('id')
@@ -350,6 +350,26 @@ async function handleTool(
         .maybeSingle()
 
       if (!proj) throw new Error('Project not found in this workspace')
+
+      // Verify column belongs to this project
+      const { data: col } = await supabase
+        .from('kanban_columns')
+        .select('id')
+        .eq('id', args.column_id)
+        .eq('project_id', args.project_id)
+        .maybeSingle()
+
+      if (!col) throw new Error('Column not found in this project')
+
+      // Calculate append position (last in column)
+      const { data: maxPos } = await supabase
+        .from('tasks')
+        .select('position')
+        .eq('column_id', args.column_id)
+        .order('position', { ascending: false })
+        .limit(1)
+
+      const position = maxPos && maxPos.length > 0 ? maxPos[0].position + 1 : 0
 
       const { data: task, error } = await supabase
         .from('tasks')
@@ -363,7 +383,7 @@ async function handleTool(
           due_date: args.due_date || null,
           tags: args.tags || [],
           reporter_id: ctx.userId,
-          position: 0,
+          position,
         })
         .select()
         .single()
@@ -415,7 +435,7 @@ async function handleTool(
 
       const { data: existing } = await supabase
         .from('tasks')
-        .select('id, project:projects!inner(workspace_id)')
+        .select('id, column_id, project_id, project:projects!inner(workspace_id)')
         .eq('id', args.task_id)
         .maybeSingle()
 
@@ -423,19 +443,48 @@ async function handleTool(
         throw new Error('Task not found in this workspace')
       }
 
+      // Verify target column belongs to the same project
+      const { data: targetCol } = await supabase
+        .from('kanban_columns')
+        .select('id')
+        .eq('id', args.column_id)
+        .eq('project_id', existing.project_id)
+        .maybeSingle()
+
+      if (!targetCol) throw new Error('Target column not found in this project')
+
+      const now = new Date().toISOString()
+
       const { data: task, error } = await supabase
         .from('tasks')
         .update({
           column_id: args.column_id,
           position: args.position ?? 0,
-          column_entered_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+          column_entered_at: now,
+          updated_at: now,
         })
         .eq('id', args.task_id)
         .select()
         .single()
 
       if (error) throw new Error(`Failed to move task: ${error.message}`)
+
+      // Record column history (fire-and-forget)
+      if (existing.column_id && existing.column_id !== args.column_id) {
+        supabase
+          .from('task_column_history')
+          .update({ exited_at: now })
+          .eq('task_id', args.task_id)
+          .eq('column_id', existing.column_id)
+          .is('exited_at', null)
+          .then(() => {}, () => {})
+
+        supabase
+          .from('task_column_history')
+          .insert({ task_id: args.task_id, column_id: args.column_id, entered_at: now })
+          .then(() => {}, () => {})
+      }
+
       return { content: [{ type: 'text', text: JSON.stringify(task, null, 2) }] }
     }
 

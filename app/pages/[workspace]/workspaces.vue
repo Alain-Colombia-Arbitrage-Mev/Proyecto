@@ -48,7 +48,23 @@
                 {{ lang.language.value === 'en' ? 'Current' : 'Actual' }}
               </span>
             </div>
-            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ ws.slug }}</p>
+            <div class="flex items-center gap-3 mt-0.5">
+              <p class="text-xs text-gray-400 dark:text-gray-500">{{ ws.slug }}</p>
+              <div class="flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-500">
+                <span v-if="ws.projectCount != null" class="flex items-center gap-0.5">
+                  <UIcon name="i-heroicons-folder-open" class="w-3 h-3" />
+                  {{ ws.projectCount }}
+                </span>
+                <span v-if="ws.taskCount != null" class="flex items-center gap-0.5">
+                  <UIcon name="i-heroicons-clipboard-document-list" class="w-3 h-3" />
+                  {{ ws.taskCount }}
+                </span>
+                <span v-if="ws.memberCount != null" class="flex items-center gap-0.5">
+                  <UIcon name="i-heroicons-users" class="w-3 h-3" />
+                  {{ ws.memberCount }}
+                </span>
+              </div>
+            </div>
           </div>
 
           <!-- Actions -->
@@ -176,6 +192,9 @@ interface WorkspaceItem {
   slug: string
   role: string
   workspace_id: string
+  projectCount?: number
+  taskCount?: number
+  memberCount?: number
 }
 
 const workspaces = ref<WorkspaceItem[]>([])
