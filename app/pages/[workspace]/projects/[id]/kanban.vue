@@ -249,6 +249,13 @@
                 <UIcon name="i-heroicons-trash" class="w-3 h-3" />
               </button>
               <button
+                class="w-7 h-7 rounded-full flex items-center justify-center transition-all bg-gray-100 dark:bg-white/10 text-gray-400 hover:bg-purple-100 dark:hover:bg-purple-500/20 hover:text-purple-600 sm:opacity-0 sm:group-hover/card:opacity-100"
+                :title="language === 'en' ? 'Delegate to AI Agent' : 'Delegar a Agente AI'"
+                @click.stop="openDelegateModal(task)"
+              >
+                <UIcon name="i-heroicons-cpu-chip" class="w-3 h-3" />
+              </button>
+              <button
                 class="w-7 h-7 rounded-full flex items-center justify-center transition-all"
                 :class="pomodoro.activeTask.value?.id === task.id
                   ? 'bg-emerald-100 text-emerald-600 opacity-100'
@@ -297,6 +304,14 @@
                 }"
               />
               <p class="text-[13px] font-semibold text-gray-900 dark:text-gray-100 leading-snug">{{ localizedTitle(task) }}</p>
+            </div>
+
+            <!-- AI Agent badge -->
+            <div v-if="task.ai_agent" class="mb-1.5">
+              <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-bold uppercase rounded-md bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300">
+                <UIcon name="i-heroicons-cpu-chip" class="w-2.5 h-2.5" />
+                {{ task.ai_agent }}
+              </span>
             </div>
 
             <!-- Description preview -->
@@ -626,6 +641,17 @@
       @improve-with-a-i="aiPanelRef?.handleImproveTask()"
     />
 
+    <!-- Delegate to AI Agent Modal -->
+    <LazyTaskDelegateAgentModal
+      v-if="delegateTask"
+      v-model:open="showDelegateModal"
+      :task-id="delegateTask.id"
+      :task-title="delegateTask.title"
+      :workspace-id="workspaceId"
+      :project-id="(route.params.id as string)"
+      @delegated="loadTasks"
+    />
+
     <LazyTaskImportModal
       v-model:open="showImportModal"
       :workspace-id="workspaceId"
@@ -949,6 +975,15 @@ async function onDrop(_e: DragEvent, columnId: string) {
 function openAddTask(columnId: string) {
   addToColumnId.value = columnId
   showAddTask.value = true
+}
+
+// --- Delegate to AI Agent ---
+const showDelegateModal = ref(false)
+const delegateTask = ref<Task | null>(null)
+
+function openDelegateModal(task: Task) {
+  delegateTask.value = task
+  showDelegateModal.value = true
 }
 
 // --- Task Detail ---

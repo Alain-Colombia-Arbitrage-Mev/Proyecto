@@ -46,6 +46,7 @@
               :title="lang.labels.value.startPomodoro"
             />
             <UButton variant="ghost" size="xs" icon="i-heroicons-sparkles" color="primary" @click="$emit('improveWithAI')" :title="lang.labels.value.improveWithAI" />
+            <UButton variant="ghost" size="xs" icon="i-heroicons-cpu-chip" color="secondary" @click="showDelegateModal = true" :title="language === 'en' ? 'Delegate to AI Agent' : 'Delegar a Agente AI'" />
             <UButton variant="ghost" size="xs" icon="i-heroicons-trash" color="error" @click="handleDelete" :title="lang.labels.value.deleteTask" />
             <UButton variant="ghost" size="xs" icon="i-heroicons-x-mark" @click="isOpen = false" />
           </div>
@@ -221,6 +222,20 @@
                 </div>
               </div>
 
+              <!-- AI Agent -->
+              <div v-if="task?.ai_agent">
+                <label class="text-[11px] font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide block mb-1.5">{{ language === 'en' ? 'AI Agent' : 'Agente AI' }}</label>
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase rounded-lg bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300">
+                    <UIcon name="i-heroicons-cpu-chip" class="w-3 h-3" />
+                    {{ task.ai_agent }}
+                  </span>
+                  <button class="text-[10px] text-gray-400 hover:text-red-500 cursor-pointer" @click="clearAgent">
+                    {{ language === 'en' ? 'Clear' : 'Quitar' }}
+                  </button>
+                </div>
+              </div>
+
               <!-- Tags -->
               <div>
                 <label class="text-[11px] font-semibold text-gray-500 dark:text-[#99a0ae] uppercase tracking-wide block mb-1.5">{{ lang.labels.value.tags }}</label>
@@ -258,6 +273,17 @@
       </div>
     </template>
   </UModal>
+
+  <!-- Delegate to AI Agent Modal -->
+  <LazyTaskDelegateAgentModal
+    v-if="task"
+    v-model:open="showDelegateModal"
+    :task-id="task.id"
+    :task-title="task.title"
+    :workspace-id="workspaceId"
+    :project-id="projectId"
+    @delegated="emit('updated')"
+  />
 </template>
 
 <script setup lang="ts">
@@ -294,6 +320,7 @@ const isOpen = computed({
 const saving = ref(false)
 const editingTitle = ref(false)
 const selectedLabelIds = ref<string[]>([])
+const showDelegateModal = ref(false)
 
 const editForm = reactive({
   title: '',
@@ -419,6 +446,17 @@ async function handleSave() {
   } catch { /* */ } finally {
     saving.value = false
   }
+}
+
+async function clearAgent() {
+  if (!props.task) return
+  try {
+    await $fetch(`/api/workspaces/${props.workspaceId}/tasks/${props.task.id}`, {
+      method: 'PATCH',
+      body: { ai_agent: null },
+    })
+    emit('updated')
+  } catch {}
 }
 
 async function handleDelete() {

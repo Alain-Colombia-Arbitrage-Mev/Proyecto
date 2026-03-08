@@ -465,7 +465,10 @@ async function handleTool(
       if (args.priority) query = query.eq('priority', args.priority)
       if (args.assignee) query = query.contains('assignees', [args.assignee])
       if (args.ai_agent) query = query.eq('ai_agent', args.ai_agent)
-      if (args.search) query = query.ilike('title', `%${args.search}%`)
+      if (args.search) {
+        const safeSearch = String(args.search).replace(/[%_]/g, '').slice(0, 200)
+        query = query.ilike('title', `%${safeSearch}%`)
+      }
 
       const { data } = await query
       return textContent(data || [])
@@ -515,7 +518,11 @@ async function handleTool(
         .order('created_at', { ascending: false })
         .limit(limit)
 
-      if (args.query) query = query.or(`title.ilike.%${args.query}%,description.ilike.%${args.query}%`)
+      if (args.query) {
+        // Sanitize query to prevent filter injection
+        const safeQuery = String(args.query).replace(/[%,()]/g, '').slice(0, 200)
+        query = query.or(`title.ilike.%${safeQuery}%,description.ilike.%${safeQuery}%`)
+      }
       if (args.priority) query = query.eq('priority', args.priority)
       if (args.ai_agent) query = query.eq('ai_agent', args.ai_agent)
       if (args.tag) query = query.contains('tags', [args.tag])

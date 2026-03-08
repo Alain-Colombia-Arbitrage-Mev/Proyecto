@@ -32,13 +32,21 @@
           <!-- Header -->
           <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <h3 class="text-sm font-bold text-gray-900">{{ t.notifications }}</h3>
-            <button
-              v-if="unreadCount > 0"
-              @click="markAllRead"
-              class="text-[10px] font-semibold text-focusflow-600 hover:text-focusflow-700 cursor-pointer"
-            >
-              {{ t.markAllRead }}
-            </button>
+            <div class="flex items-center gap-2">
+              <button
+                v-if="unreadCount > 0"
+                @click="markAllRead"
+                class="text-[10px] font-semibold text-focusflow-600 hover:text-focusflow-700 cursor-pointer"
+              >
+                {{ t.markAllRead }}
+              </button>
+              <button
+                @click="open = false"
+                class="w-6 h-6 flex items-center justify-center rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+              >
+                <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           <!-- List -->
@@ -98,6 +106,38 @@
                 </div>
                 <div v-if="!notif.read" class="w-2 h-2 rounded-full bg-focusflow-500 shrink-0 mt-1.5" />
               </div>
+            </div>
+          </div>
+
+          <!-- Push notification toggle -->
+          <div class="px-4 py-2.5 border-t border-gray-100 bg-gray-50/50">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <UIcon name="i-heroicons-device-phone-mobile" class="w-3.5 h-3.5 text-gray-400" />
+                <span class="text-[11px] font-medium text-gray-600">
+                  {{ lang.current.value === 'es' ? 'Notificaciones push' : 'Push notifications' }}
+                </span>
+              </div>
+              <button
+                v-if="pushNotif.permission.value === 'granted'"
+                class="text-[10px] font-semibold text-green-600 flex items-center gap-1 cursor-default"
+              >
+                <UIcon name="i-heroicons-check-circle-solid" class="w-3.5 h-3.5" />
+                {{ lang.current.value === 'es' ? 'Activas' : 'Active' }}
+              </button>
+              <button
+                v-else-if="pushNotif.permission.value === 'denied'"
+                class="text-[10px] font-semibold text-red-500 cursor-default"
+              >
+                {{ lang.current.value === 'es' ? 'Bloqueadas' : 'Blocked' }}
+              </button>
+              <button
+                v-else
+                @click="pushNotif.requestPermission()"
+                class="text-[10px] font-semibold text-focusflow-600 hover:text-focusflow-700 cursor-pointer"
+              >
+                {{ lang.current.value === 'es' ? 'Activar' : 'Enable' }}
+              </button>
             </div>
           </div>
         </div>

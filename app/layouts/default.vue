@@ -426,6 +426,7 @@ const allNav = computed<NavItem[]>(() => [
   { label: t.value.workflows, icon: 'i-heroicons-bolt', to: `/${workspaceSlug.value}/workflows`, show: canUseWorkflows.value },
   { label: t.value.timesheet, icon: 'i-heroicons-clock', to: `/${workspaceSlug.value}/timesheet`, show: canViewTimesheets.value },
   { label: t.value.files, icon: 'i-heroicons-document-duplicate', to: `/${workspaceSlug.value}/files`, show: true },
+  { label: lang.language.value === 'en' ? 'Orchestrator' : 'Orquestador', icon: 'i-heroicons-sparkles', to: `/${workspaceSlug.value}/orchestrator`, show: canUseAI.value },
   { label: t.value.goals, icon: 'i-heroicons-flag', to: `/${workspaceSlug.value}/goals`, show: canViewGoals.value },
   { label: t.value.roadmap, icon: 'i-heroicons-map', to: `/${workspaceSlug.value}/roadmap`, show: canViewRoadmap.value },
   {
