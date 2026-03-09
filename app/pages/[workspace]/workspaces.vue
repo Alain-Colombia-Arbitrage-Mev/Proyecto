@@ -12,7 +12,7 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex justify-center py-12">
-      <UIcon name="i-heroicons-arrow-path" class="w-6 h-6 text-gray-400 animate-spin" />
+      <UIcon name="i-heroicons-arrow-path" class="w-6 h-6 text-gray-500 dark:text-gray-400 animate-spin" />
     </div>
 
     <!-- Workspace list -->

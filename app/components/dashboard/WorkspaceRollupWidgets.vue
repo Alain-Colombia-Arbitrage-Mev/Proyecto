@@ -40,7 +40,7 @@ watch(() => props.workspaceId, (id) => { if (id) fetchRollups() }, { immediate: 
 </script>
 
 <template>
-  <div v-if="loading" class="text-sm text-gray-400">{{ labels.loading }}</div>
+  <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400">{{ labels.loading }}</div>
 
   <div v-else-if="data" class="grid grid-cols-2 md:grid-cols-4 gap-3">
     <div class="p-4 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">

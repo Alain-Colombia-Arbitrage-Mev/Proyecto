@@ -44,7 +44,7 @@
             autofocus
             @keydown.enter="workspaceNameInput && (step = 2)"
           />
-          <p class="text-xs text-gray-400 mt-2">{{ t.workspaceHint }}</p>
+          <p class="text-xs text-gray-500 mt-2">{{ t.workspaceHint }}</p>
         </div>
         <UButton
           block
@@ -73,7 +73,7 @@
             autofocus
             @keydown.enter="projectName && (step = 3)"
           />
-          <p class="text-xs text-gray-400 mt-2">{{ t.moreProjectsLater }}</p>
+          <p class="text-xs text-gray-500 mt-2">{{ t.moreProjectsLater }}</p>
         </div>
         <div class="flex gap-3 mt-4">
           <UButton block variant="ghost" size="lg" @click="step = 1">{{ t.back }}</UButton>
@@ -101,7 +101,7 @@
             >
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-gray-900">{{ tpl.label }}</span>
-                <span class="text-[9px] font-semibold text-gray-400">{{ tpl.cols }} {{ t.columns }}</span>
+                <span class="text-[9px] font-semibold text-gray-500">{{ tpl.cols }} {{ t.columns }}</span>
               </div>
               <div class="flex gap-1 flex-wrap">
                 <span

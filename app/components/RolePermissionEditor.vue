@@ -3,9 +3,9 @@
     <template #content>
       <div class="flex flex-col max-h-[85vh]">
         <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200/80 dark:border-white/10">
           <div>
-            <h2 class="text-lg font-bold text-gray-900">{{ lang.language.value === 'en' ? 'Role Permissions' : 'Permisos por Rol' }}</h2>
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ lang.language.value === 'en' ? 'Role Permissions' : 'Permisos por Rol' }}</h2>
             <p class="text-xs text-gray-500 mt-0.5">{{ lang.language.value === 'en' ? 'Customize what each role can do' : 'Personaliza qué puede hacer cada rol' }}</p>
           </div>
           <UButton variant="ghost" size="xs" icon="i-heroicons-x-mark" @click="isOpen = false" />
@@ -16,8 +16,8 @@
           <div class="overflow-x-auto">
             <table class="w-full text-xs">
               <thead>
-                <tr class="border-b border-gray-100">
-                  <th class="text-left py-2 pr-4 font-semibold text-gray-500 uppercase tracking-wider text-[10px] sticky left-0 bg-white min-w-[160px]">
+                <tr class="border-b border-gray-200/80 dark:border-white/10">
+                  <th class="text-left py-2 pr-4 font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-[10px] sticky left-0 bg-white dark:bg-[#1b1b1b] min-w-[160px]">
                     {{ lang.language.value === 'en' ? 'Permission' : 'Permiso' }}
                   </th>
                   <th
@@ -34,9 +34,9 @@
                 <tr
                   v-for="perm in allPermissions"
                   :key="perm"
-                  class="border-b border-gray-50 hover:bg-gray-50/50"
+                  class="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50/50 dark:hover:bg-white/5"
                 >
-                  <td class="py-2 pr-4 text-[11px] text-gray-700 font-medium sticky left-0 bg-white">
+                  <td class="py-2 pr-4 text-[11px] text-gray-700 dark:text-gray-300 font-medium sticky left-0 bg-white dark:bg-[#1b1b1b]">
                     {{ permLabel(perm) }}
                   </td>
                   <td
@@ -48,8 +48,8 @@
                       v-if="canToggle(role, perm)"
                       class="w-7 h-7 rounded-lg flex items-center justify-center transition-all cursor-pointer mx-auto"
                       :class="localPerms[role]?.[perm]
-                        ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
-                        : 'bg-gray-100 text-gray-300 hover:bg-gray-200 hover:text-gray-500'"
+                        ? 'bg-emerald-100 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-500/25'
+                        : 'bg-gray-100 dark:bg-white/[0.06] text-gray-300 dark:text-gray-600 hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-500 dark:hover:text-gray-400'"
                       @click="togglePerm(role, perm)"
                     >
                       <UIcon :name="localPerms[role]?.[perm] ? 'i-heroicons-check' : 'i-heroicons-x-mark'" class="w-3.5 h-3.5" />
@@ -75,7 +75,7 @@
         </div>
 
         <!-- Footer -->
-        <div class="flex items-center justify-end gap-3 px-6 py-3 border-t border-gray-100">
+        <div class="flex items-center justify-end gap-3 px-6 py-3 border-t border-gray-200/80 dark:border-white/10">
           <UButton variant="ghost" @click="isOpen = false">{{ t.cancel }}</UButton>
           <UButton color="primary" :loading="saving" class="font-semibold" @click="handleSave">{{ t.save }}</UButton>
         </div>
@@ -175,13 +175,13 @@ function roleDisplayName(role: string): string {
 
 function roleHeaderClass(role: string): string {
   const map: Record<string, string> = {
-    viewer: 'text-gray-400',
-    marketing: 'text-pink-600',
-    member: 'text-gray-600',
-    admin: 'text-sky-600',
-    owner: 'text-amber-600',
+    viewer: 'text-gray-500 dark:text-gray-400',
+    marketing: 'text-pink-600 dark:text-pink-400',
+    member: 'text-gray-600 dark:text-gray-300',
+    admin: 'text-sky-600 dark:text-sky-400',
+    owner: 'text-amber-600 dark:text-amber-400',
   }
-  return map[role] || 'text-gray-600'
+  return map[role] || 'text-gray-600 dark:text-gray-300'
 }
 
 async function handleSave() {

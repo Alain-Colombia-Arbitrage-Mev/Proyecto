@@ -189,21 +189,21 @@
           <div class="flex items-center gap-0.5">
             <button
               v-if="canDeleteTasks && filteredTasksByColumn(column.id).length > 0"
-              class="w-7 h-7 flex items-center justify-center rounded-md text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-all sm:opacity-0 sm:group-hover/col:opacity-100"
+              class="w-7 h-7 flex items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-all sm:opacity-0 sm:group-hover/col:opacity-100"
               @click="handleClearColumn(column)"
               :title="language === 'en' ? 'Clear all tasks in column' : 'Vaciar tareas de la columna'"
             >
               <UIcon name="i-heroicons-archive-box-x-mark" class="w-3.5 h-3.5" />
             </button>
             <button
-              class="w-7 h-7 flex items-center justify-center rounded-md text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-all sm:opacity-0 sm:group-hover/col:opacity-100"
+              class="w-7 h-7 flex items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-all sm:opacity-0 sm:group-hover/col:opacity-100"
               @click="openEditColumn(column)"
               :title="t.editColumn"
             >
               <UIcon name="i-heroicons-pencil-square" class="w-3.5 h-3.5" />
             </button>
             <button
-              class="w-7 h-7 flex items-center justify-center rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all sm:opacity-0 sm:group-hover/col:opacity-100"
+              class="w-7 h-7 flex items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all sm:opacity-0 sm:group-hover/col:opacity-100"
               @click="handleDeleteColumn(column)"
               :title="t.deleteColumn"
             >
@@ -242,14 +242,14 @@
             <div class="absolute top-2 right-2 flex items-center gap-1 z-10">
               <button
                 v-if="canDeleteTasks"
-                class="w-7 h-7 rounded-full flex items-center justify-center transition-all bg-gray-100 dark:bg-white/10 text-gray-400 hover:bg-red-100 dark:hover:bg-red-500/20 hover:text-red-500 sm:opacity-0 sm:group-hover/card:opacity-100"
+                class="w-7 h-7 rounded-full flex items-center justify-center transition-all bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-500/20 hover:text-red-500 sm:opacity-0 sm:group-hover/card:opacity-100"
                 :title="t.deleteTask"
                 @click.stop="handleDeleteTask(task)"
               >
                 <UIcon name="i-heroicons-trash" class="w-3 h-3" />
               </button>
               <button
-                class="w-7 h-7 rounded-full flex items-center justify-center transition-all bg-gray-100 dark:bg-white/10 text-gray-400 hover:bg-purple-100 dark:hover:bg-purple-500/20 hover:text-purple-600 sm:opacity-0 sm:group-hover/card:opacity-100"
+                class="w-7 h-7 rounded-full flex items-center justify-center transition-all bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 hover:bg-purple-100 dark:hover:bg-purple-500/20 hover:text-purple-600 sm:opacity-0 sm:group-hover/card:opacity-100"
                 :title="language === 'en' ? 'Delegate to AI Agent' : 'Delegar a Agente AI'"
                 @click.stop="openDelegateModal(task)"
               >
@@ -259,7 +259,7 @@
                 class="w-7 h-7 rounded-full flex items-center justify-center transition-all"
                 :class="pomodoro.activeTask.value?.id === task.id
                   ? 'bg-emerald-100 text-emerald-600 opacity-100'
-                  : 'bg-gray-100 dark:bg-white/10 text-gray-400 hover:bg-focusflow-100 dark:hover:bg-focusflow-500/20 hover:text-focusflow-600 sm:opacity-0 sm:group-hover/card:opacity-100'"
+                  : 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 hover:bg-focusflow-100 dark:hover:bg-focusflow-500/20 hover:text-focusflow-600 sm:opacity-0 sm:group-hover/card:opacity-100'"
                 :title="pomodoro.activeTask.value?.id === task.id ? `Pomodoro: ${pomodoro.display.value}` : t.startPomodoro"
                 @click.stop="pomodoro.startForTask({ id: task.id, title: task.title }, workspaceId)"
               >
@@ -276,7 +276,7 @@
               >
                 {{ label.name }}
               </span>
-              <span v-if="task.labels.length > 3" class="text-[9px] text-gray-400 px-1 py-0.5">+{{ task.labels.length - 3 }}</span>
+              <span v-if="task.labels.length > 3" class="text-[9px] text-gray-500 dark:text-gray-400 px-1 py-0.5">+{{ task.labels.length - 3 }}</span>
             </div>
 
             <!-- Tags row -->
@@ -289,7 +289,7 @@
               >
                 #{{ tag }}
               </span>
-              <span v-if="task.tags.length > 3" class="text-[9px] text-gray-400 px-1 py-0.5">+{{ task.tags.length - 3 }}</span>
+              <span v-if="task.tags.length > 3" class="text-[9px] text-gray-500 dark:text-gray-400 px-1 py-0.5">+{{ task.tags.length - 3 }}</span>
             </div>
 
             <!-- Priority + title -->
@@ -384,14 +384,14 @@
             v-if="filteredTasksByColumn(column.id).length === 0"
             class="flex items-center justify-center h-24 border border-dashed border-gray-300 dark:border-white/10 rounded-xl bg-white/50 dark:bg-transparent"
           >
-            <p class="text-[10px] text-gray-400 font-medium"><span class="hidden sm:inline">{{ t.noTasksDrag }}</span><span class="sm:hidden">{{ t.noTasksMobile }}</span></p>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400 font-medium"><span class="hidden sm:inline">{{ t.noTasksDrag }}</span><span class="sm:hidden">{{ t.noTasksMobile }}</span></p>
           </div>
         </div>
 
         <!-- Quick add -->
         <button
           v-if="canCreateTasks"
-          class="mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-400 hover:text-focusflow-700 dark:hover:text-focusflow-400 hover:bg-focusflow-50/50 dark:hover:bg-focusflow-500/10 rounded-xl transition-all"
+          class="mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-focusflow-700 dark:hover:text-focusflow-400 hover:bg-focusflow-50/50 dark:hover:bg-focusflow-500/10 rounded-xl transition-all"
           @click="openAddTask(column.id)"
         >
           <UIcon name="i-heroicons-plus" class="w-3.5 h-3.5" />
@@ -403,7 +403,7 @@
       <div class="flex flex-col w-64 min-w-[256px] md:w-72 md:min-w-[288px] shrink-0">
         <div v-if="!showAddColumn" class="flex-1 flex items-start">
           <button
-            class="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 dark:border-white/10 hover:border-focusflow-300 dark:hover:border-focusflow-500/30 rounded-xl text-sm font-medium text-gray-400 hover:text-focusflow-700 dark:hover:text-focusflow-400 transition-all cursor-pointer"
+            class="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 dark:border-white/10 hover:border-focusflow-300 dark:hover:border-focusflow-500/30 rounded-xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-focusflow-700 dark:hover:text-focusflow-400 transition-all cursor-pointer"
             @click="showAddColumn = true"
           >
             <UIcon name="i-heroicons-plus" class="w-4 h-4" />
@@ -440,7 +440,7 @@
     <div v-if="!loading && viewMode === 'list'" class="animate-fade-up delay-100">
       <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-200/80 dark:border-white/10 overflow-hidden">
         <!-- Table header -->
-        <div class="grid grid-cols-[2fr_1fr_1fr_auto] md:grid-cols-[2fr_1fr_0.8fr_0.8fr_0.8fr_0.6fr_auto] px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-gray-400 border-b border-gray-200/80 dark:border-white/10 bg-gray-50/50 dark:bg-white/5">
+        <div class="grid grid-cols-[2fr_1fr_1fr_auto] md:grid-cols-[2fr_1fr_0.8fr_0.8fr_0.8fr_0.6fr_auto] px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 border-b border-gray-200/80 dark:border-white/10 bg-gray-50/50 dark:bg-white/5">
           <span>{{ language === 'en' ? 'Task' : 'Tarea' }}</span>
           <span class="hidden md:block">{{ t.column }}</span>
           <span>{{ t.deadline }}</span>
@@ -509,7 +509,7 @@
                     }"
                   />
                 </div>
-                <span class="text-[8px] text-gray-400 tabular-nums whitespace-nowrap">{{ getTaskProgress(task.due_date, task.created_at, task.estimated_hours)!.label }}</span>
+                <span class="text-[8px] text-gray-500 dark:text-gray-400 tabular-nums whitespace-nowrap">{{ getTaskProgress(task.due_date, task.created_at, task.estimated_hours)!.label }}</span>
               </div>
             </div>
             <!-- Priority -->
@@ -546,7 +546,7 @@
               >
                 {{ getMemberInitials(uid) }}
               </div>
-              <span v-if="(task.assignees || []).length > 3" class="text-[9px] text-gray-400 ml-1">+{{ task.assignees!.length - 3 }}</span>
+              <span v-if="(task.assignees || []).length > 3" class="text-[9px] text-gray-500 dark:text-gray-400 ml-1">+{{ task.assignees!.length - 3 }}</span>
               <span v-if="!(task.assignees || []).length" class="text-[10px] text-gray-300">—</span>
             </div>
             <!-- Delete -->
@@ -562,7 +562,7 @@
             </div>
           </div>
         </template>
-        <div v-if="allFilteredTasks.length === 0" class="flex flex-col items-center justify-center py-12 text-gray-400">
+        <div v-if="allFilteredTasks.length === 0" class="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
           <UIcon name="i-heroicons-clipboard-document-list" class="w-8 h-8 text-gray-300 mb-2" />
           <p class="text-[12px]">{{ t.noTasksMobile }}</p>
         </div>

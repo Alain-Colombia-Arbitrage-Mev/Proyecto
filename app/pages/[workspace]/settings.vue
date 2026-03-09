@@ -131,13 +131,13 @@
                       <UIcon :name="client.icon" class="w-3 h-3" :class="client.iconColor" />
                     </div>
                     <span class="text-xs font-semibold text-gray-900 dark:text-white">{{ client.name }}</span>
-                    <span class="text-[9px] text-gray-400 font-mono">{{ client.file }}</span>
+                    <span class="text-[9px] text-gray-500 dark:text-gray-400 font-mono">{{ client.file }}</span>
                   </div>
                   <button
                     class="w-6 h-6 rounded-md hover:bg-gray-200 dark:hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer"
                     @click="copyToClipboard(client.config, client.key)"
                   >
-                    <UIcon :name="copiedKey === client.key ? 'i-heroicons-check' : 'i-heroicons-clipboard'" class="w-3.5 h-3.5 text-gray-400" />
+                    <UIcon :name="copiedKey === client.key ? 'i-heroicons-check' : 'i-heroicons-clipboard'" class="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                   </button>
                 </div>
                 <pre class="bg-gray-900 dark:bg-black/50 text-emerald-400 text-[10px] leading-relaxed rounded-lg px-3 py-2 overflow-x-auto font-mono select-all">{{ client.config }}</pre>
@@ -158,12 +158,12 @@
                 <div class="min-w-0">
                   <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ tk.name }}</p>
                   <div class="flex items-center gap-2 mt-0.5">
-                    <code class="text-[10px] text-gray-400 font-mono">{{ tk.token_prefix }}...</code>
+                    <code class="text-[10px] text-gray-500 dark:text-gray-400 font-mono">{{ tk.token_prefix }}...</code>
                     <span v-for="s in tk.scopes" :key="s" class="text-[9px] px-1.5 py-0.5 rounded-full font-semibold"
                       :class="s === 'write' || s === 'admin' ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400' : 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400'">
                       {{ s }}
                     </span>
-                    <span v-if="tk.last_used_at" class="text-[9px] text-gray-400">
+                    <span v-if="tk.last_used_at" class="text-[9px] text-gray-500 dark:text-gray-400">
                       {{ lang.language.value === 'en' ? 'Last used' : 'Ultimo uso' }}: {{ new Date(tk.last_used_at).toLocaleDateString() }}
                     </span>
                   </div>

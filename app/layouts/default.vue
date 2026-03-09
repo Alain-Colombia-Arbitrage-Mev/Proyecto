@@ -2,7 +2,8 @@
   <div class="min-h-screen bg-[#f8f9fb] dark:bg-[#111] transition-colors">
     <!-- Desktop Sidebar -->
     <aside
-      class="hidden md:flex fixed inset-y-0 left-0 z-30 flex-col bg-[#0d0d0d]/80 backdrop-blur-xl border-r border-white/10 transition-all duration-300 ease-out"
+      class="dark hidden md:flex fixed inset-y-0 left-0 z-30 flex-col bg-[#0d0d0d] border-r border-white/10 transition-all duration-300 ease-out"
+      style="color-scheme: dark"
       :class="collapsed ? 'w-[68px]' : 'w-[252px]'"
     >
       <!-- Logo + workspace switcher -->
@@ -34,7 +35,7 @@
           >
             <div
               v-if="showWsSwitcher"
-              class="fixed z-[200] w-64 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl shadow-black/40 overflow-hidden"
+              class="dark fixed z-[200] w-64 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl shadow-black/40 overflow-hidden"
               :style="wsSwitcherStyle"
             >
               <div class="px-3 py-2 border-b border-white/[0.06]">
@@ -190,10 +191,10 @@
         <div class="min-w-0">
           <p class="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate leading-tight">{{ store.workspace?.name || 'FocusFlow' }}</p>
         </div>
-        <UIcon name="i-heroicons-chevron-up-down" class="w-3.5 h-3.5 text-gray-400 shrink-0" />
+        <UIcon name="i-heroicons-chevron-up-down" class="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 shrink-0" />
       </button>
       <div class="flex items-center gap-1.5">
-        <ClientOnly><DarkModeToggle sidebar-style /></ClientOnly>
+        <ClientOnly><DarkModeToggle /></ClientOnly>
         <LazyNotificationBell />
       </div>
     </header>

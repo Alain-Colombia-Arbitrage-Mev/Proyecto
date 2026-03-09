@@ -42,7 +42,7 @@
 
       <!-- Search -->
       <div class="relative">
-        <UIcon name="i-heroicons-magnifying-glass" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <UIcon name="i-heroicons-magnifying-glass" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400" />
         <input
           v-model="search"
           :placeholder="t.searchUsers"
@@ -90,7 +90,7 @@
                     </div>
                     <div class="min-w-0 text-left">
                       <p class="text-xs font-medium text-gray-900 dark:text-white truncate max-w-[220px] group-hover:text-focusflow-600 dark:group-hover:text-focusflow-400 transition-colors">{{ u.email }}</p>
-                      <p class="text-[10px] text-gray-400">{{ t.registeredOn }} {{ formatDate(u.created_at) }}</p>
+                      <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ t.registeredOn }} {{ formatDate(u.created_at) }}</p>
                     </div>
                     <UIcon
                       name="i-heroicons-chevron-right-20-solid"
@@ -112,7 +112,7 @@
                         <span class="text-[11px] font-medium text-gray-700 dark:text-gray-300 truncate">{{ ws.name }}</span>
                         <span class="text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider"
                           :class="roleBadge(ws.role)">{{ ws.role }}</span>
-                        <span class="text-[10px] text-gray-400 ml-auto">{{ ws.memberCount }} {{ t.membersLabel.toLowerCase() }} / {{ ws.projectCount }} {{ t.projectsLabel.toLowerCase() }}</span>
+                        <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-auto">{{ ws.memberCount }} {{ t.membersLabel.toLowerCase() }} / {{ ws.projectCount }} {{ t.projectsLabel.toLowerCase() }}</span>
                       </div>
                     </div>
                   </Transition>
@@ -122,7 +122,7 @@
                     <UIcon name="i-heroicons-building-office" class="w-3.5 h-3.5" />
                     {{ u.totalWorkspaces }}
                   </span>
-                  <span v-else class="text-[10px] text-gray-400">—</span>
+                  <span v-else class="text-[10px] text-gray-500 dark:text-gray-400">—</span>
                 </td>
                 <td class="px-4 py-3 text-center">
                   <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ totalMembers(u) }}</span>
@@ -131,7 +131,7 @@
                   <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ totalProjects(u) }}</span>
                 </td>
                 <td class="px-4 py-3 text-center">
-                  <span class="text-xs font-semibold" :class="u.tasks.total > 0 ? 'text-gray-900 dark:text-white' : 'text-gray-400'">{{ u.tasks.total }}</span>
+                  <span class="text-xs font-semibold" :class="u.tasks.total > 0 ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'">{{ u.tasks.total }}</span>
                 </td>
                 <td class="px-4 py-3 text-center">
                   <div v-if="u.tasks.total > 0" class="flex items-center justify-center gap-1.5">
@@ -140,10 +140,10 @@
                     </div>
                     <span class="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">{{ u.tasks.completed }}</span>
                   </div>
-                  <span v-else class="text-[10px] text-gray-400">—</span>
+                  <span v-else class="text-[10px] text-gray-500 dark:text-gray-400">—</span>
                 </td>
                 <td class="px-4 py-3">
-                  <span class="text-[11px]" :class="isRecentLogin(u.last_sign_in_at) ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-gray-400'">
+                  <span class="text-[11px]" :class="isRecentLogin(u.last_sign_in_at) ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-gray-500 dark:text-gray-400'">
                     {{ u.last_sign_in_at ? timeAgo(u.last_sign_in_at) : t.never }}
                   </span>
                 </td>
@@ -167,9 +167,9 @@
               </div>
               <div class="min-w-0 flex-1">
                 <p class="text-xs font-medium text-gray-900 dark:text-white truncate">{{ u.email }}</p>
-                <p class="text-[10px] text-gray-400">{{ t.registeredOn }} {{ formatDate(u.created_at) }}</p>
+                <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ t.registeredOn }} {{ formatDate(u.created_at) }}</p>
               </div>
-              <span class="text-[10px] shrink-0" :class="isRecentLogin(u.last_sign_in_at) ? 'text-emerald-500 font-medium' : 'text-gray-400'">
+              <span class="text-[10px] shrink-0" :class="isRecentLogin(u.last_sign_in_at) ? 'text-emerald-500 font-medium' : 'text-gray-500 dark:text-gray-400'">
                 {{ u.last_sign_in_at ? timeAgo(u.last_sign_in_at) : t.never }}
               </span>
             </div>
@@ -202,13 +202,13 @@
 
         <!-- Pagination -->
         <div v-if="totalPages > 1" class="flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-white/[0.06]">
-          <p class="text-[10px] text-gray-400">
+          <p class="text-[10px] text-gray-500 dark:text-gray-400">
             {{ (currentPage - 1) * pageSize + 1 }}-{{ Math.min(currentPage * pageSize, filteredUsers.length) }} / {{ filteredUsers.length }}
           </p>
           <div class="flex items-center gap-1">
             <button
               :disabled="currentPage <= 1"
-              class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06] disabled:opacity-30 transition-colors cursor-pointer"
+              class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06] disabled:opacity-30 transition-colors cursor-pointer"
               @click="currentPage--"
             >
               <UIcon name="i-heroicons-chevron-left" class="w-4 h-4" />
@@ -216,7 +216,7 @@
             <span class="text-xs font-medium text-gray-600 dark:text-gray-300 px-2">{{ currentPage }} / {{ totalPages }}</span>
             <button
               :disabled="currentPage >= totalPages"
-              class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06] disabled:opacity-30 transition-colors cursor-pointer"
+              class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06] disabled:opacity-30 transition-colors cursor-pointer"
               @click="currentPage++"
             >
               <UIcon name="i-heroicons-chevron-right" class="w-4 h-4" />

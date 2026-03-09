@@ -124,7 +124,7 @@
             <div class="flex items-center gap-2 mb-4">
               <UIcon name="i-heroicons-key" class="w-4 h-4 text-violet-500" />
               <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ t.apiKeys }}</h3>
-              <span class="text-[10px] text-gray-400 hidden sm:inline">{{ t.apiKeysDesc }}</span>
+              <span class="text-[10px] text-gray-500 dark:text-gray-400 hidden sm:inline">{{ t.apiKeysDesc }}</span>
             </div>
             <!-- n8n Connection -->
             <div class="mb-5 p-4 rounded-xl border-2 transition-colors" :class="n8nStatus?.connected ? 'border-emerald-200 dark:border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-500/5' : 'border-gray-200/80 dark:border-white/10 bg-gray-50/50 dark:bg-white/[0.02]'">
@@ -135,7 +135,7 @@
                   </div>
                   <div>
                     <p class="text-sm font-bold text-gray-900 dark:text-white">n8n</p>
-                    <p class="text-[10px] text-gray-400">{{ t.n8nDesc }}</p>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ t.n8nDesc }}</p>
                   </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -143,7 +143,7 @@
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     {{ t.n8nConnected }}
                   </span>
-                  <span v-else-if="n8nStatus" class="text-[10px] font-bold text-gray-400">{{ t.n8nNotConfigured }}</span>
+                  <span v-else-if="n8nStatus" class="text-[10px] font-bold text-gray-500 dark:text-gray-400">{{ t.n8nNotConfigured }}</span>
                   <button class="text-[10px] text-violet-500 hover:text-violet-600 font-semibold cursor-pointer" @click="checkN8n">
                     {{ t.checkConnection }}
                   </button>
@@ -177,7 +177,7 @@
                     class="flex-1"
                   />
                   <button
-                    class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 transition-colors"
+                    class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 transition-colors"
                     @click="key.visible = !key.visible"
                   >
                     <UIcon :name="key.visible ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'" class="w-4 h-4" />
@@ -225,7 +225,7 @@
                 </div>
                 <div>
                   <h3 class="font-bold text-gray-900 dark:text-white text-sm">{{ wf.name }}</h3>
-                  <p class="text-[11px] text-gray-400">{{ typeConfig(wf.type).label }}</p>
+                  <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ typeConfig(wf.type).label }}</p>
                 </div>
               </div>
               <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" :class="statusBadge(wf.status)">{{ statusLabel(wf.status) }}</span>
@@ -237,10 +237,10 @@
                 :key="node.id"
                 class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 border border-gray-200/80 dark:border-white/10"
               >{{ node.label }}</span>
-              <span v-if="(wf.nodes || []).length > 5" class="text-[10px] text-gray-400">+{{ (wf.nodes || []).length - 5 }}</span>
+              <span v-if="(wf.nodes || []).length > 5" class="text-[10px] text-gray-500 dark:text-gray-400">+{{ (wf.nodes || []).length - 5 }}</span>
             </div>
             <div class="flex items-center justify-between pt-3 border-t border-gray-50 dark:border-white/5">
-              <div class="flex items-center gap-3 text-[11px] text-gray-400">
+              <div class="flex items-center gap-3 text-[11px] text-gray-500 dark:text-gray-400">
                 <span class="flex items-center gap-1">
                   <UIcon name="i-heroicons-play" class="w-3 h-3" />
                   {{ wf.run_count || 0 }} {{ t.totalRuns.toLowerCase() }}
@@ -275,7 +275,7 @@
               class="font-bold text-gray-900 dark:text-white bg-transparent border-none outline-none text-sm w-full"
               @blur="saveWorkflow"
             />
-            <p class="text-[11px] text-gray-400">{{ typeConfig(editingWorkflow.type).label }} &middot; {{ (editingWorkflow.nodes || []).length }} nodos</p>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ typeConfig(editingWorkflow.type).label }} &middot; {{ (editingWorkflow.nodes || []).length }} nodos</p>
           </div>
         </div>
         <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -408,13 +408,13 @@
                           @click.stop
                         />
                         <div class="flex items-center gap-0.5 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                          <button class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 transition-colors" @click.stop="moveNode(idx, -1)" :disabled="idx === 0">
+                          <button class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 transition-colors" @click.stop="moveNode(idx, -1)" :disabled="idx === 0">
                             <UIcon name="i-heroicons-arrow-up" class="w-3.5 h-3.5" />
                           </button>
-                          <button class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 transition-colors" @click.stop="moveNode(idx, 1)" :disabled="idx === editingWorkflow!.nodes.length - 1">
+                          <button class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 transition-colors" @click.stop="moveNode(idx, 1)" :disabled="idx === editingWorkflow!.nodes.length - 1">
                             <UIcon name="i-heroicons-arrow-down" class="w-3.5 h-3.5" />
                           </button>
-                          <button class="p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors" @click.stop="removeNode(idx)">
+                          <button class="p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors" @click.stop="removeNode(idx)">
                             <UIcon name="i-heroicons-trash" class="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -428,7 +428,7 @@
                         <!-- AI Prompt / Agent config -->
                         <template v-if="node.type === 'ai_prompt' || node.type === 'ai_agent'">
                           <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.model }}</label>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.model }}</label>
                             <select v-model="node.config.model" class="w-full text-xs border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 cursor-pointer" @change="saveWorkflow">
                               <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
                               <option value="openai/gpt-4o">GPT-4o</option>
@@ -439,7 +439,7 @@
                             </select>
                           </div>
                           <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.prompt }}</label>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.prompt }}</label>
                             <textarea v-model="node.config.prompt" rows="3" class="w-full text-xs border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 resize-none" :placeholder="node.type === 'ai_agent' ? t.placeholderAgentTask : t.placeholderPrompt" @blur="saveWorkflow" />
                           </div>
                         </template>
@@ -447,7 +447,7 @@
                         <!-- Social Post config -->
                         <template v-if="node.type === 'social_post'">
                           <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.platform }}</label>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.platform }}</label>
                             <div class="flex flex-wrap gap-2 mt-1">
                               <button
                                 v-for="sp in socialPlatforms"
@@ -465,11 +465,11 @@
                             </div>
                           </div>
                           <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.caption }}</label>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.caption }}</label>
                             <textarea v-model="node.config.caption" rows="2" class="w-full text-xs border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 resize-none" :placeholder="t.placeholderPostContent" @blur="saveWorkflow" />
                           </div>
                           <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.hashtags }}</label>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.hashtags }}</label>
                             <UInput v-model="node.config.hashtags" size="sm" placeholder="#focusflow #productivity" class="mt-1" @blur="saveWorkflow" />
                           </div>
                         </template>
@@ -481,7 +481,7 @@
                             <span class="text-xs font-bold text-amber-700 dark:text-amber-300">Runway AI</span>
                           </div>
                           <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.runwayModel }}</label>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.runwayModel }}</label>
                             <select v-model="node.config.runway_model" class="w-full text-xs border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 cursor-pointer" @change="saveWorkflow">
                               <option value="gen3a_turbo">Gen-3 Alpha Turbo</option>
                               <option value="gen3a">Gen-3 Alpha</option>
@@ -489,19 +489,19 @@
                             </select>
                           </div>
                           <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.prompt }}</label>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.prompt }}</label>
                             <textarea v-model="node.config.prompt" rows="3" class="w-full text-xs border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 resize-none" :placeholder="t.placeholderVideoPrompt" @blur="saveWorkflow" />
                           </div>
                           <div class="grid grid-cols-2 gap-3">
                             <div>
-                              <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.videoDuration }}</label>
+                              <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.videoDuration }}</label>
                               <select v-model="node.config.duration" class="w-full text-xs border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 cursor-pointer" @change="saveWorkflow">
                                 <option :value="5">{{ t.seconds5 }}</option>
                                 <option :value="10">{{ t.seconds10 }}</option>
                               </select>
                             </div>
                             <div>
-                              <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.videoStyle }}</label>
+                              <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.videoStyle }}</label>
                               <select v-model="node.config.style" class="w-full text-xs border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 cursor-pointer" @change="saveWorkflow">
                                 <option value="cinematic">Cinematic</option>
                                 <option value="anime">Anime</option>
@@ -516,7 +516,7 @@
                         <!-- Image Generate config -->
                         <template v-if="node.type === 'image_generate'">
                           <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.prompt }}</label>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.prompt }}</label>
                             <textarea v-model="node.config.prompt" rows="2" class="w-full text-xs border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 resize-none" :placeholder="t.placeholderImagePrompt" @blur="saveWorkflow" />
                           </div>
                         </template>
@@ -524,15 +524,15 @@
                         <!-- Send Email config -->
                         <template v-if="node.type === 'send_email'">
                           <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.emailTo }}</label>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.emailTo }}</label>
                             <UInput v-model="node.config.to" size="sm" :placeholder="t.placeholderEmail" class="mt-1" @blur="saveWorkflow" />
                           </div>
                           <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.emailSubject }}</label>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.emailSubject }}</label>
                             <UInput v-model="node.config.subject" size="sm" :placeholder="t.placeholderSubject" class="mt-1" @blur="saveWorkflow" />
                           </div>
                           <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.emailBody }}</label>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.emailBody }}</label>
                             <textarea v-model="node.config.body" rows="3" class="w-full text-xs border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 resize-none" :placeholder="t.placeholderEmailBody" @blur="saveWorkflow" />
                           </div>
                         </template>
@@ -540,11 +540,11 @@
                         <!-- Webhook config -->
                         <template v-if="node.type === 'webhook'">
                           <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.webhookUrl }}</label>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.webhookUrl }}</label>
                             <UInput v-model="node.config.url" size="sm" placeholder="https://..." class="mt-1" @blur="saveWorkflow" />
                           </div>
                           <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.httpMethod }}</label>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.httpMethod }}</label>
                             <select v-model="node.config.method" class="w-full text-xs border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 cursor-pointer" @change="saveWorkflow">
                               <option value="POST">POST</option>
                               <option value="GET">GET</option>
@@ -557,7 +557,7 @@
                         <template v-if="node.type === 'http_request'">
                           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                             <div>
-                              <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.httpMethod }}</label>
+                              <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.httpMethod }}</label>
                               <select v-model="node.config.method" class="w-full text-xs border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 cursor-pointer" @change="saveWorkflow">
                                 <option value="GET">GET</option>
                                 <option value="POST">POST</option>
@@ -567,16 +567,16 @@
                               </select>
                             </div>
                             <div class="sm:col-span-2">
-                              <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.httpUrl }}</label>
+                              <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.httpUrl }}</label>
                               <UInput v-model="node.config.url" size="sm" placeholder="https://api.example.com/..." class="mt-1" @blur="saveWorkflow" />
                             </div>
                           </div>
                           <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.httpHeaders }}</label>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.httpHeaders }}</label>
                             <textarea v-model="node.config.headers" rows="2" class="w-full text-xs border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 resize-none font-mono" placeholder='{ "Authorization": "Bearer ..." }' @blur="saveWorkflow" />
                           </div>
                           <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.httpBody }}</label>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.httpBody }}</label>
                             <textarea v-model="node.config.request_body" rows="2" class="w-full text-xs border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 resize-none font-mono" placeholder='{ "key": "value" }' @blur="saveWorkflow" />
                           </div>
                         </template>
@@ -584,7 +584,7 @@
                         <!-- Delay config -->
                         <template v-if="node.type === 'delay'">
                           <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.delayNode }} (s)</label>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.delayNode }} (s)</label>
                             <UInput v-model="node.config.seconds" type="number" size="sm" class="mt-1" @blur="saveWorkflow" />
                           </div>
                         </template>
@@ -592,7 +592,7 @@
                         <!-- Condition config -->
                         <template v-if="node.type === 'condition'">
                           <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.conditionNode }}</label>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.conditionNode }}</label>
                             <UInput v-model="node.config.expression" size="sm" placeholder="output.status === 'success'" class="mt-1" @blur="saveWorkflow" />
                           </div>
                         </template>
@@ -600,7 +600,7 @@
                         <!-- Transform config -->
                         <template v-if="node.type === 'transform'">
                           <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase">{{ t.transformNode }}</label>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.transformNode }}</label>
                             <textarea v-model="node.config.template" rows="2" class="w-full text-xs border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 resize-none font-mono" placeholder="{ result: {{prev.output}} }" @blur="saveWorkflow" />
                           </div>
                         </template>
@@ -639,7 +639,7 @@
                               </div>
                               <div class="min-w-0">
                                 <p class="text-[11px] font-semibold text-gray-700 dark:text-gray-200 truncate">{{ nt.label }}</p>
-                                <p class="text-[9px] text-gray-400 truncate">{{ nt.desc }}</p>
+                                <p class="text-[9px] text-gray-500 dark:text-gray-400 truncate">{{ nt.desc }}</p>
                               </div>
                             </button>
                           </div>
@@ -663,13 +663,13 @@
               </div>
               <div class="flex-1 min-w-0">
                 <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ t.workflowAssistant }}</h3>
-                <p class="text-[10px] text-gray-400 truncate">
+                <p class="text-[10px] text-gray-500 dark:text-gray-400 truncate">
                   {{ chatSessionId ? t.sessionActive : t.workflowAssistantDesc }}
                 </p>
               </div>
               <div class="flex items-center gap-1 shrink-0">
                 <button
-                  class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-500/10 transition-colors"
+                  class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-500/10 transition-colors"
                   :title="t.newSession"
                   @click="startNewSession()"
                 >
@@ -677,7 +677,7 @@
                 </button>
                 <button
                   class="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
-                  :class="showSessionList ? 'text-violet-600 bg-violet-50 dark:bg-violet-500/10' : 'text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-500/10'"
+                  :class="showSessionList ? 'text-violet-600 bg-violet-50 dark:bg-violet-500/10' : 'text-gray-500 dark:text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-500/10'"
                   :title="t.chatHistory"
                   @click="showSessionList = !showSessionList"
                 >
@@ -693,8 +693,8 @@
                 <button class="text-xs text-violet-600 dark:text-violet-400 font-semibold hover:underline" @click="showSessionList = false">{{ t.close }}</button>
               </div>
               <div class="flex-1 overflow-y-auto">
-                <div v-if="loadingSessions" class="p-4 text-center text-xs text-gray-400">{{ t.loading }}...</div>
-                <div v-else-if="chatSessions.length === 0" class="p-6 text-center text-xs text-gray-400">{{ t.noSessions }}</div>
+                <div v-if="loadingSessions" class="p-4 text-center text-xs text-gray-500 dark:text-gray-400">{{ t.loading }}...</div>
+                <div v-else-if="chatSessions.length === 0" class="p-6 text-center text-xs text-gray-500 dark:text-gray-400">{{ t.noSessions }}</div>
                 <button
                   v-for="session in chatSessions"
                   :key="session.id"
@@ -702,10 +702,10 @@
                   :class="chatSessionId === session.id ? 'bg-violet-50 dark:bg-violet-500/10' : ''"
                   @click="loadSession(session)"
                 >
-                  <UIcon name="i-heroicons-chat-bubble-left-right" class="w-4 h-4 text-gray-400 shrink-0" />
+                  <UIcon name="i-heroicons-chat-bubble-left-right" class="w-4 h-4 text-gray-500 dark:text-gray-400 shrink-0" />
                   <div class="flex-1 min-w-0">
                     <p class="text-xs font-medium text-gray-700 dark:text-gray-200 truncate">{{ session.title }}</p>
-                    <p class="text-[10px] text-gray-400">{{ new Date(session.updated_at).toLocaleDateString() }}</p>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ new Date(session.updated_at).toLocaleDateString() }}</p>
                   </div>
                   <button
                     class="w-6 h-6 rounded flex items-center justify-center text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"

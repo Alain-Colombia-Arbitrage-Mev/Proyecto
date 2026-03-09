@@ -44,7 +44,7 @@ function handleStartTimer() {
       <TimesheetGrid :workspace-id="workspaceId" />
     </div>
 
-    <div v-else class="text-center py-16 text-gray-400">
+    <div v-else class="text-center py-16 text-gray-500 dark:text-gray-400">
       {{ labels.noTimeEntries }}
     </div>
   </div>

@@ -121,7 +121,7 @@ watch([filterStatus, filterType], fetchGoals)
       </div>
     </div>
 
-    <div v-if="loading" class="text-center py-16 text-gray-400">{{ labels.loading }}</div>
+    <div v-if="loading" class="text-center py-16 text-gray-500 dark:text-gray-400">{{ labels.loading }}</div>
 
     <div v-else-if="filteredGoals.length === 0" class="text-center py-16">
       <UIcon name="i-heroicons-flag" class="w-12 h-12 text-gray-300 dark:text-gray-700 mx-auto mb-3" />
@@ -134,7 +134,7 @@ watch([filterStatus, filterType], fetchGoals)
         <div class="flex items-center gap-2 mb-3">
           <span class="w-3 h-3 rounded-full shrink-0" :style="{ backgroundColor: group.projectColor }" />
           <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ group.projectName }}</h2>
-          <span class="text-xs text-gray-400">({{ group.goals.length }})</span>
+          <span class="text-xs text-gray-500 dark:text-gray-400">({{ group.goals.length }})</span>
         </div>
 
         <div class="space-y-4">

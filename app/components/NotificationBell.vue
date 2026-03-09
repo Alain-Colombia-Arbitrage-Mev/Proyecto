@@ -2,12 +2,12 @@
   <div ref="bellRef" class="relative">
     <button
       @click="open = !open"
-      class="relative w-8 h-8 flex items-center justify-center rounded-lg text-white/40 hover:text-white/80 hover:bg-white/[0.08] md:text-white/40 md:hover:text-white/80 transition-colors cursor-pointer"
+      class="relative w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 md:text-white/40 md:hover:text-white/80 md:hover:bg-white/[0.08] dark:text-white/40 dark:hover:text-white/80 dark:hover:bg-white/[0.08] transition-colors cursor-pointer"
     >
       <UIcon name="i-heroicons-bell" class="w-[18px] h-[18px]" />
       <span
         v-if="unreadCount > 0"
-        class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center ring-2 ring-white"
+        class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center ring-2 ring-white md:ring-[#0d0d0d]"
       >
         {{ unreadCount > 9 ? '9+' : unreadCount }}
       </span>
@@ -26,12 +26,12 @@
         <div
           v-if="open"
           ref="panelRef"
-          class="fixed w-80 max-h-[400px] bg-white border border-gray-100 rounded-xl shadow-xl z-[100] flex flex-col overflow-hidden"
+          class="fixed w-80 max-h-[400px] bg-white dark:bg-[#1b1b1b] border border-gray-200/80 dark:border-white/10 rounded-xl shadow-xl z-[100] flex flex-col overflow-hidden"
           :style="panelStyle"
         >
           <!-- Header -->
-          <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-            <h3 class="text-sm font-bold text-gray-900">{{ t.notifications }}</h3>
+          <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200/80 dark:border-white/10">
+            <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ t.notifications }}</h3>
             <div class="flex items-center gap-2">
               <button
                 v-if="unreadCount > 0"
@@ -42,7 +42,7 @@
               </button>
               <button
                 @click="open = false"
-                class="w-6 h-6 flex items-center justify-center rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+                class="w-6 h-6 flex items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
               >
                 <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
               </button>
@@ -51,15 +51,15 @@
 
           <!-- List -->
           <div class="flex-1 overflow-y-auto">
-            <div v-if="notifications.length === 0" class="flex flex-col items-center justify-center py-10 text-gray-400">
-              <UIcon name="i-heroicons-bell-slash" class="w-8 h-8 text-gray-300 mb-2" />
+            <div v-if="notifications.length === 0" class="flex flex-col items-center justify-center py-10 text-gray-500 dark:text-gray-400">
+              <UIcon name="i-heroicons-bell-slash" class="w-8 h-8 text-gray-300 dark:text-gray-600 mb-2" />
               <p class="text-xs">{{ t.noNotifications }}</p>
             </div>
             <div
               v-for="notif in notifications"
               :key="notif.id"
-              class="px-4 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors cursor-pointer"
-              :class="!notif.read ? 'bg-focusflow-50/30' : ''"
+              class="px-4 py-3 border-b border-gray-100 dark:border-white/5 last:border-0 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              :class="!notif.read ? 'bg-focusflow-50/30 dark:bg-focusflow-500/5' : ''"
               @click="markRead(notif)"
             >
               <div class="flex items-start gap-2.5">
@@ -70,8 +70,8 @@
                   <UIcon :name="notifIcon(notif.type)" class="w-3.5 h-3.5" :class="notifIconColor(notif.type)" />
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="text-xs font-medium text-gray-900 leading-snug">{{ notif.title }}</p>
-                  <p v-if="notif.body" class="text-[10px] text-gray-500 mt-0.5 line-clamp-2">{{ notif.body }}</p>
+                  <p class="text-xs font-medium text-gray-900 dark:text-gray-100 leading-snug">{{ notif.title }}</p>
+                  <p v-if="notif.body" class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">{{ notif.body }}</p>
                   <!-- RSVP buttons for meeting invitations -->
                   <div
                     v-if="notif.type === 'meeting_scheduled' && notif.entity_id && !rsvpStatus[notif.entity_id]"
@@ -79,14 +79,14 @@
                     @click.stop
                   >
                     <button
-                      class="px-2.5 py-1 text-[10px] font-semibold rounded-md bg-green-100 text-green-700 hover:bg-green-200 transition-colors cursor-pointer"
+                      class="px-2.5 py-1 text-[10px] font-semibold rounded-md bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-500/25 transition-colors cursor-pointer"
                       :disabled="rsvpLoading[notif.entity_id]"
                       @click="respondRsvp(notif, 'accepted')"
                     >
                       {{ lang.current.value === 'es' ? 'Aceptar' : 'Accept' }}
                     </button>
                     <button
-                      class="px-2.5 py-1 text-[10px] font-semibold rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-colors cursor-pointer"
+                      class="px-2.5 py-1 text-[10px] font-semibold rounded-md bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-500/25 transition-colors cursor-pointer"
                       :disabled="rsvpLoading[notif.entity_id]"
                       @click="respondRsvp(notif, 'declined')"
                     >
@@ -102,7 +102,7 @@
                       ? (lang.current.value === 'es' ? 'Aceptada' : 'Accepted')
                       : (lang.current.value === 'es' ? 'Rechazada' : 'Declined') }}
                   </p>
-                  <p class="text-[9px] text-gray-400 mt-1">{{ timeAgo(notif.created_at) }}</p>
+                  <p class="text-[9px] text-gray-400 dark:text-gray-500 mt-1">{{ timeAgo(notif.created_at) }}</p>
                 </div>
                 <div v-if="!notif.read" class="w-2 h-2 rounded-full bg-focusflow-500 shrink-0 mt-1.5" />
               </div>
@@ -110,11 +110,11 @@
           </div>
 
           <!-- Push notification toggle -->
-          <div class="px-4 py-2.5 border-t border-gray-100 bg-gray-50/50">
+          <div class="px-4 py-2.5 border-t border-gray-200/80 dark:border-white/10 bg-gray-50/50 dark:bg-white/[0.03]">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <UIcon name="i-heroicons-device-phone-mobile" class="w-3.5 h-3.5 text-gray-400" />
-                <span class="text-[11px] font-medium text-gray-600">
+                <UIcon name="i-heroicons-device-phone-mobile" class="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+                <span class="text-[11px] font-medium text-gray-600 dark:text-gray-400">
                   {{ lang.current.value === 'es' ? 'Notificaciones push' : 'Push notifications' }}
                 </span>
               </div>
@@ -272,12 +272,12 @@ function notifIcon(type: string) {
 }
 
 function notifIconBg(type: string) {
-  if (type === 'deadline_urgent') return 'bg-red-50'
-  if (type === 'deadline_approaching') return 'bg-amber-50'
-  if (type === 'task_assigned') return 'bg-blue-50'
-  if (type === 'workspace_invitation') return 'bg-green-50'
-  if (type === 'meeting_scheduled' || type === 'meeting_rsvp' || type === 'meeting_reminder') return 'bg-purple-50'
-  return 'bg-gray-50'
+  if (type === 'deadline_urgent') return 'bg-red-50 dark:bg-red-500/10'
+  if (type === 'deadline_approaching') return 'bg-amber-50 dark:bg-amber-500/10'
+  if (type === 'task_assigned') return 'bg-blue-50 dark:bg-blue-500/10'
+  if (type === 'workspace_invitation') return 'bg-green-50 dark:bg-green-500/10'
+  if (type === 'meeting_scheduled' || type === 'meeting_rsvp' || type === 'meeting_reminder') return 'bg-purple-50 dark:bg-purple-500/10'
+  return 'bg-gray-50 dark:bg-white/[0.06]'
 }
 
 function notifIconColor(type: string) {
@@ -286,7 +286,7 @@ function notifIconColor(type: string) {
   if (type === 'task_assigned') return 'text-blue-500'
   if (type === 'workspace_invitation') return 'text-green-500'
   if (type === 'meeting_scheduled' || type === 'meeting_rsvp' || type === 'meeting_reminder') return 'text-purple-500'
-  return 'text-gray-400'
+  return 'text-gray-500 dark:text-gray-400'
 }
 
 function timeAgo(dateStr: string) {

@@ -31,7 +31,7 @@
                     <span v-if="inv.invited_by_name" class="font-medium text-gray-700 dark:text-gray-300">{{ inv.invited_by_name }}</span>
                     {{ lang.language.value === 'en' ? ' invited you to' : ' te invito a' }}
                     <span class="font-semibold text-focusflow-600 dark:text-focusflow-400"> {{ inv.workspace_name }}</span>
-                    <span class="text-gray-400"> ({{ inv.role }})</span>
+                    <span class="text-gray-500 dark:text-gray-400"> ({{ inv.role }})</span>
                   </p>
                   <div class="flex items-center gap-2 mt-2.5">
                     <button
@@ -51,7 +51,7 @@
                   </div>
                 </div>
                 <button
-                  class="w-6 h-6 flex items-center justify-center rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+                  class="w-6 h-6 flex items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer shrink-0"
                   @click="dismiss(inv.id)"
                 >
                   <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />

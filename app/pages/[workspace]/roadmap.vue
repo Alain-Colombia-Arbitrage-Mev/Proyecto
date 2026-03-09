@@ -399,7 +399,7 @@ function onSidebarScroll() {
         <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ labels.roadmap }}</h1>
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
           {{ labels.timeline }}
-          <span class="text-[10px] text-gray-400 ml-2">{{ language === 'en' ? 'Drag bars to change dates · Right-click for options' : 'Arrastra barras para cambiar fechas · Clic derecho para opciones' }}</span>
+          <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-2">{{ language === 'en' ? 'Drag bars to change dates · Right-click for options' : 'Arrastra barras para cambiar fechas · Clic derecho para opciones' }}</span>
         </p>
       </div>
       <div class="flex items-center gap-2">
@@ -460,7 +460,7 @@ function onSidebarScroll() {
             >
               <UIcon
                 :name="expandedProjects.has(project.id) ? 'i-heroicons-chevron-down-20-solid' : 'i-heroicons-chevron-right-20-solid'"
-                class="w-3.5 h-3.5 text-gray-400 shrink-0"
+                class="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 shrink-0"
               />
               <div class="w-2.5 h-2.5 rounded-full shrink-0" :style="{ backgroundColor: project.color || '#14b8a6' }" />
               <span class="text-[13px] font-semibold text-gray-800 dark:text-gray-200 truncate">{{ project.name }}</span>
@@ -478,10 +478,10 @@ function onSidebarScroll() {
                 <span class="text-xs text-gray-600 dark:text-gray-400 truncate flex-1">{{ task.title }}</span>
                 <!-- Quick action buttons (visible on hover) -->
                 <div class="flex items-center gap-0.5 opacity-0 group-hover/task:opacity-100 transition-opacity">
-                  <button class="w-5 h-5 flex items-center justify-center rounded text-gray-400 hover:text-focusflow-500 cursor-pointer" @click.stop="openEditDate(task)" :title="labels.dueDate">
+                  <button class="w-5 h-5 flex items-center justify-center rounded text-gray-500 dark:text-gray-400 hover:text-focusflow-500 cursor-pointer" @click.stop="openEditDate(task)" :title="labels.dueDate">
                     <UIcon name="i-heroicons-calendar" class="w-3 h-3" />
                   </button>
-                  <button class="w-5 h-5 flex items-center justify-center rounded text-gray-400 hover:text-red-500 cursor-pointer" @click.stop="deleteTask(task)" :title="labels.delete">
+                  <button class="w-5 h-5 flex items-center justify-center rounded text-gray-500 dark:text-gray-400 hover:text-red-500 cursor-pointer" @click.stop="deleteTask(task)" :title="labels.delete">
                     <UIcon name="i-heroicons-trash" class="w-3 h-3" />
                   </button>
                 </div>
@@ -627,11 +627,11 @@ function onSidebarScroll() {
         @click.stop
       >
         <button class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer" @click="openEditDate(contextMenu.task)">
-          <UIcon name="i-heroicons-calendar" class="w-4 h-4 text-gray-400" />
+          <UIcon name="i-heroicons-calendar" class="w-4 h-4 text-gray-500 dark:text-gray-400" />
           {{ language === 'en' ? 'Edit due date' : 'Editar fecha límite' }}
         </button>
         <button class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer" @click="navigateToTask(contextMenu.task)">
-          <UIcon name="i-heroicons-arrow-top-right-on-square" class="w-4 h-4 text-gray-400" />
+          <UIcon name="i-heroicons-arrow-top-right-on-square" class="w-4 h-4 text-gray-500 dark:text-gray-400" />
           {{ language === 'en' ? 'Open in board' : 'Abrir en tablero' }}
         </button>
         <div class="border-t border-gray-200/80 dark:border-white/10 my-1" />

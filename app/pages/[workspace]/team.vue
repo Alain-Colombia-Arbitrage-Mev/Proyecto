@@ -851,7 +851,7 @@ function riskBarColor(score: number | null): string {
 }
 
 function riskTextColor(score: number | null): string {
-  if (score === null) return 'text-gray-400'
+  if (score === null) return 'text-gray-500 dark:text-gray-400'
   if (score <= 30) return 'text-focusflow-600 dark:text-focusflow-400'
   if (score <= 60) return 'text-amber-600 dark:text-amber-400'
   return 'text-rose-600 dark:text-rose-400'

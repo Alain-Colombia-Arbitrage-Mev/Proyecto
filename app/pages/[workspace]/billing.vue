@@ -13,7 +13,7 @@
         <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
           <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 animate-spin text-emerald-500" />
         </div>
-        <span class="text-xs text-gray-400">{{ en ? 'Loading plans...' : 'Cargando planes...' }}</span>
+        <span class="text-xs text-gray-500 dark:text-gray-400">{{ en ? 'Loading plans...' : 'Cargando planes...' }}</span>
       </div>
     </div>
 

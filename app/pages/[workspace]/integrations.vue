@@ -54,7 +54,7 @@
               <UIcon name="i-heroicons-window" class="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
             </div>
             <span class="text-xs font-semibold text-gray-900 dark:text-white">Claude Desktop</span>
-            <span class="text-[9px] text-gray-400">(npx)</span>
+            <span class="text-[9px] text-gray-500 dark:text-gray-400">(npx)</span>
           </div>
           <div class="relative group">
             <pre class="bg-gray-900 dark:bg-black/50 text-emerald-400 text-[11px] leading-relaxed rounded-lg px-3 py-2.5 overflow-x-auto font-mono">npx -y @anthropic-ai/claude-code mcp add focusflow -- npx -y mcp-remote {{ host }}/api/mcp --header "Authorization:Bearer {{ activeToken }}"</pre>
@@ -74,7 +74,7 @@
               <UIcon name="i-heroicons-cursor-arrow-rays" class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
             </div>
             <span class="text-xs font-semibold text-gray-900 dark:text-white">Cursor</span>
-            <span class="text-[9px] text-gray-400">.cursor/mcp.json</span>
+            <span class="text-[9px] text-gray-500 dark:text-gray-400">.cursor/mcp.json</span>
           </div>
           <div class="relative group">
             <pre class="bg-gray-900 dark:bg-black/50 text-emerald-400 text-[11px] leading-relaxed rounded-lg px-3 py-2.5 overflow-x-auto font-mono">{{ cursorConfig }}</pre>
@@ -94,7 +94,7 @@
               <UIcon name="i-heroicons-globe-alt" class="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
             </div>
             <span class="text-xs font-semibold text-gray-900 dark:text-white">Windsurf</span>
-            <span class="text-[9px] text-gray-400">~/.codeium/windsurf/mcp_config.json</span>
+            <span class="text-[9px] text-gray-500 dark:text-gray-400">~/.codeium/windsurf/mcp_config.json</span>
           </div>
           <div class="relative group">
             <pre class="bg-gray-900 dark:bg-black/50 text-emerald-400 text-[11px] leading-relaxed rounded-lg px-3 py-2.5 overflow-x-auto font-mono">{{ windsurfConfig }}</pre>
@@ -114,7 +114,7 @@
               <UIcon name="i-heroicons-code-bracket" class="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
             </div>
             <span class="text-xs font-semibold text-gray-900 dark:text-white">Cline</span>
-            <span class="text-[9px] text-gray-400">VS Code → Cline → MCP Servers</span>
+            <span class="text-[9px] text-gray-500 dark:text-gray-400">VS Code → Cline → MCP Servers</span>
           </div>
           <div class="relative group">
             <pre class="bg-gray-900 dark:bg-black/50 text-emerald-400 text-[11px] leading-relaxed rounded-lg px-3 py-2.5 overflow-x-auto font-mono">{{ clineConfig }}</pre>
@@ -134,7 +134,7 @@
               <UIcon name="i-heroicons-sparkles" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
             </div>
             <span class="text-xs font-semibold text-gray-900 dark:text-white">Gemini CLI</span>
-            <span class="text-[9px] text-gray-400">~/.gemini/settings.json</span>
+            <span class="text-[9px] text-gray-500 dark:text-gray-400">~/.gemini/settings.json</span>
           </div>
           <div class="relative group">
             <pre class="bg-gray-900 dark:bg-black/50 text-emerald-400 text-[11px] leading-relaxed rounded-lg px-3 py-2.5 overflow-x-auto font-mono">{{ geminiConfig }}</pre>
@@ -180,7 +180,7 @@
       <!-- Token list -->
       <div v-if="tokens.length === 0 && !loadingTokens" class="text-center py-6">
         <UIcon name="i-heroicons-key" class="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-        <p class="text-xs text-gray-400">{{ lang.language.value === 'en' ? 'No tokens yet' : 'Sin tokens aun' }}</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">{{ lang.language.value === 'en' ? 'No tokens yet' : 'Sin tokens aun' }}</p>
       </div>
 
       <div v-else class="space-y-2">
@@ -203,14 +203,14 @@
             <div class="min-w-0">
               <p class="text-xs font-semibold text-gray-900 dark:text-white truncate">{{ tk.name }}</p>
               <div class="flex items-center gap-2 mt-0.5">
-                <code class="text-[10px] text-gray-400 font-mono">{{ tk.token_prefix }}...</code>
+                <code class="text-[10px] text-gray-500 dark:text-gray-400 font-mono">{{ tk.token_prefix }}...</code>
                 <span v-for="s in tk.scopes" :key="s" class="text-[9px] font-bold uppercase px-1 py-0.5 rounded bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400">{{ s }}</span>
-                <span v-if="tk.last_used_at" class="text-[9px] text-gray-400">{{ lang.language.value === 'en' ? 'Used' : 'Usado' }} {{ timeAgo(tk.last_used_at) }}</span>
+                <span v-if="tk.last_used_at" class="text-[9px] text-gray-500 dark:text-gray-400">{{ lang.language.value === 'en' ? 'Used' : 'Usado' }} {{ timeAgo(tk.last_used_at) }}</span>
               </div>
             </div>
           </div>
           <button
-            class="w-7 h-7 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center justify-center transition-colors cursor-pointer"
+            class="w-7 h-7 rounded-md text-gray-500 dark:text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center justify-center transition-colors cursor-pointer"
             @click="deleteToken(tk.id)"
           >
             <UIcon name="i-heroicons-trash" class="w-3.5 h-3.5" />

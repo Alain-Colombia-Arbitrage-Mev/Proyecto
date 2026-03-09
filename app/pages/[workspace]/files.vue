@@ -265,6 +265,6 @@ function fileIconColor(mime: string) {
   if (mime === 'application/pdf') return 'text-red-500'
   if (mime === 'text/markdown' || mime === 'text/plain') return 'text-sky-500'
   if (mime === 'application/json') return 'text-amber-500'
-  return 'text-gray-400'
+  return 'text-gray-500 dark:text-gray-400'
 }
 </script>

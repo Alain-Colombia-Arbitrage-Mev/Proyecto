@@ -52,6 +52,6 @@ watch(() => props.workspaceId, (id) => { if (id) fetchRollup() }, { immediate: t
       </div>
     </div>
 
-    <div v-else class="text-xs text-gray-400">{{ labels.loading }}</div>
+    <div v-else class="text-xs text-gray-500 dark:text-gray-400">{{ labels.loading }}</div>
   </div>
 </template>

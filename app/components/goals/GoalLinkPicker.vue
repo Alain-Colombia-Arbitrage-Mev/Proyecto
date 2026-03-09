@@ -78,7 +78,7 @@ async function removeLink(linkId: string) {
         <button
           v-if="canManageGoals"
           @click="removeLink(link.id)"
-          class="ml-0.5 text-gray-400 hover:text-red-500"
+          class="ml-0.5 text-gray-500 dark:text-gray-400 hover:text-red-500"
         >×</button>
       </span>
     </div>

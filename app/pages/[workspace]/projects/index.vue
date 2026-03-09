@@ -117,7 +117,7 @@
     <!-- No workspace -->
     <div v-else-if="!store.workspace" class="text-center py-20 animate-fade-up">
       <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-white/10 flex items-center justify-center mx-auto mb-5">
-        <UIcon name="i-heroicons-building-office" class="w-8 h-8 text-gray-400" />
+        <UIcon name="i-heroicons-building-office" class="w-8 h-8 text-gray-500 dark:text-gray-400" />
       </div>
       <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ t.workspaceNotFound }}</h2>
       <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 mb-6">{{ t.createWorkspaceFirst }}</p>
@@ -192,7 +192,7 @@
         </NuxtLink>
         <button
           v-if="canDeleteProjects"
-          class="absolute top-3 right-3 w-7 h-7 rounded-lg bg-white/90 dark:bg-[#1b1b1b]/90 border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-400 hover:text-red-500 hover:border-red-300 opacity-0 group-hover/card:opacity-100 transition-all z-10"
+          class="absolute top-3 right-3 w-7 h-7 rounded-lg bg-white/90 dark:bg-[#1b1b1b]/90 border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-red-500 hover:border-red-300 opacity-0 group-hover/card:opacity-100 transition-all z-10"
           @click.prevent="confirmDeleteProject(project)"
           :title="t.delete"
         >
@@ -275,7 +275,7 @@
                 >
                   <div class="flex items-center justify-between mb-1">
                     <span class="text-xs font-bold text-gray-900 dark:text-gray-100">{{ tpl.label }}</span>
-                    <span class="text-[9px] font-semibold text-gray-400">{{ tpl.cols }} {{ t.columns }}</span>
+                    <span class="text-[9px] font-semibold text-gray-500 dark:text-gray-400">{{ tpl.cols }} {{ t.columns }}</span>
                   </div>
                   <div class="flex gap-1 flex-wrap">
                     <span
@@ -330,7 +330,7 @@
                         {{ importPreview?.platform === 'clickup_es' ? 'ClickUp (ES)' : importPreview?.platform }}
                       </span>
                     </div>
-                    <button type="button" class="p-0.5 text-gray-400 hover:text-red-500 transition-colors cursor-pointer shrink-0" @click="clearImportCsv">
+                    <button type="button" class="p-0.5 text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors cursor-pointer shrink-0" @click="clearImportCsv">
                       <UIcon name="i-heroicons-x-mark" class="w-3.5 h-3.5" />
                     </button>
                   </div>

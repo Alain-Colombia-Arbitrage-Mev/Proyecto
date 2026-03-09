@@ -82,7 +82,7 @@
               <p class="text-sm font-semibold text-gray-900 dark:text-white">
                 {{ lastResult.tasks_created }} {{ lang.language.value === 'en' ? 'tasks created' : 'tareas creadas' }}
               </p>
-              <p v-if="lastResult.agents_used?.length" class="text-[10px] text-gray-400">
+              <p v-if="lastResult.agents_used?.length" class="text-[10px] text-gray-500 dark:text-gray-400">
                 {{ lang.language.value === 'en' ? 'Agents:' : 'Agentes:' }} {{ lastResult.agents_used.join(', ') }}
               </p>
             </div>
@@ -129,7 +129,7 @@
               </div>
               <div>
                 <p class="text-xs font-medium text-gray-900 dark:text-white">{{ agent.name }}</p>
-                <p class="text-[10px] text-gray-400">{{ agent.desc }}</p>
+                <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ agent.desc }}</p>
               </div>
             </div>
           </div>
@@ -140,7 +140,7 @@
           <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
             {{ lang.language.value === 'en' ? 'Recent Runs' : 'Ejecuciones Recientes' }}
           </h3>
-          <div v-if="recentRuns.length === 0" class="text-xs text-gray-400 py-4 text-center">
+          <div v-if="recentRuns.length === 0" class="text-xs text-gray-500 dark:text-gray-400 py-4 text-center">
             {{ lang.language.value === 'en' ? 'No runs yet' : 'Sin ejecuciones aun' }}
           </div>
           <div v-else class="space-y-2">
@@ -157,10 +157,10 @@
                 >
                   {{ run.status }}
                 </span>
-                <span class="text-[10px] text-gray-400">{{ formatTime(run.created_at) }}</span>
+                <span class="text-[10px] text-gray-500 dark:text-gray-400">{{ formatTime(run.created_at) }}</span>
               </div>
               <p class="text-[11px] text-gray-700 dark:text-gray-300 mt-1 truncate">{{ run.prompt?.slice(0, 80) }}</p>
-              <p v-if="run.tasks_created?.length" class="text-[10px] text-gray-400 mt-0.5">{{ run.tasks_created.length }} tasks</p>
+              <p v-if="run.tasks_created?.length" class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">{{ run.tasks_created.length }} tasks</p>
             </div>
           </div>
         </div>

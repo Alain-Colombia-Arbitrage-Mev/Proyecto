@@ -54,9 +54,9 @@ watch(workspaceId, () => { if (workspaceId.value) fetchSprints() }, { immediate:
       </select>
     </div>
 
-    <div v-if="loading" class="text-center py-16 text-gray-400">{{ labels.loading }}</div>
+    <div v-if="loading" class="text-center py-16 text-gray-500 dark:text-gray-400">{{ labels.loading }}</div>
 
-    <div v-else-if="!canViewReports" class="text-center py-16 text-gray-400">
+    <div v-else-if="!canViewReports" class="text-center py-16 text-gray-500 dark:text-gray-400">
       {{ labels.noResults }}
     </div>
 

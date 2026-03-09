@@ -20,14 +20,6 @@
   --font-heading: 'Space Grotesk', 'Inter', sans-serif;
 }
 
-:root {
-  color-scheme: light;
-}
-
-.dark {
-  color-scheme: dark;
-}
-
 /* Smooth scrolling */
 * {
   scroll-behavior: smooth;

@@ -20,10 +20,10 @@
         </div>
         <div class="flex-1">
           <p class="text-sm font-bold text-gray-900 dark:text-gray-100">FocusFlow AI</p>
-          <p class="text-[10px] text-gray-400">MiniMax M2.5 · {{ language === 'en' ? 'Smart assistant' : 'Asistente inteligente' }}</p>
+          <p class="text-[10px] text-gray-500 dark:text-gray-400">MiniMax M2.5 · {{ language === 'en' ? 'Smart assistant' : 'Asistente inteligente' }}</p>
         </div>
         <button
-          class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
+          class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
           @click="showAiPanel = false"
           :title="t.close"
         >
@@ -35,17 +35,17 @@
       <div class="px-3 py-1.5 border-b border-gray-200/80 dark:border-white/10 flex gap-1">
         <button
           class="text-[10px] font-semibold px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
-          :class="aiTab === 'chat' ? 'bg-focusflow-50 dark:bg-focusflow-500/10 text-focusflow-700 dark:text-focusflow-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+          :class="aiTab === 'chat' ? 'bg-focusflow-50 dark:bg-focusflow-500/10 text-focusflow-700 dark:text-focusflow-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
           @click="aiTab = 'chat'"
         >Chat</button>
         <button
           class="text-[10px] font-semibold px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
-          :class="aiTab === 'memory' ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+          :class="aiTab === 'memory' ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
           @click="aiTab = 'memory'; loadMemoryAgents()"
         >{{ language === 'en' ? 'Memory' : 'Memoria' }}</button>
         <button
           class="text-[10px] font-semibold px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
-          :class="aiTab === 'tokens' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+          :class="aiTab === 'tokens' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
           @click="aiTab = 'tokens'; loadTokenUsage()"
         >Tokens</button>
       </div>
@@ -84,12 +84,12 @@
       <!-- Memory Tab -->
       <div v-if="aiTab === 'memory'" class="flex-1 overflow-y-auto p-3 space-y-3 min-h-[200px] max-h-[340px]">
         <div v-if="memoryLoading" class="flex justify-center py-8">
-          <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 animate-spin text-gray-400" />
+          <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 animate-spin text-gray-500 dark:text-gray-400" />
         </div>
         <template v-else>
           <div v-if="memoryAgents.length === 0" class="text-center py-8">
-            <UIcon name="i-heroicons-cpu-chip" class="w-8 h-8 text-gray-300 mx-auto mb-2" />
-            <p class="text-xs text-gray-400">{{ language === 'en' ? 'No memories yet. Use the chat to generate context.' : 'Sin memorias aún. Usa el chat para generar contexto.' }}</p>
+            <UIcon name="i-heroicons-cpu-chip" class="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ language === 'en' ? 'No memories yet. Use the chat to generate context.' : 'Sin memorias aún. Usa el chat para generar contexto.' }}</p>
           </div>
           <div v-for="agent in memoryAgents" :key="agent.type" class="bg-gray-50 dark:bg-white/5 rounded-xl p-3">
             <div class="flex items-center gap-2 mb-1">
@@ -98,7 +98,7 @@
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-xs font-bold text-gray-900 dark:text-gray-100">{{ agent.name }}</p>
-                <p class="text-[10px] text-gray-400">{{ agent.description }}</p>
+                <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ agent.description }}</p>
               </div>
               <span
                 class="text-[10px] font-bold px-2 py-0.5 rounded-full"
@@ -109,7 +109,7 @@
             </div>
           </div>
           <div class="text-center pt-2">
-            <p class="text-[10px] text-gray-400">Total: {{ memoryTotalCount }} {{ language === 'en' ? 'vector memories' : 'memorias vectoriales' }}</p>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400">Total: {{ memoryTotalCount }} {{ language === 'en' ? 'vector memories' : 'memorias vectoriales' }}</p>
           </div>
         </template>
       </div>
@@ -117,13 +117,13 @@
       <!-- Tokens Tab -->
       <div v-if="aiTab === 'tokens'" class="flex-1 overflow-y-auto p-3 space-y-3 min-h-[200px] max-h-[340px]">
         <div v-if="tokenLoading" class="flex justify-center py-8">
-          <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 animate-spin text-gray-400" />
+          <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 animate-spin text-gray-500 dark:text-gray-400" />
         </div>
         <template v-else-if="tokenStats">
           <!-- Monthly usage bar -->
           <div class="bg-gray-50 dark:bg-white/5 rounded-xl p-3">
             <div class="flex items-center justify-between mb-2">
-              <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400">{{ language === 'en' ? 'Monthly usage' : 'Uso mensual' }}</p>
+              <p class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">{{ language === 'en' ? 'Monthly usage' : 'Uso mensual' }}</p>
               <span class="text-xs font-bold tabular-nums" :class="tokenStats.percentUsed >= 90 ? 'text-red-600' : tokenStats.percentUsed >= 70 ? 'text-amber-600' : 'text-emerald-600'">
                 {{ tokenStats.percentUsed }}%
               </span>
@@ -145,14 +145,14 @@
               <span class="text-lg font-bold text-emerald-700 tabular-nums">{{ formatTokens(tokenTodayCount) }}</span>
             </div>
             <div class="bg-gray-50 dark:bg-white/5 rounded-xl p-3 text-center">
-              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">{{ t.thisMonth }}</p>
+              <p class="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-1">{{ t.thisMonth }}</p>
               <span class="text-lg font-bold text-gray-700 dark:text-gray-300 tabular-nums">{{ formatTokens(tokenStats.totalTokens) }}</span>
             </div>
           </div>
 
           <!-- By action breakdown -->
           <div>
-            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">{{ language === 'en' ? 'By action' : 'Por acción' }}</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{{ language === 'en' ? 'By action' : 'Por acción' }}</p>
             <div class="space-y-1.5">
               <div v-for="(tokens, actionName) in tokenStats.byAction" :key="actionName" class="flex items-center gap-2">
                 <span class="text-[10px] text-gray-600 dark:text-gray-400 w-24 truncate">{{ actionName }}</span>
@@ -172,16 +172,16 @@
           </div>
         </template>
         <div v-else class="text-center py-8">
-          <UIcon name="i-heroicons-cpu-chip" class="w-8 h-8 text-gray-300 mx-auto mb-2" />
-          <p class="text-xs text-gray-400">{{ language === 'en' ? 'No token usage data' : 'Sin datos de uso de tokens' }}</p>
+          <UIcon name="i-heroicons-cpu-chip" class="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+          <p class="text-xs text-gray-500 dark:text-gray-400">{{ language === 'en' ? 'No token usage data' : 'Sin datos de uso de tokens' }}</p>
         </div>
       </div>
 
       <!-- Messages (chat tab) -->
       <div v-if="aiTab === 'chat'" ref="chatContainer" class="flex-1 overflow-y-auto p-3 space-y-3 min-h-[200px] max-h-[340px]">
         <div v-if="aiMessages.length === 0" class="flex flex-col items-center justify-center h-full text-center py-8">
-          <UIcon name="i-heroicons-sparkles" class="w-8 h-8 text-gray-300 mb-2" />
-          <p class="text-xs text-gray-400">{{ language === 'en' ? 'Ask me about your project or use the buttons above' : 'Pregúntame sobre tu proyecto o usa los botones de arriba' }}</p>
+          <UIcon name="i-heroicons-sparkles" class="w-8 h-8 text-gray-300 dark:text-gray-600 mb-2" />
+          <p class="text-xs text-gray-500 dark:text-gray-400">{{ language === 'en' ? 'Ask me about your project or use the buttons above' : 'Pregúntame sobre tu proyecto o usa los botones de arriba' }}</p>
         </div>
 
         <div
@@ -234,7 +234,7 @@
               <p class="font-semibold text-emerald-700 mb-1">{{ msg.plan.greeting }}</p>
               <div class="space-y-1 mt-2">
                 <div v-for="(ft, ti) in msg.plan.focus_tasks" :key="ti" class="flex items-center gap-1.5">
-                  <span class="text-gray-400">{{ Number(ti) + 1 }}.</span>
+                  <span class="text-gray-500 dark:text-gray-400">{{ Number(ti) + 1 }}.</span>
                   <span class="text-gray-900 dark:text-gray-100">{{ ft }}</span>
                 </div>
               <button
@@ -349,7 +349,7 @@
           </div>
         </div>
 
-        <div v-if="aiLoading" class="flex items-center gap-2 text-xs text-gray-400">
+        <div v-if="aiLoading" class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
           <UIcon name="i-heroicons-arrow-path" class="w-3.5 h-3.5 animate-spin" />
           {{ language === 'en' ? 'Thinking...' : 'Pensando...' }}
         </div>

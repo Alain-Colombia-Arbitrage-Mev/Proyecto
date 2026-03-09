@@ -48,7 +48,7 @@ const typeIcon = computed(() => {
   >
     <div class="flex items-start justify-between mb-2">
       <div class="flex items-center gap-2">
-        <UIcon :name="typeIcon" class="w-4 h-4 text-gray-400" />
+        <UIcon :name="typeIcon" class="w-4 h-4 text-gray-500 dark:text-gray-400" />
         <span class="text-sm font-semibold text-gray-900 dark:text-white">
           {{ localizedTitle(goal) }}
         </span>
@@ -84,7 +84,7 @@ const typeIcon = computed(() => {
       </div>
     </div>
 
-    <div v-if="goal.period_end" class="mt-2 text-xs text-gray-400">
+    <div v-if="goal.period_end" class="mt-2 text-xs text-gray-500 dark:text-gray-400">
       {{ labels.deadline }}: {{ new Date(goal.period_end).toLocaleDateString() }}
     </div>
   </div>
