@@ -112,7 +112,14 @@
                         <span class="text-[11px] font-medium text-gray-700 dark:text-gray-300 truncate">{{ ws.name }}</span>
                         <span class="text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider"
                           :class="roleBadge(ws.role)">{{ ws.role }}</span>
-                        <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-auto">{{ ws.memberCount }} {{ t.membersLabel.toLowerCase() }} / {{ ws.projectCount }} {{ t.projectsLabel.toLowerCase() }}</span>
+                        <span class="text-[10px] text-gray-500 dark:text-gray-400 ml-auto mr-2">{{ ws.memberCount }} {{ t.membersLabel.toLowerCase() }} / {{ ws.projectCount }} {{ t.projectsLabel.toLowerCase() }}</span>
+                        <NuxtLink
+                          v-if="ws.slug"
+                          :to="`/${ws.slug}/dashboard`"
+                          class="text-[10px] font-semibold text-focusflow-600 dark:text-focusflow-400 bg-focusflow-50 dark:bg-focusflow-500/10 hover:bg-focusflow-100 dark:hover:bg-focusflow-500/20 px-2 py-1 rounded-md transition-colors shrink-0"
+                        >
+                          {{ lang.language.value === 'en' ? 'Enter' : 'Entrar' }}
+                        </NuxtLink>
                       </div>
                     </div>
                   </Transition>
@@ -188,14 +195,15 @@
 
             <!-- Workspace pills -->
             <div v-if="u.workspaces.length > 0" class="flex flex-wrap gap-1 pl-11">
-              <span
+              <NuxtLink
                 v-for="ws in u.workspaces"
                 :key="ws.id"
-                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-white/[0.06] text-[9px] font-medium text-gray-600 dark:text-gray-400"
+                :to="ws.slug ? `/${ws.slug}/dashboard` : undefined"
+                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-white/[0.06] text-[9px] font-medium text-gray-600 dark:text-gray-400 hover:bg-focusflow-100 dark:hover:bg-focusflow-500/10 hover:text-focusflow-600 dark:hover:text-focusflow-400 transition-colors"
               >
                 {{ ws.name }}
                 <span class="px-1 py-px rounded-full text-[8px] font-bold uppercase" :class="roleBadge(ws.role)">{{ ws.role }}</span>
-              </span>
+              </NuxtLink>
             </div>
           </div>
         </div>

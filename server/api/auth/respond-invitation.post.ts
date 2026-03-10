@@ -35,12 +35,28 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: 'This invitation is not for you' })
   }
 
+  // Get workspace slug for redirect
+  const { data: ws } = await supabase
+    .from('workspaces')
+    .select('slug')
+    .eq('id', invite.workspace_id)
+    .maybeSingle()
+
   // ── DECLINE ──
   if (action === 'decline') {
-    await supabase
+    const { error: declineErr } = await supabase
       .from('workspace_invitations')
       .update({ status: 'declined', accepted_at: new Date().toISOString() })
       .eq('id', invite.id)
+
+    if (declineErr) {
+      console.error('[respond-invitation] Error declining:', declineErr.message)
+      // Fallback: mark as cancelled if 'declined' is not in CHECK constraint yet
+      await supabase
+        .from('workspace_invitations')
+        .update({ status: 'cancelled', accepted_at: new Date().toISOString() })
+        .eq('id', invite.id)
+    }
 
     return { ok: true, action: 'declined' }
   }
@@ -84,14 +100,19 @@ export default defineEventHandler(async (event) => {
   }
 
   // Mark accepted
-  await supabase
+  const { error: acceptErr } = await supabase
     .from('workspace_invitations')
     .update({ status: 'accepted', accepted_at: new Date().toISOString() })
     .eq('id', invite.id)
+
+  if (acceptErr) {
+    console.error('[respond-invitation] Error marking accepted:', acceptErr.message)
+  }
 
   return {
     ok: true,
     action: 'accepted',
     workspace_id: invite.workspace_id,
+    workspace_slug: ws?.slug || '',
   }
 })

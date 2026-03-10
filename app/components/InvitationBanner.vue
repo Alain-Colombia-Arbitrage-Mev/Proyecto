@@ -104,11 +104,20 @@ async function respond(inv: Invitation, action: 'accept' | 'decline') {
     invitations.value = invitations.value.filter(i => i.id !== inv.id)
 
     // If accepted, navigate to the workspace
-    if (action === 'accept' && result?.workspace_id && inv.workspace_slug) {
-      await router.push(`/${inv.workspace_slug}/dashboard`)
+    if (action === 'accept') {
+      const slug = inv.workspace_slug || result?.workspace_slug
+      if (slug) {
+        await router.push(`/${slug}/dashboard`)
+      } else {
+        // Fallback: reload to let index.vue redirect to the right workspace
+        window.location.href = '/'
+      }
     }
   } catch (e: any) {
     console.error('[InvitationBanner] respond error:', e)
+    // Show error to user instead of silently failing
+    const msg = e?.data?.message || e?.message || 'Error'
+    alert(lang.language.value === 'en' ? `Error: ${msg}` : `Error: ${msg}`)
   } finally {
     delete responding.value[inv.id]
   }
