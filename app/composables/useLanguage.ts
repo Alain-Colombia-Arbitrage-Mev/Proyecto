@@ -788,6 +788,17 @@ export function useLanguage() {
       registeredOn: t('Registrado el', 'Registered on', 'رجسٹرڈ'),
       noUsersFound: t('No se encontraron usuarios', 'No users found', 'کوئی صارف نہیں ملا'),
       loadingUsers: t('Cargando usuarios...', 'Loading users...', 'صارفین لوڈ ہو رہے ہیں...'),
+      addToWorkspace: t('Agregar a workspace', 'Add to workspace', 'ورک سپیس میں شامل کریں'),
+      selectWorkspace: t('Seleccionar workspace', 'Select workspace', 'ورک سپیس منتخب کریں'),
+      selectRole: t('Seleccionar rol', 'Select role', 'کردار منتخب کریں'),
+      addedToWorkspace: t('agregado al workspace', 'added to workspace', 'ورک سپیس میں شامل'),
+      manageProjectAccess: t('Gestionar acceso a proyectos', 'Manage project access', 'پروجیکٹ تک رسائی کا انتظام'),
+      userAlreadyInWorkspace: t('El usuario ya es miembro de este workspace', 'User is already a member of this workspace', 'صارف پہلے سے اس ورک سپیس کا ممبر ہے'),
+      adminAutoAccessShort: t('Admin+ tiene acceso a todos los proyectos', 'Admin+ has access to all projects', 'ایڈمن+ کو تمام پروجیکٹس تک رسائی ہے'),
+      selectProjects: t('Seleccionar proyectos', 'Select projects', 'پروجیکٹس منتخب کریں'),
+      projectsUpdated: t('Proyectos actualizados', 'Projects updated', 'پروجیکٹس اپ ڈیٹ ہو گئے'),
+      noProjectsInWorkspace: t('Este workspace no tiene proyectos', 'This workspace has no projects', 'اس ورک سپیس میں کوئی پروجیکٹ نہیں'),
+      actions: t('Acciones', 'Actions', 'اعمال'),
     }
   })
 
