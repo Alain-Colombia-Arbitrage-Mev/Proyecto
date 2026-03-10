@@ -63,7 +63,7 @@ export default defineEventHandler(async (event) => {
         workspace_id: invite.workspace_id,
         granted_by: invite.invited_by,
       }))
-      await supabase.from('project_members').insert(rows).catch(() => {})
+      await supabase.from('project_members').upsert(rows, { onConflict: 'project_id,user_id' }).catch(() => {})
     }
 
     // Mark invitation as accepted

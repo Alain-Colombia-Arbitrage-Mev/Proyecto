@@ -59,7 +59,11 @@ onMounted(async () => {
 
     sessionStorage.setItem('focusflow_just_logged_in', '1')
 
-    // Invitations are handled via InvitationBanner — no auto-accept
+    // Auto-process pending invitations before redirect
+    try {
+      await $fetch('/api/auth/process-invitations', { method: 'POST' })
+    } catch {}
+
     await router.replace('/')
   } catch (err: any) {
     console.error('[callback] Error:', err)

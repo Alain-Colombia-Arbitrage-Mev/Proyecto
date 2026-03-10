@@ -41,17 +41,31 @@ async function redirectToWorkspace() {
     sessionStorage.removeItem('focusflow_invite_id')
   }
 
-  const workspaces = await fetchWorkspacesWithRetry()
+  let workspaces = await fetchWorkspacesWithRetry()
+
+  // If no workspaces, try to auto-process pending invitations first
+  if (workspaces && workspaces.length === 0) {
+    try {
+      const result = await $fetch<{ processed: number }>('/api/auth/process-invitations', { method: 'POST' })
+      if (result?.processed > 0) {
+        // Re-fetch workspaces after processing invitations
+        workspaces = await fetchWorkspacesWithRetry()
+      }
+    } catch (e) {
+      console.warn('[index] Could not process invitations:', e)
+    }
+  }
 
   if (workspaces && workspaces.length > 0) {
     await router.push(`/${workspaces[0].slug}/dashboard`)
   } else if (workspaces && workspaces.length === 0) {
-    // Check if there are pending invitations — if so, go to dashboard of first available or onboarding
     await router.push('/onboarding')
   } else {
     // All retries failed — likely cookie not synced yet
     await new Promise(r => setTimeout(r, 1500))
     try {
+      // Try processing invitations on retry path too
+      await $fetch('/api/auth/process-invitations', { method: 'POST' }).catch(() => {})
       const data = await $fetch<any[]>('/api/user/workspaces')
       if (data && data.length > 0) {
         await router.push(`/${data[0].slug}/dashboard`)

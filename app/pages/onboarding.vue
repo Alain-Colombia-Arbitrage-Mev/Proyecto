@@ -6,6 +6,61 @@
     </div>
 
     <div class="relative w-full max-w-lg px-4 py-12">
+      <!-- Pending invitations banner -->
+      <div v-if="pendingInvitations.length > 0" class="mb-8 animate-fade-up">
+        <div
+          v-for="inv in pendingInvitations"
+          :key="inv.id"
+          class="mb-3 bg-white rounded-2xl border border-focusflow-200 shadow-lg shadow-focusflow-100/30 overflow-hidden"
+        >
+          <div class="px-5 py-4">
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 rounded-xl bg-focusflow-100 flex items-center justify-center shrink-0 mt-0.5">
+                <UIcon name="i-heroicons-envelope-open" class="w-5 h-5 text-focusflow-600" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-gray-900">
+                  {{ lang.language.value === 'en' ? 'Workspace Invitation' : 'Invitacion a Workspace' }}
+                </p>
+                <p class="text-xs text-gray-500 mt-0.5">
+                  <span v-if="inv.invited_by_name" class="font-medium text-gray-700">{{ inv.invited_by_name }}</span>
+                  {{ lang.language.value === 'en' ? ' invited you to' : ' te invito a' }}
+                  <span class="font-semibold text-focusflow-600"> {{ inv.workspace_name }}</span>
+                  <span class="text-gray-400"> ({{ inv.role }})</span>
+                </p>
+                <div class="flex items-center gap-2 mt-3">
+                  <UButton
+                    size="sm"
+                    color="primary"
+                    class="font-semibold"
+                    :loading="respondingId === inv.id"
+                    @click="acceptInvitation(inv)"
+                  >
+                    {{ lang.language.value === 'en' ? 'Join Workspace' : 'Unirme al Workspace' }}
+                  </UButton>
+                  <UButton
+                    size="sm"
+                    variant="ghost"
+                    color="neutral"
+                    @click="declineInvitation(inv)"
+                  >
+                    {{ lang.language.value === 'en' ? 'Decline' : 'Rechazar' }}
+                  </UButton>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="relative my-6">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-200" />
+          </div>
+          <div class="relative flex justify-center text-xs">
+            <span class="bg-white px-3 text-gray-400">{{ lang.language.value === 'en' ? 'or create a new workspace' : 'o crea un nuevo workspace' }}</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Header -->
       <div class="text-center mb-10 animate-fade-up">
         <div class="w-14 h-14 rounded-2xl bg-focusflow-600 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-focusflow-100">
@@ -130,7 +185,8 @@
 definePageMeta({ layout: false })
 
 const router = useRouter()
-const { labels: t } = useLanguage()
+const lang = useLanguage()
+const { labels: t } = lang
 
 const step = ref(1)
 const workspaceNameInput = ref('')
@@ -232,13 +288,68 @@ const templateOptions = [
   },
 ]
 
+interface PendingInvitation {
+  id: string
+  workspace_id: string
+  workspace_name: string
+  workspace_slug: string
+  role: string
+  invited_by_name: string
+  created_at: string
+}
+
+const pendingInvitations = ref<PendingInvitation[]>([])
+const respondingId = ref('')
+
+async function loadPendingInvitations() {
+  try {
+    pendingInvitations.value = await $fetch<PendingInvitation[]>('/api/auth/pending-invitations')
+  } catch {}
+}
+
+async function acceptInvitation(inv: PendingInvitation) {
+  respondingId.value = inv.id
+  try {
+    const result = await $fetch<any>('/api/auth/respond-invitation', {
+      method: 'POST',
+      body: { inviteId: inv.id, action: 'accept' },
+    })
+    if (result?.workspace_id && inv.workspace_slug) {
+      await router.push(`/${inv.workspace_slug}/dashboard`)
+    } else {
+      // Fallback: re-check workspaces
+      const workspaces = await $fetch<any[]>('/api/user/workspaces')
+      if (workspaces?.length > 0) {
+        await router.push(`/${workspaces[0].slug}/dashboard`)
+      }
+    }
+  } catch (e: any) {
+    console.error('[onboarding] Accept invitation error:', e)
+  } finally {
+    respondingId.value = ''
+  }
+}
+
+async function declineInvitation(inv: PendingInvitation) {
+  try {
+    await $fetch('/api/auth/respond-invitation', {
+      method: 'POST',
+      body: { inviteId: inv.id, action: 'decline' },
+    })
+    pendingInvitations.value = pendingInvitations.value.filter(i => i.id !== inv.id)
+  } catch {}
+}
+
 onMounted(async () => {
   try {
     const existing = await $fetch<any[]>('/api/user/workspaces')
     if (existing && existing.length > 0) {
       await router.replace(`/${existing[0].slug}/projects`)
+      return
     }
   } catch {}
+  // Load pending invitations if user has no workspaces
+  await loadPendingInvitations()
 })
 
 async function handleCreate() {
