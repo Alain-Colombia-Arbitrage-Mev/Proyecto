@@ -51,11 +51,15 @@ export default defineEventHandler(async (event) => {
     doneColumnIds.push(...lastColPerProject.values())
   }
 
-  // Total tasks across all projects
+  const allColumnIds = (allColumns || []).map(c => c.id)
+  const safeColumnIds = allColumnIds.length > 0 ? allColumnIds : ['00000000-0000-0000-0000-000000000000']
+
+  // Total tasks across all projects (only in valid columns, root-level only)
   const { count: totalTasks } = await supabase
     .from('tasks')
     .select('*', { count: 'exact', head: true })
     .in('project_id', projectIds)
+    .in('column_id', safeColumnIds)
     .is('parent_task_id', null) // root-level tasks only to avoid double-counting subtasks
 
   // Completed tasks (in done columns)

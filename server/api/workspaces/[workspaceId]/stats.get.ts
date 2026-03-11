@@ -17,18 +17,21 @@ export default defineEventHandler(async (event) => {
     return { totalTasks: 0, completedTasks: 0, dueTodayTasks: 0 }
   }
 
-  // Total tasks
-  const { count: totalTasks } = await supabase
-    .from('tasks')
-    .select('*', { count: 'exact', head: true })
-    .in('project_id', projectIds)
-
-  // Completed tasks (tasks in the last column of each project)
+  // Get all valid columns first — we only count tasks assigned to existing columns
   const { data: cols } = await supabase
     .from('kanban_columns')
     .select('id, project_id, position')
     .in('project_id', projectIds)
     .order('position', { ascending: false })
+
+  const validColumnIds = (cols || []).map(c => c.id)
+
+  // Total tasks (only those in valid columns — excludes orphaned tasks)
+  const { count: totalTasks } = await supabase
+    .from('tasks')
+    .select('*', { count: 'exact', head: true })
+    .in('project_id', projectIds)
+    .in('column_id', validColumnIds.length > 0 ? validColumnIds : ['00000000-0000-0000-0000-000000000000'])
 
   let completedTasks = 0
   if (cols && cols.length > 0) {
@@ -43,19 +46,21 @@ export default defineEventHandler(async (event) => {
     completedTasks = count || 0
   }
 
-  // Due today
+  // Due today (only tasks in valid columns)
   const today = new Date().toISOString().slice(0, 10)
   const { count: dueTodayTasks } = await supabase
     .from('tasks')
     .select('*', { count: 'exact', head: true })
     .in('project_id', projectIds)
+    .in('column_id', validColumnIds.length > 0 ? validColumnIds : ['00000000-0000-0000-0000-000000000000'])
     .eq('due_date', today)
 
-  // Per-project task counts
+  // Per-project task counts (only tasks in valid columns)
   const { data: perProjectTasks } = await supabase
     .from('tasks')
     .select('project_id')
     .in('project_id', projectIds)
+    .in('column_id', validColumnIds.length > 0 ? validColumnIds : ['00000000-0000-0000-0000-000000000000'])
 
   const projectTaskCounts: Record<string, { total: number; completed: number }> = {}
   for (const pid of projectIds) {

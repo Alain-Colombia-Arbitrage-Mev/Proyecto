@@ -26,12 +26,15 @@ export default defineEventHandler(async (event) => {
     .order('position', { ascending: false })
 
   const doneColumnId = columns && columns.length > 0 ? columns[0].id : null
+  const validColumnIds = (columns || []).map(c => c.id)
+  const safeColumnIds = validColumnIds.length > 0 ? validColumnIds : ['00000000-0000-0000-0000-000000000000']
 
-  // Total root-level tasks for this project
+  // Total root-level tasks for this project (only in valid columns)
   const { count: totalTasks } = await supabase
     .from('tasks')
     .select('*', { count: 'exact', head: true })
     .eq('project_id', projectId)
+    .in('column_id', safeColumnIds)
     .is('parent_task_id', null)
 
   // Completed tasks

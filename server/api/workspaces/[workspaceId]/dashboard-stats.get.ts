@@ -31,26 +31,31 @@ export default defineEventHandler(async (event) => {
     return { taskCount: 0, completedTasks: 0, recentTasks: [], lastColumnIds: [] }
   }
 
-  // Run all queries in parallel
-  const [totalResult, colsResult, recentResult] = await Promise.all([
-    // Total task count
+  // Get kanban columns first to filter orphaned tasks
+  const colsResult = await supabase
+    .from('kanban_columns')
+    .select('id, project_id, position')
+    .in('project_id', projectFilter)
+    .order('position', { ascending: false })
+
+  const validColumnIds = (colsResult.data || []).map(c => c.id)
+  const safeColumnIds = validColumnIds.length > 0 ? validColumnIds : ['00000000-0000-0000-0000-000000000000']
+
+  // Run remaining queries in parallel — only count tasks in valid columns
+  const [totalResult, recentResult] = await Promise.all([
+    // Total task count (only tasks in valid columns)
     supabase
       .from('tasks')
       .select('*', { count: 'exact', head: true })
-      .in('project_id', projectFilter),
-
-    // Get kanban columns to find last column per project
-    supabase
-      .from('kanban_columns')
-      .select('id, project_id, position')
       .in('project_id', projectFilter)
-      .order('position', { ascending: false }),
+      .in('column_id', safeColumnIds),
 
-    // Recent 20 tasks with project name
+    // Recent 20 tasks with project name (only tasks in valid columns)
     supabase
       .from('tasks')
       .select('id, title, priority, created_at, column_id, project_id, due_date')
       .in('project_id', projectFilter)
+      .in('column_id', safeColumnIds)
       .order('created_at', { ascending: false })
       .limit(20),
   ])
