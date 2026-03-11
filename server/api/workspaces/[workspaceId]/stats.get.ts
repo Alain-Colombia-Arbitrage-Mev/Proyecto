@@ -24,77 +24,47 @@ export default defineEventHandler(async (event) => {
     .in('project_id', projectIds)
     .order('position', { ascending: false })
 
-  const validColumnIds = (cols || []).map(c => c.id)
-
-  // Total tasks (only those in valid columns — excludes orphaned tasks)
-  const { count: totalTasks } = await supabase
-    .from('tasks')
-    .select('*', { count: 'exact', head: true })
-    .in('project_id', projectIds)
-    .in('column_id', validColumnIds.length > 0 ? validColumnIds : ['00000000-0000-0000-0000-000000000000'])
-
-  let completedTasks = 0
-  if (cols && cols.length > 0) {
-    const lastCols = new Map<string, string>()
-    for (const col of cols) {
-      if (!lastCols.has(col.project_id)) lastCols.set(col.project_id, col.id)
-    }
-    const { count } = await supabase
-      .from('tasks')
-      .select('*', { count: 'exact', head: true })
-      .in('column_id', Array.from(lastCols.values()))
-    completedTasks = count || 0
+  // Build a map of project_id -> set of its column IDs
+  const columnsByProject = new Map<string, Set<string>>()
+  const lastColByProject = new Map<string, string>()
+  for (const col of (cols || [])) {
+    if (!columnsByProject.has(col.project_id)) columnsByProject.set(col.project_id, new Set())
+    columnsByProject.get(col.project_id)!.add(col.id)
+    // cols are ordered by position DESC, so first seen per project is the last column
+    if (!lastColByProject.has(col.project_id)) lastColByProject.set(col.project_id, col.id)
   }
 
-  // Due today (only tasks in valid columns)
+  // Fetch all tasks with their project_id and column_id
+  const { data: allTasks } = await supabase
+    .from('tasks')
+    .select('project_id, column_id, due_date')
+    .in('project_id', projectIds)
+
+  // Count only tasks whose column_id belongs to their own project's columns
   const today = new Date().toISOString().slice(0, 10)
-  const { count: dueTodayTasks } = await supabase
-    .from('tasks')
-    .select('*', { count: 'exact', head: true })
-    .in('project_id', projectIds)
-    .in('column_id', validColumnIds.length > 0 ? validColumnIds : ['00000000-0000-0000-0000-000000000000'])
-    .eq('due_date', today)
-
-  // Per-project task counts (only tasks in valid columns)
-  const { data: perProjectTasks } = await supabase
-    .from('tasks')
-    .select('project_id')
-    .in('project_id', projectIds)
-    .in('column_id', validColumnIds.length > 0 ? validColumnIds : ['00000000-0000-0000-0000-000000000000'])
-
+  let totalTasks = 0
+  let completedTasks = 0
+  let dueTodayTasks = 0
   const projectTaskCounts: Record<string, { total: number; completed: number }> = {}
   for (const pid of projectIds) {
     projectTaskCounts[pid] = { total: 0, completed: 0 }
   }
-  if (perProjectTasks) {
-    for (const t of perProjectTasks) {
-      if (projectTaskCounts[t.project_id]) {
-        projectTaskCounts[t.project_id].total++
-      }
+
+  for (const t of (allTasks || [])) {
+    const projectCols = columnsByProject.get(t.project_id)
+    // Skip orphaned tasks: column_id doesn't belong to this task's project
+    if (!projectCols || !projectCols.has(t.column_id)) continue
+
+    totalTasks++
+    projectTaskCounts[t.project_id].total++
+
+    if (t.column_id === lastColByProject.get(t.project_id)) {
+      completedTasks++
+      projectTaskCounts[t.project_id].completed++
     }
-  }
 
-  // Count completed per project using lastCols map
-  if (cols && cols.length > 0) {
-    const lastCols2 = new Map<string, string>()
-    for (const col of cols) {
-      if (!lastCols2.has(col.project_id)) lastCols2.set(col.project_id, col.id)
-    }
-    const colToProject = new Map<string, string>()
-    for (const [pid, cid] of lastCols2) colToProject.set(cid, pid)
-
-    const { data: completedPerProject } = await supabase
-      .from('tasks')
-      .select('column_id')
-      .in('column_id', Array.from(lastCols2.values()))
-
-    if (completedPerProject) {
-      for (const t of completedPerProject) {
-        const pid = colToProject.get(t.column_id)
-        if (pid && projectTaskCounts[pid]) {
-          projectTaskCounts[pid].completed++
-        }
-      }
+    if (t.due_date === today) {
+      dueTodayTasks++
     }
   }
 

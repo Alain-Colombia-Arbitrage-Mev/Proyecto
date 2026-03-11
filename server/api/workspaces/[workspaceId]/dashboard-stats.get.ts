@@ -31,76 +31,63 @@ export default defineEventHandler(async (event) => {
     return { taskCount: 0, completedTasks: 0, recentTasks: [], lastColumnIds: [] }
   }
 
-  // Get kanban columns first to filter orphaned tasks
-  const colsResult = await supabase
-    .from('kanban_columns')
-    .select('id, project_id, position')
-    .in('project_id', projectFilter)
-    .order('position', { ascending: false })
-
-  const validColumnIds = (colsResult.data || []).map(c => c.id)
-  const safeColumnIds = validColumnIds.length > 0 ? validColumnIds : ['00000000-0000-0000-0000-000000000000']
-
-  // Run remaining queries in parallel — only count tasks in valid columns
-  const [totalResult, recentResult] = await Promise.all([
-    // Total task count (only tasks in valid columns)
+  // Get kanban columns and project names in parallel
+  const [colsResult, projectNamesResult, allTasksResult] = await Promise.all([
     supabase
-      .from('tasks')
-      .select('*', { count: 'exact', head: true })
+      .from('kanban_columns')
+      .select('id, project_id, position')
       .in('project_id', projectFilter)
-      .in('column_id', safeColumnIds),
-
-    // Recent 20 tasks with project name (only tasks in valid columns)
+      .order('position', { ascending: false }),
+    supabase
+      .from('projects')
+      .select('id, name')
+      .in('id', projectFilter),
     supabase
       .from('tasks')
       .select('id, title, priority, created_at, column_id, project_id, due_date')
       .in('project_id', projectFilter)
-      .in('column_id', safeColumnIds)
-      .order('created_at', { ascending: false })
-      .limit(20),
+      .order('created_at', { ascending: false }),
   ])
 
-  const taskCount = totalResult.count || 0
-
-  // Calculate completed tasks (tasks in last column per project)
-  let completedTasks = 0
-  const lastColumnIds: string[] = []
-  if (colsResult.data && colsResult.data.length > 0) {
-    const lastCols = new Map<string, string>()
-    for (const col of colsResult.data) {
-      if (!lastCols.has(col.project_id)) lastCols.set(col.project_id, col.id)
-    }
-    const colIds = Array.from(lastCols.values())
-    lastColumnIds.push(...colIds)
-
-    if (colIds.length > 0) {
-      const { count: done } = await supabase
-        .from('tasks')
-        .select('*', { count: 'exact', head: true })
-        .in('column_id', colIds)
-      completedTasks = done || 0
-    }
+  // Build map of project_id -> set of its column IDs
+  const columnsByProject = new Map<string, Set<string>>()
+  const lastColByProject = new Map<string, string>()
+  for (const col of (colsResult.data || [])) {
+    if (!columnsByProject.has(col.project_id)) columnsByProject.set(col.project_id, new Set())
+    columnsByProject.get(col.project_id)!.add(col.id)
+    if (!lastColByProject.has(col.project_id)) lastColByProject.set(col.project_id, col.id)
   }
 
-  // Get project names for recent tasks
-  const { data: projectNames } = await supabase
-    .from('projects')
-    .select('id, name')
-    .in('id', projectFilter)
+  const lastColumnIds = Array.from(lastColByProject.values())
+  const projectMap = new Map((projectNamesResult.data || []).map(p => [p.id, p.name]))
 
-  const projectMap = new Map((projectNames || []).map(p => [p.id, p.name]))
+  // Filter: only tasks whose column_id belongs to their own project's columns
+  let taskCount = 0
+  let completedTasks = 0
+  const recentTasks: any[] = []
 
-  const recentTasks = (recentResult.data || []).map(t => ({
-    id: t.id,
-    title: t.title,
-    priority: t.priority || 'medium',
-    created_at: t.created_at,
-    column_id: t.column_id,
-    project_id: t.project_id,
-    due_date: t.due_date,
-    projectName: projectMap.get(t.project_id) || '—',
-    isCompleted: lastColumnIds.includes(t.column_id),
-  }))
+  for (const t of (allTasksResult.data || [])) {
+    const projectCols = columnsByProject.get(t.project_id)
+    if (!projectCols || !projectCols.has(t.column_id)) continue
+
+    taskCount++
+    const isCompleted = t.column_id === lastColByProject.get(t.project_id)
+    if (isCompleted) completedTasks++
+
+    if (recentTasks.length < 20) {
+      recentTasks.push({
+        id: t.id,
+        title: t.title,
+        priority: t.priority || 'medium',
+        created_at: t.created_at,
+        column_id: t.column_id,
+        project_id: t.project_id,
+        due_date: t.due_date,
+        projectName: projectMap.get(t.project_id) || '—',
+        isCompleted,
+      })
+    }
+  }
 
   return { taskCount, completedTasks, recentTasks, lastColumnIds }
 })
