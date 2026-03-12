@@ -14,27 +14,18 @@ export default defineEventHandler(async (event) => {
 
   if (error) throw createError({ statusCode: 500, message: error.message })
 
-  // Resolve emails from auth — batch all user IDs
+  // Resolve emails from auth — fetch each member directly
   const members = data || []
   const emailMap: Record<string, string> = {}
 
-  // Paginate auth users to find emails for our members
-  const memberIds = new Set(members.map(m => m.user_id))
-  let page = 1
-  const perPage = 500
-  while (memberIds.size > Object.keys(emailMap).length) {
-    const { data: authData, error: authErr } = await supabase.auth.admin.listUsers({ page, perPage })
-    if (authErr) break
-    const users = authData?.users || []
-    for (const u of users) {
-      if (memberIds.has(u.id)) {
-        emailMap[u.id] = u.email || ''
-      }
-    }
-    if (users.length < perPage) break
-    page++
-    if (page > 20) break
-  }
+  const emailResults = await Promise.allSettled(
+    members.map(m =>
+      supabase.auth.admin.getUserById(m.user_id).then(({ data: profile }) => {
+        if (profile?.user?.email) emailMap[m.user_id] = profile.user.email
+        else if (profile?.user?.user_metadata?.full_name) emailMap[m.user_id] = profile.user.user_metadata.full_name
+      })
+    )
+  )
 
   // Fetch project_members for this workspace (table may not exist if migration 012 not applied)
   let pmByUser: Record<string, string[]> = {}
