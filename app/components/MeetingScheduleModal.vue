@@ -91,9 +91,17 @@
           <!-- Attendees -->
           <div>
             <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-2">{{ t.attendees }}</label>
-            <div class="flex flex-wrap gap-1.5">
+            <!-- Search filter -->
+            <input
+              v-model="memberSearch"
+              type="text"
+              class="w-full text-sm border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1b1b1b] text-gray-900 dark:text-gray-100 rounded-xl px-3 py-2 mb-2 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500/40"
+              :placeholder="isEn ? 'Search members or type external email...' : 'Buscar miembros o escribir email externo...'"
+              @keydown.enter.prevent="addExternalEmail"
+            />
+            <div class="flex flex-wrap gap-1.5 max-h-[160px] overflow-y-auto">
               <button
-                v-for="m in members"
+                v-for="m in filteredMembers"
                 :key="m.user_id"
                 type="button"
                 class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer border"
@@ -118,7 +126,24 @@
                 />
               </button>
             </div>
-            <p v-if="form.attendees.length > 0" class="text-[10px] text-gray-400 dark:text-gray-500 mt-1.5">{{ form.attendees.length }} {{ t.attendeesSelected }}</p>
+            <!-- External emails -->
+            <div v-if="form.externalEmails.length > 0" class="flex flex-wrap gap-1.5 mt-2">
+              <span
+                v-for="(email, idx) in form.externalEmails"
+                :key="email"
+                class="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20"
+              >
+                <UIcon name="i-heroicons-envelope" class="w-3 h-3" />
+                {{ email }}
+                <button type="button" class="ml-0.5 hover:text-red-500 transition-colors cursor-pointer" @click="form.externalEmails.splice(idx, 1)">
+                  <UIcon name="i-heroicons-x-mark" class="w-3 h-3" />
+                </button>
+              </span>
+            </div>
+            <p class="text-[10px] text-gray-400 dark:text-gray-500 mt-1.5">
+              {{ form.attendees.length + form.externalEmails.length }} {{ t.attendeesSelected }}
+              <span v-if="form.externalEmails.length > 0"> ({{ form.externalEmails.length }} {{ isEn ? 'external' : 'externos' }})</span>
+            </p>
           </div>
 
           <!-- Google Meet badge -->
@@ -141,7 +166,7 @@
             <a :href="createdMeeting.meeting_url" target="_blank" class="text-xs text-blue-600 dark:text-blue-400 hover:underline break-all">
               {{ createdMeeting.meeting_url }}
             </a>
-            <p class="text-[10px] text-emerald-600 dark:text-emerald-500 mt-1">{{ t.invitationsSent }} {{ form.attendees.length }} {{ t.attendees.toLowerCase() }}</p>
+            <p class="text-[10px] text-emerald-600 dark:text-emerald-500 mt-1">{{ t.invitationsSent }} {{ form.attendees.length + form.externalEmails.length }} {{ t.attendees.toLowerCase() }}</p>
           </div>
         </div>
 
@@ -209,7 +234,32 @@ const form = reactive({
   duration_minutes: 30,
   project_id: '',
   attendees: [] as string[],
+  externalEmails: [] as string[],
 })
+
+const memberSearch = ref('')
+
+const filteredMembers = computed(() => {
+  const q = memberSearch.value.toLowerCase().trim()
+  if (!q) return props.members
+  return props.members.filter(m =>
+    (m.email || '').toLowerCase().includes(q) ||
+    m.user_id.toLowerCase().includes(q) ||
+    (m.role || '').toLowerCase().includes(q)
+  )
+})
+
+function addExternalEmail() {
+  const input = memberSearch.value.trim()
+  if (!input || !input.includes('@') || !input.includes('.')) return
+  const email = input.toLowerCase()
+  // Don't add if already a member
+  if (props.members.some(m => (m.email || '').toLowerCase() === email)) return
+  // Don't add duplicates
+  if (form.externalEmails.includes(email)) return
+  form.externalEmails.push(email)
+  memberSearch.value = ''
+}
 
 const hours = Array.from({ length: 24 }, (_, i) => pad(i))
 const minuteOptions = ['00', '15', '30', '45']
@@ -256,6 +306,7 @@ async function handleCreate() {
         duration_minutes: form.duration_minutes,
         project_id: form.project_id || null,
         attendees: form.attendees,
+        external_emails: form.externalEmails.length > 0 ? form.externalEmails : undefined,
         provider_token: providerToken,
       },
     })
@@ -280,7 +331,9 @@ watch(() => props.open, (v) => {
       duration_minutes: 30,
       project_id: '',
       attendees: [],
+      externalEmails: [],
     })
+    memberSearch.value = ''
     error.value = ''
     createdMeeting.value = null
   }

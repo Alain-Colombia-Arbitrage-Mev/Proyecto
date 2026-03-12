@@ -48,6 +48,9 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  // Collect external emails (non-member attendees)
+  const externalEmails: string[] = Array.isArray(body.external_emails) ? body.external_emails.filter((e: any) => typeof e === 'string' && e.includes('@')) : []
+
   // Try to create a real Google Meet event via Calendar API
   let meetingUrl = body.meeting_url || ''
   let calendarEventId: string | null = null
@@ -66,6 +69,8 @@ export default defineEventHandler(async (event) => {
           if (profile?.user?.email) attendeeEmails.push(profile.user.email)
         } catch {}
       }
+      // Add external emails to Calendar invite
+      attendeeEmails.push(...externalEmails)
 
       const result = await createGoogleMeetEvent({
         accessToken: providerToken,
@@ -168,6 +173,18 @@ export default defineEventHandler(async (event) => {
     )
 
   await Promise.allSettled(notifyPromises)
+
+  // Send email invitations to external attendees (non-members)
+  if (externalEmails.length > 0) {
+    const externalPromises = externalEmails.map(email =>
+      sendEmail({
+        to: email,
+        subject: `Reunión programada: ${meeting.title}`,
+        html: emailHtml,
+      }).catch(err => console.error(`[meetings.post] External email failed for ${email}:`, err))
+    )
+    await Promise.allSettled(externalPromises)
+  }
 
   return meeting
 })
