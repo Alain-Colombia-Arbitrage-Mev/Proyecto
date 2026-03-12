@@ -104,7 +104,7 @@ export default defineEventHandler(async (event) => {
         }
       }
 
-      systemPrompt = `PM experto. Genera 5 tareas JSON array. Cada: {title,description,priority:"low"|"medium"|"high"|"critical",tags:[],estimated_hours:N,column:"nombre columna"}. Asigna cada tarea a la columna más apropiada según su naturaleza${columnsHint ? '' : ' (usa "Por hacer" por defecto)'}. ES. Empieza por las más pequeñas. Solo JSON.`
+      systemPrompt = `PM experto. Genera 5 tareas JSON array. Cada: {title,description,priority:"low"|"medium"|"high"|"critical",tags:[],estimated_hours:N,column:"nombre columna"}. IMPORTANTE: "description" es OBLIGATORIO en cada tarea — mínimo 2-3 oraciones con: objetivo, pasos clave y criterios de aceptación. Asigna cada tarea a la columna más apropiada según su naturaleza${columnsHint ? '' : ' (usa "Por hacer" por defecto)'}. ES. Empieza por las más pequeñas. Solo JSON.`
       userPrompt = `${String(context.projectName).slice(0, 2000)}|${String(context.projectDescription || '').slice(0, 3000)}${columnsHint}`
       break
     }
@@ -126,7 +126,7 @@ export default defineEventHandler(async (event) => {
       if (!context.taskTitle || typeof context.taskTitle !== 'string') {
         throw createError({ statusCode: 400, message: 'taskTitle is required' })
       }
-      systemPrompt = `Mejora esta tarea. JSON: {title,description,priority_suggestion:"low"|"medium"|"high"|"critical",estimated_hours:N,tags:[]}. Descripción con criterios de aceptación. ES. Solo JSON.`
+      systemPrompt = `Mejora esta tarea. JSON: {title,description,priority_suggestion:"low"|"medium"|"high"|"critical",estimated_hours:N,tags:[]}. IMPORTANTE: "description" es OBLIGATORIO — mínimo 3-4 oraciones con: objetivo claro, pasos de implementación, criterios de aceptación ✅. ES. Solo JSON.`
       userPrompt = `${String(context.taskTitle).slice(0, 2000)}|${String(context.taskDescription || '').slice(0, 3000)}|p:${context.priority || 'medium'}`
       if (context.workspaceId) {
         resolvedWorkspaceId = String(context.workspaceId)
@@ -294,7 +294,7 @@ Específico, basado en datos reales. Solo JSON.`
       systemPrompt = `Asistente PM FocusFlow.${projectContext}${memoryContext}
 
 REGLAS:
-1. Crear/sugerir/generar tareas → JSON array: [{title,title_en,description,description_en,priority,tags:[],estimated_hours,column:"nombre columna"}]. Asigna cada tarea a la columna más apropiada según su naturaleza. Description detallado: objetivo, pasos implementación, archivos, criterios aceptación ✅, notas técnicas. Bilingüe ES+EN. Solo JSON.
+1. Crear/sugerir/generar tareas → JSON array: [{title,title_en,description,description_en,priority,tags:[],estimated_hours,column:"nombre columna"}]. Asigna cada tarea a la columna más apropiada. OBLIGATORIO: "description" y "description_en" SIEMPRE con contenido — mínimo 3 oraciones: objetivo, pasos implementación, criterios aceptación ✅. NUNCA dejar description vacío o null. Bilingüe ES+EN. Solo JSON.
 2. Otra consulta → texto plano ES, max 5 líneas.
 
 No <think>. No markdown.`
