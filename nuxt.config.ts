@@ -47,7 +47,7 @@ export default defineNuxtConfig({
     redirectOptions: {
       login: '/auth/login',
       callback: '/auth/callback',
-      exclude: ['/auth/register'],
+      exclude: ['/auth/register', '/legal/*'],
     },
     cookieOptions: {
       maxAge: 60 * 60 * 8,
