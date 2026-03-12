@@ -587,9 +587,12 @@ async function addSuggestedTask(suggestion: any) {
         project_id: props.projectId,
         column_id: columnId,
         title: suggestion.title,
+        title_en: suggestion.title_en || null,
         description: suggestion.description || null,
+        description_en: suggestion.description_en || null,
         priority: suggestion.priority || 'medium',
         tags: suggestion.tags || [],
+        estimated_hours: suggestion.estimated_hours || null,
       },
     })
     addedSuggestions.value.add(suggestion.title)
@@ -618,9 +621,12 @@ async function addAllSuggestedTasks(suggestions: any[]) {
           project_id: props.projectId,
           column_id: columnId,
           title: s.title,
+          title_en: s.title_en || null,
           description: s.description || null,
+          description_en: s.description_en || null,
           priority: s.priority || 'medium',
           tags: s.tags || [],
+          estimated_hours: s.estimated_hours || null,
         },
       })
       addedSuggestions.value.add(s.title)
