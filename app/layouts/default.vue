@@ -166,7 +166,7 @@
             v-if="!collapsed"
             class="w-8 h-8 flex items-center justify-center rounded-md text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all shrink-0"
             :title="lang.language.value === 'en' ? 'Sign out' : 'Cerrar sesion'"
-            @click="signOut"
+            @click="handleSignOut"
           >
             <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-4 h-4" />
           </button>
@@ -181,7 +181,7 @@
             v-if="collapsed"
             class="w-8 h-8 flex items-center justify-center rounded-md text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all"
             :title="lang.language.value === 'en' ? 'Sign out' : 'Cerrar sesion'"
-            @click="signOut"
+            @click="handleSignOut"
           >
             <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-4 h-4" />
           </button>
@@ -361,7 +361,6 @@
 const route = useRoute()
 const store = useWorkspaceStore()
 const auth = useAuthStore()
-const { signOut } = useAuth()
 const pomodoro = usePomodoroTimer()
 const lang = useLanguage()
 const t = lang.labels
@@ -372,6 +371,12 @@ const collapsed = ref(false)
 const showMobileMore = ref(false)
 const expandedGroups = ref<Set<string>>(new Set())
 const router = useRouter()
+const supabaseClient = useSupabaseClient()
+
+async function handleSignOut() {
+  await supabaseClient.auth.signOut()
+  navigateTo('/auth/login')
+}
 
 // ── Workspace Switcher ──
 const showWsSwitcher = ref(false)
