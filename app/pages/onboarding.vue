@@ -63,7 +63,7 @@
 
       <!-- Header -->
       <div class="text-center mb-10 animate-fade-up">
-        <img src="~/assets/Focus.png" alt="FocusFlow" class="w-14 h-14 rounded-2xl mx-auto mb-6 shadow-lg shadow-focusflow-100" />
+        <img src="/logo.png" alt="FocusFlow" class="w-14 h-14 rounded-2xl mx-auto mb-6 shadow-lg shadow-focusflow-100" />
         <h1 class="text-3xl font-bold text-gray-900 tracking-tight">
           {{ t.setupWorkspace }}
         </h1>

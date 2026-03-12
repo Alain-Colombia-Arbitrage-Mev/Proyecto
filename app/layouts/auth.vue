@@ -6,7 +6,7 @@
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.05),transparent_50%)]" />
       <div class="relative z-10 max-w-sm">
         <div class="flex items-center gap-3 mb-12 animate-fade-up">
-          <img src="~/assets/Focus.png" alt="FocusFlow" class="w-10 h-10 rounded-xl" />
+          <img src="/logo.png" alt="FocusFlow" class="w-10 h-10 rounded-xl" />
           <span class="text-xl font-bold text-white tracking-tight">FocusFlow</span>
         </div>
         <h2 class="text-3xl font-bold text-white leading-tight mb-4 animate-fade-up delay-100">
@@ -30,7 +30,7 @@
       <div class="w-full max-w-sm">
         <!-- Mobile logo -->
         <div class="lg:hidden flex items-center gap-3 mb-10 justify-center animate-fade-up">
-          <img src="~/assets/Focus.png" alt="FocusFlow" class="w-10 h-10 rounded-xl" />
+          <img src="/logo.png" alt="FocusFlow" class="w-10 h-10 rounded-xl" />
           <span class="text-xl font-bold text-gray-900 dark:text-white tracking-tight">FocusFlow</span>
         </div>
         <slot />
