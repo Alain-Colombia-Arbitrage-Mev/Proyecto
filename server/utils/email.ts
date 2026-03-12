@@ -372,6 +372,57 @@ export function pendingInvitationEmailHtml(opts: {
 </html>`
 }
 
+export function projectAssignedEmailHtml(projectNames: string[], assignedByName: string, workspaceName: string): string {
+  const safeName = escapeHtml(assignedByName)
+  const safeWorkspace = escapeHtml(workspaceName)
+  const projectList = projectNames.map(p => `<li style="margin: 4px 0; font-weight: 600; color: #0D0D0D;">${escapeHtml(p)}</li>`).join('')
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f6f6f6; padding: 32px; margin: 0;">
+  <div style="max-width: 480px; margin: 0 auto; background: white; border-radius: 12px; padding: 32px; border: 1px solid #e5e7eb;">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <div style="display: inline-block; width: 40px; height: 40px; background: #0ea5e9; border-radius: 8px; line-height: 40px; color: white; font-weight: bold; font-size: 18px;">F</div>
+    </div>
+    <h2 style="margin: 0 0 8px; font-size: 18px; color: #0D0D0D;">Proyecto${projectNames.length > 1 ? 's' : ''} Asignado${projectNames.length > 1 ? 's' : ''}</h2>
+    <p style="margin: 0 0 16px; color: #7A7A7A; font-size: 14px;">${safeName} te asign&oacute; acceso a ${projectNames.length > 1 ? 'los siguientes proyectos' : 'un proyecto'} en <strong>${safeWorkspace}</strong>:</p>
+    <div style="background: #DBEAFE; border-left: 4px solid #0ea5e9; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">
+      <ul style="margin: 0; padding-left: 16px; list-style: disc;">${projectList}</ul>
+    </div>
+    <p style="margin: 0; color: #7A7A7A; font-size: 12px; text-align: center;">&mdash; FocusFlow</p>
+  </div>
+</body>
+</html>`
+}
+
+export function taskMovedToProjectEmailHtml(taskTitle: string, fromProject: string, toProject: string, movedByName: string): string {
+  const safeTitle = escapeHtml(taskTitle)
+  const safeFrom = escapeHtml(fromProject)
+  const safeTo = escapeHtml(toProject)
+  const safeName = escapeHtml(movedByName)
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f6f6f6; padding: 32px; margin: 0;">
+  <div style="max-width: 480px; margin: 0 auto; background: white; border-radius: 12px; padding: 32px; border: 1px solid #e5e7eb;">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <div style="display: inline-block; width: 40px; height: 40px; background: #f59e0b; border-radius: 8px; line-height: 40px; color: white; font-weight: bold; font-size: 18px;">F</div>
+    </div>
+    <h2 style="margin: 0 0 8px; font-size: 18px; color: #0D0D0D;">Tarea Movida de Proyecto</h2>
+    <p style="margin: 0 0 16px; color: #7A7A7A; font-size: 14px;">${safeName} movi&oacute; una tarea a otro proyecto:</p>
+    <div style="background: #FEF3C7; border-left: 4px solid #f59e0b; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">
+      <p style="margin: 0; font-weight: 600; color: #0D0D0D; font-size: 15px;">${safeTitle}</p>
+      <p style="margin: 4px 0 0; color: #92400E; font-size: 13px;">De: ${safeFrom} &rarr; A: ${safeTo}</p>
+      <p style="margin: 4px 0 0; color: #92400E; font-size: 13px;">Movida por: ${safeName}</p>
+    </div>
+    <p style="margin: 0; color: #7A7A7A; font-size: 12px; text-align: center;">&mdash; FocusFlow</p>
+  </div>
+</body>
+</html>`
+}
+
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, '&amp;')

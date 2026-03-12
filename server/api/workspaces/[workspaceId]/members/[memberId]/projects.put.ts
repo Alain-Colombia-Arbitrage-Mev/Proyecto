@@ -1,4 +1,6 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
+import { notifyUser } from '~~/server/utils/notifications'
+import { projectAssignedEmailHtml } from '~~/server/utils/email'
 
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
@@ -27,6 +29,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'admin/owner/superadmin tienen acceso a todos los proyectos' })
   }
 
+  // Get current project_ids before replacing (to detect newly added ones)
+  const { data: currentPM } = await supabase
+    .from('project_members')
+    .select('project_id')
+    .eq('workspace_id', workspaceId)
+    .eq('user_id', target.user_id)
+  const oldProjectIds = new Set((currentPM || []).map(pm => pm.project_id))
+
   // Replace: delete all current entries, then insert new ones
   const { error: delErr } = await supabase
     .from('project_members')
@@ -54,6 +64,38 @@ export default defineEventHandler(async (event) => {
       console.error(`[projects.put] Error inserting project_members:`, error.message)
       throw createError({ statusCode: 500, message: 'Error updating project access' })
     }
+  }
+
+  // Notify user about newly assigned projects (fire-and-forget)
+  const newProjectIds = (body.project_ids as string[]).filter(pid => !oldProjectIds.has(pid))
+  if (newProjectIds.length > 0 && target.user_id !== user.id) {
+    // Fetch project names and workspace name
+    const [{ data: projects }, { data: workspace }] = await Promise.all([
+      supabase.from('projects').select('id, name').in('id', newProjectIds),
+      supabase.from('workspaces').select('name').eq('id', workspaceId).maybeSingle(),
+    ])
+    const projectNames = (projects || []).map(p => p.name || 'Proyecto')
+    const workspaceName = workspace?.name || 'Workspace'
+
+    let assignerName = 'Alguien'
+    try {
+      const { data: profile } = await supabase.auth.admin.getUserById(user.id)
+      assignerName = profile?.user?.user_metadata?.full_name || profile?.user?.email || 'Alguien'
+    } catch {}
+
+    const projectLabel = projectNames.length === 1 ? projectNames[0] : `${projectNames.length} proyectos`
+
+    notifyUser({
+      event,
+      userId: target.user_id,
+      type: 'project_assigned',
+      title: `Proyecto asignado: ${projectLabel}`,
+      body: `${assignerName} te asignó acceso a ${projectLabel} en ${workspaceName}`,
+      entityType: 'project',
+      entityId: newProjectIds[0],
+      emailSubject: `Proyecto asignado: ${projectLabel}`,
+      emailHtml: projectAssignedEmailHtml(projectNames, assignerName, workspaceName),
+    }).catch(err => console.error(`[projects.put] notifyUser failed:`, err))
   }
 
   return { success: true, project_ids: body.project_ids }

@@ -1,6 +1,6 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import { notifyUser } from '~~/server/utils/notifications'
-import { taskAssignedEmailHtml } from '~~/server/utils/email'
+import { taskAssignedEmailHtml, taskMovedToProjectEmailHtml } from '~~/server/utils/email'
 
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
@@ -150,6 +150,39 @@ export default defineEventHandler(async (event) => {
       .from('task_column_history')
       .insert({ task_id: taskId, column_id: body.column_id, entered_at: now })
       .then(() => {}, (err: any) => console.error('[tasks.patch] Error inserting column history:', err))
+  }
+
+  // Notify assignees when task is moved to another project (fire-and-forget)
+  if (body.project_id !== undefined && body.project_id !== task.project_id) {
+    const taskAssignees: string[] = (task as any).assignees || []
+    if (taskAssignees.length > 0) {
+      const taskTitle = updated.title || (task as any).title || 'Tarea'
+      const { data: oldProj } = await supabase.from('projects').select('name').eq('id', task.project_id).maybeSingle()
+      const { data: newProj } = await supabase.from('projects').select('name').eq('id', body.project_id).maybeSingle()
+      const fromProject = oldProj?.name || 'Proyecto'
+      const toProject = newProj?.name || 'Proyecto'
+
+      let moverName = 'Alguien'
+      try {
+        const { data: profile } = await supabase.auth.admin.getUserById(user.id)
+        moverName = profile?.user?.user_metadata?.full_name || profile?.user?.email || 'Alguien'
+      } catch {}
+
+      for (const assigneeId of taskAssignees) {
+        if (assigneeId === user.id) continue
+        notifyUser({
+          event,
+          userId: assigneeId,
+          type: 'task_moved_project',
+          title: `Tarea movida: ${taskTitle}`,
+          body: `${moverName} movió "${taskTitle}" de ${fromProject} a ${toProject}`,
+          entityType: 'task',
+          entityId: updated.id,
+          emailSubject: `Tarea movida de proyecto: ${taskTitle}`,
+          emailHtml: taskMovedToProjectEmailHtml(taskTitle, fromProject, toProject, moverName),
+        }).catch(() => {})
+      }
+    }
   }
 
   // Notify newly added assignees (fire-and-forget)
