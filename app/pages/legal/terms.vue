@@ -4,9 +4,7 @@
     <header class="border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm sticky top-0 z-10">
       <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
         <NuxtLink to="/auth/login" class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-focusflow-600 flex items-center justify-center">
-            <span class="text-white font-bold text-sm" style="font-family: 'Space Grotesk', monospace;">F</span>
-          </div>
+          <img src="~/assets/Focus.png" alt="FocusFlow" class="w-8 h-8 rounded-lg" />
           <span class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">FocusFlow</span>
         </NuxtLink>
         <NuxtLink to="/legal/privacy" class="text-sm text-focusflow-600 hover:text-focusflow-500 dark:text-focusflow-400 font-medium transition-colors">

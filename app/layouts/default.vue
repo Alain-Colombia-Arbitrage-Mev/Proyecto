@@ -8,9 +8,7 @@
     >
       <!-- Logo + workspace switcher -->
       <div class="h-14 flex items-center gap-2.5 shrink-0 border-b border-white/[0.06] relative" :class="collapsed ? 'px-4 justify-center' : 'px-4'">
-        <div class="w-8 h-8 rounded-lg bg-[#75fc96] flex items-center justify-center shrink-0 shadow-lg shadow-[#75fc96]/20">
-          <span class="text-[#17191c] font-bold text-sm" style="font-family: 'Space Grotesk', monospace;">F</span>
-        </div>
+        <img src="~/assets/Focus.png" alt="FocusFlow" class="w-8 h-8 rounded-lg shrink-0 shadow-lg shadow-[#75fc96]/20" />
         <button
           v-if="!collapsed"
           class="min-w-0 flex-1 text-left cursor-pointer hover:bg-white/[0.06] rounded-lg px-1.5 py-1 -mx-1.5 transition-colors group"
@@ -185,9 +183,7 @@
     <!-- Mobile Header -->
     <header class="md:hidden fixed top-0 inset-x-0 z-30 h-14 flex items-center justify-between px-4 bg-white/90 dark:bg-[#111]/90 backdrop-blur-xl border-b border-gray-200/60 dark:border-white/10">
       <button class="flex items-center gap-2.5 cursor-pointer" @click="toggleMobileWsSwitcher">
-        <div class="w-8 h-8 rounded-lg bg-[#75fc96] flex items-center justify-center shadow-sm shadow-[#75fc96]/20">
-          <span class="text-[#17191c] font-bold text-sm" style="font-family: 'Space Grotesk', monospace;">F</span>
-        </div>
+        <img src="~/assets/Focus.png" alt="FocusFlow" class="w-8 h-8 rounded-lg shadow-sm shadow-[#75fc96]/20" />
         <div class="min-w-0">
           <p class="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate leading-tight">{{ store.workspace?.name || 'FocusFlow' }}</p>
         </div>

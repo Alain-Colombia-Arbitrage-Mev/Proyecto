@@ -63,9 +63,7 @@
 
       <!-- Header -->
       <div class="text-center mb-10 animate-fade-up">
-        <div class="w-14 h-14 rounded-2xl bg-focusflow-600 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-focusflow-100">
-          <span class="text-white font-bold text-xl" style="font-family: 'Space Grotesk', monospace;">F</span>
-        </div>
+        <img src="~/assets/Focus.png" alt="FocusFlow" class="w-14 h-14 rounded-2xl mx-auto mb-6 shadow-lg shadow-focusflow-100" />
         <h1 class="text-3xl font-bold text-gray-900 tracking-tight">
           {{ t.setupWorkspace }}
         </h1>
