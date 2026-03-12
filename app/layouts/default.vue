@@ -164,10 +164,26 @@
           </NuxtLink>
           <button
             v-if="!collapsed"
+            class="w-8 h-8 flex items-center justify-center rounded-md text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all shrink-0"
+            :title="lang.language.value === 'en' ? 'Sign out' : 'Cerrar sesion'"
+            @click="signOut"
+          >
+            <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-4 h-4" />
+          </button>
+          <button
+            v-if="!collapsed"
             class="w-8 h-8 flex items-center justify-center rounded-md bg-black text-white/50 hover:text-white hover:bg-black/80 transition-all shrink-0 border border-white/[0.08] shadow-sm"
             @click="collapsed = true"
           >
             <UIcon name="i-heroicons-chevron-double-left-20-solid" class="w-4 h-4" />
+          </button>
+          <button
+            v-if="collapsed"
+            class="w-8 h-8 flex items-center justify-center rounded-md text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all"
+            :title="lang.language.value === 'en' ? 'Sign out' : 'Cerrar sesion'"
+            @click="signOut"
+          >
+            <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-4 h-4" />
           </button>
           <button
             v-if="collapsed"
@@ -345,6 +361,7 @@
 const route = useRoute()
 const store = useWorkspaceStore()
 const auth = useAuthStore()
+const { signOut } = useAuth()
 const pomodoro = usePomodoroTimer()
 const lang = useLanguage()
 const t = lang.labels
