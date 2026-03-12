@@ -58,6 +58,12 @@
             {{ t.createAccountBtn }}
           </NuxtLink>
         </p>
+
+        <p class="text-center text-xs text-gray-400 dark:text-gray-500 mt-4 leading-relaxed">
+          <NuxtLink to="/legal/terms" class="hover:text-gray-600 dark:hover:text-gray-300 transition-colors hover:underline">{{ lang.language.value === 'en' ? 'Terms & Conditions' : 'Terminos y Condiciones' }}</NuxtLink>
+          <span class="mx-1.5">&middot;</span>
+          <NuxtLink to="/legal/privacy" class="hover:text-gray-600 dark:hover:text-gray-300 transition-colors hover:underline">{{ lang.language.value === 'en' ? 'Privacy Policy' : 'Politica de Privacidad' }}</NuxtLink>
+        </p>
       </div>
     </NuxtLayout>
   </div>

@@ -69,6 +69,13 @@
             {{ t.signIn }}
           </NuxtLink>
         </p>
+
+        <p class="text-center text-xs text-gray-400 dark:text-gray-500 mt-4 leading-relaxed">
+          {{ lang.language.value === 'en' ? 'By creating an account, you agree to our' : 'Al crear una cuenta, aceptas nuestros' }}
+          <NuxtLink to="/legal/terms" class="text-focusflow-600 dark:text-focusflow-400 hover:underline">{{ lang.language.value === 'en' ? 'Terms & Conditions' : 'Terminos y Condiciones' }}</NuxtLink>
+          {{ lang.language.value === 'en' ? 'and' : 'y' }}
+          <NuxtLink to="/legal/privacy" class="text-focusflow-600 dark:text-focusflow-400 hover:underline">{{ lang.language.value === 'en' ? 'Privacy Policy' : 'Politica de Privacidad' }}</NuxtLink>.
+        </p>
       </div>
     </NuxtLayout>
   </div>

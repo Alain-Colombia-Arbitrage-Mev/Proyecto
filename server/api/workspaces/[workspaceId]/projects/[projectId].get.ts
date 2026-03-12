@@ -28,8 +28,12 @@ export default defineEventHandler(async (event) => {
       .order('position'),
   ])
 
+  // Filter out orphaned tasks whose column_id doesn't belong to this project's columns
+  const validColumnIds = new Set((columns || []).map(c => c.id))
+  const validTasks = (tasks || []).filter(t => validColumnIds.has(t.column_id))
+
   // Fetch task labels separately
-  const taskIds = (tasks || []).map(t => t.id)
+  const taskIds = validTasks.map(t => t.id)
   let taskLabels: any[] = []
   if (taskIds.length > 0) {
     const { data } = await supabase
@@ -47,7 +51,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Attach labels to each task
-  const tasksWithLabels = (tasks || []).map(t => ({
+  const tasksWithLabels = validTasks.map(t => ({
     ...t,
     labels: labelsByTask[t.id] || [],
   }))
