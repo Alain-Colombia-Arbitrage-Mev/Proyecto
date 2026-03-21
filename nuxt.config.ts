@@ -8,6 +8,9 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   app: {
     head: {
+      meta: [
+        { name: 'google-site-verification', content: 'fOBWKJInEPNm9Q3I6rKeWSaYu2weuELdB-MqA3kVTeQ' },
+      ],
       link: [
         {
           rel: 'icon',
