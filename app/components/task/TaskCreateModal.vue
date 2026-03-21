@@ -139,6 +139,7 @@ const cardColors = ['#3B82F6', '#8B5CF6', '#F59E0B', '#10B981', '#F97316', '#EF4
 const creating = ref(false)
 const error = ref('')
 const draftRestored = ref(false)
+const justCreated = ref(false)
 
 const form = reactive({
   title: '',
@@ -255,8 +256,12 @@ watch(() => props.open, (val) => {
       })
     }
   } else {
-    // Closing: save draft if there's data
-    saveDraft()
+    // Closing: save draft only if it wasn't a successful creation
+    if (justCreated.value) {
+      justCreated.value = false
+    } else {
+      saveDraft()
+    }
   }
 })
 
@@ -307,6 +312,12 @@ async function handleCreate() {
       },
     })
     clearDraft()
+    Object.assign(form, {
+      title: '', description: '', priority: 'medium', due_date: '',
+      column_id: props.columnId, estimated_hours: '', assignees: [],
+      figma_links: [], color: '', tagsStr: '',
+    })
+    justCreated.value = true
     isOpen.value = false
     emit('created')
   } catch (e: any) {
