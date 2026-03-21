@@ -5,6 +5,14 @@
         <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">{{ t.newTask }}</h2>
         <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">{{ t.addToBoard }}</p>
 
+        <!-- Draft restored banner -->
+        <div v-if="draftRestored" class="flex items-center justify-between gap-2 px-3 py-2 mb-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-300 text-xs font-medium">
+          <span>{{ language === 'en' ? 'Draft restored' : 'Borrador restaurado' }}</span>
+          <button type="button" class="underline hover:no-underline" @click="discardDraft">
+            {{ language === 'en' ? 'Discard' : 'Descartar' }}
+          </button>
+        </div>
+
         <form class="space-y-4" @submit.prevent="handleCreate">
           <UFormField :label="t.title">
             <UInput v-model="form.title" :placeholder="t.whatToDo" required class="w-full" size="lg" autofocus />
@@ -130,6 +138,7 @@ const cardColors = ['#3B82F6', '#8B5CF6', '#F59E0B', '#10B981', '#F97316', '#EF4
 
 const creating = ref(false)
 const error = ref('')
+const draftRestored = ref(false)
 
 const form = reactive({
   title: '',
@@ -155,16 +164,113 @@ const columnOptions = computed(() =>
   props.columns.map(c => ({ label: c.title, value: c.id }))
 )
 
+// --- Draft persistence ---
+const draftKey = computed(() => `focusflow_task_draft_${props.projectId}`)
+
+function hasFormData(): boolean {
+  return !!(form.title.trim() || form.description.trim() || form.due_date
+    || form.estimated_hours || form.assignees.length || form.tagsStr.trim()
+    || form.color || form.figma_links.length || form.priority !== 'medium')
+}
+
+function saveDraft() {
+  if (!hasFormData()) {
+    localStorage.removeItem(draftKey.value)
+    return
+  }
+  const draft = {
+    title: form.title,
+    description: form.description,
+    priority: form.priority,
+    due_date: form.due_date,
+    column_id: form.column_id,
+    estimated_hours: form.estimated_hours,
+    assignees: form.assignees,
+    figma_links: form.figma_links,
+    color: form.color,
+    tagsStr: form.tagsStr,
+    savedAt: Date.now(),
+  }
+  localStorage.setItem(draftKey.value, JSON.stringify(draft))
+}
+
+function loadDraft(): boolean {
+  try {
+    const raw = localStorage.getItem(draftKey.value)
+    if (!raw) return false
+    const draft = JSON.parse(raw)
+    // Discard drafts older than 24 hours
+    if (draft.savedAt && Date.now() - draft.savedAt > 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(draftKey.value)
+      return false
+    }
+    Object.assign(form, {
+      title: draft.title || '',
+      description: draft.description || '',
+      priority: draft.priority || 'medium',
+      due_date: draft.due_date || '',
+      column_id: draft.column_id || props.columnId,
+      estimated_hours: draft.estimated_hours || '',
+      assignees: draft.assignees || [],
+      figma_links: draft.figma_links || [],
+      color: draft.color || '',
+      tagsStr: draft.tagsStr || '',
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
+function clearDraft() {
+  localStorage.removeItem(draftKey.value)
+  draftRestored.value = false
+}
+
+function discardDraft() {
+  clearDraft()
+  Object.assign(form, {
+    title: '', description: '', priority: 'medium', due_date: '',
+    column_id: props.columnId, estimated_hours: '', assignees: [],
+    figma_links: [], color: '', tagsStr: '',
+  })
+}
+
+// Save draft on close if form has data
 watch(() => props.open, (val) => {
   if (val) {
-    Object.assign(form, {
-      title: '', description: '', priority: 'medium', due_date: '',
-      column_id: props.columnId, estimated_hours: '', assignees: [],
-      figma_links: [], color: '', tagsStr: '',
-    })
+    // Opening: try to restore draft, otherwise reset
     error.value = ''
+    const restored = loadDraft()
+    if (restored) {
+      draftRestored.value = true
+      // Update column_id to current target if draft had a different one
+      if (!form.column_id) form.column_id = props.columnId
+    } else {
+      draftRestored.value = false
+      Object.assign(form, {
+        title: '', description: '', priority: 'medium', due_date: '',
+        column_id: props.columnId, estimated_hours: '', assignees: [],
+        figma_links: [], color: '', tagsStr: '',
+      })
+    }
+  } else {
+    // Closing: save draft if there's data
+    saveDraft()
   }
 })
+
+// Auto-save draft as user types (debounced)
+let draftTimer: ReturnType<typeof setTimeout> | null = null
+watch(
+  () => [form.title, form.description, form.priority, form.due_date,
+    form.estimated_hours, form.color, form.tagsStr, form.assignees.length, form.figma_links.length],
+  () => {
+    if (!props.open) return
+    if (draftTimer) clearTimeout(draftTimer)
+    draftTimer = setTimeout(saveDraft, 500)
+  },
+)
 
 
 function toggleAssignee(userId: string) {
@@ -200,6 +306,7 @@ async function handleCreate() {
         color: form.color || null,
       },
     })
+    clearDraft()
     isOpen.value = false
     emit('created')
   } catch (e: any) {
