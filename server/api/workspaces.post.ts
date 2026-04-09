@@ -49,10 +49,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, message: 'Error creating workspace' })
   }
 
-  // Add creator as owner
+  // Add creator as member (owner/admin roles are assigned by superadmin only)
   const { error: memErr } = await supabase
     .from('workspace_members')
-    .insert({ workspace_id: workspace.id, user_id: user.id, role: 'owner' })
+    .insert({ workspace_id: workspace.id, user_id: user.id, role: 'member' })
   if (memErr) throw createError({ statusCode: 500, message: 'Error creating workspace membership' })
 
   return workspace

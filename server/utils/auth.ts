@@ -75,7 +75,7 @@ export async function requireWorkspaceMember(event: H3Event, workspaceId: string
   if (workspace && workspace.owner_id === user.id) {
     const { data: newMembership, error: upsertErr } = await supabase
       .from('workspace_members')
-      .upsert({ workspace_id: workspaceId, user_id: user.id, role: 'owner' }, { onConflict: 'workspace_id,user_id' })
+      .upsert({ workspace_id: workspaceId, user_id: user.id, role: 'member' }, { onConflict: 'workspace_id,user_id' })
       .select('id, role')
       .single()
 
