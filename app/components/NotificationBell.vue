@@ -83,14 +83,14 @@
                       :disabled="rsvpLoading[notif.entity_id]"
                       @click="respondRsvp(notif, 'accepted')"
                     >
-                      {{ lang.current.value === 'es' ? 'Aceptar' : 'Accept' }}
+                      {{ lang.language.value === 'es' ? 'Aceptar' : 'Accept' }}
                     </button>
                     <button
                       class="px-2.5 py-1 text-[10px] font-semibold rounded-md bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-500/25 transition-colors cursor-pointer"
                       :disabled="rsvpLoading[notif.entity_id]"
                       @click="respondRsvp(notif, 'declined')"
                     >
-                      {{ lang.current.value === 'es' ? 'Rechazar' : 'Decline' }}
+                      {{ lang.language.value === 'es' ? 'Rechazar' : 'Decline' }}
                     </button>
                   </div>
                   <p
@@ -99,8 +99,8 @@
                     :class="rsvpStatus[notif.entity_id] === 'accepted' ? 'text-green-600' : 'text-red-500'"
                   >
                     {{ rsvpStatus[notif.entity_id] === 'accepted'
-                      ? (lang.current.value === 'es' ? 'Aceptada' : 'Accepted')
-                      : (lang.current.value === 'es' ? 'Rechazada' : 'Declined') }}
+                      ? (lang.language.value === 'es' ? 'Aceptada' : 'Accepted')
+                      : (lang.language.value === 'es' ? 'Rechazada' : 'Declined') }}
                   </p>
                   <p class="text-[9px] text-gray-400 dark:text-gray-500 mt-1">{{ timeAgo(notif.created_at) }}</p>
                 </div>
@@ -115,7 +115,7 @@
               <div class="flex items-center gap-2">
                 <UIcon name="i-heroicons-device-phone-mobile" class="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
                 <span class="text-[11px] font-medium text-gray-600 dark:text-gray-400">
-                  {{ lang.current.value === 'es' ? 'Notificaciones push' : 'Push notifications' }}
+                  {{ lang.language.value === 'es' ? 'Notificaciones push' : 'Push notifications' }}
                 </span>
               </div>
               <button
@@ -123,20 +123,20 @@
                 class="text-[10px] font-semibold text-green-600 flex items-center gap-1 cursor-default"
               >
                 <UIcon name="i-heroicons-check-circle-solid" class="w-3.5 h-3.5" />
-                {{ lang.current.value === 'es' ? 'Activas' : 'Active' }}
+                {{ lang.language.value === 'es' ? 'Activas' : 'Active' }}
               </button>
               <button
                 v-else-if="pushNotif.permission.value === 'denied'"
                 class="text-[10px] font-semibold text-red-500 cursor-default"
               >
-                {{ lang.current.value === 'es' ? 'Bloqueadas' : 'Blocked' }}
+                {{ lang.language.value === 'es' ? 'Bloqueadas' : 'Blocked' }}
               </button>
               <button
                 v-else
                 @click="pushNotif.requestPermission()"
                 class="text-[10px] font-semibold text-focusflow-600 hover:text-focusflow-700 cursor-pointer"
               >
-                {{ lang.current.value === 'es' ? 'Activar' : 'Enable' }}
+                {{ lang.language.value === 'es' ? 'Activar' : 'Enable' }}
               </button>
             </div>
           </div>
