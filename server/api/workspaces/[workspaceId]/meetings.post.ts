@@ -56,34 +56,36 @@ export default defineEventHandler(async (event) => {
   let calendarEventId: string | null = null
 
   if (!meetingUrl) {
-    // Get user's Google OAuth provider token
-    const { data: session } = await supabase.auth.admin.getUserById(user.id)
     const providerToken = body.provider_token || null
 
     if (providerToken) {
-      // Resolve attendee emails for Google Calendar invites
-      const attendeeEmails: string[] = []
-      for (const uid of (body.attendees || [])) {
-        try {
-          const { data: profile } = await supabase.auth.admin.getUserById(uid)
-          if (profile?.user?.email) attendeeEmails.push(profile.user.email)
-        } catch {}
-      }
-      // Add external emails to Calendar invite
-      attendeeEmails.push(...externalEmails)
+      try {
+        // Resolve attendee emails for Google Calendar invites
+        const attendeeEmails: string[] = []
+        for (const uid of (body.attendees || [])) {
+          try {
+            const { data: profile } = await supabase.auth.admin.getUserById(uid)
+            if (profile?.user?.email) attendeeEmails.push(profile.user.email)
+          } catch {}
+        }
+        // Add external emails to Calendar invite
+        attendeeEmails.push(...externalEmails)
 
-      const result = await createGoogleMeetEvent({
-        accessToken: providerToken,
-        title: body.title,
-        description: body.description,
-        startTime: body.scheduled_at,
-        durationMinutes: body.duration_minutes || 30,
-        attendeeEmails,
-      })
+        const result = await createGoogleMeetEvent({
+          accessToken: providerToken,
+          title: body.title,
+          description: body.description,
+          startTime: body.scheduled_at,
+          durationMinutes: body.duration_minutes || 30,
+          attendeeEmails,
+        })
 
-      if (result) {
-        meetingUrl = result.meetingUrl
-        calendarEventId = result.calendarEventId
+        if (result) {
+          meetingUrl = result.meetingUrl
+          calendarEventId = result.calendarEventId
+        }
+      } catch (err) {
+        console.warn('[meetings.post] Google Calendar API failed, using fallback:', err)
       }
     }
 

@@ -60,7 +60,7 @@
               :key="notif.id"
               class="px-4 py-3 border-b border-gray-100 dark:border-white/5 last:border-0 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors cursor-pointer"
               :class="!notif.read ? 'bg-focusflow-50/30 dark:bg-focusflow-500/5' : ''"
-              @click="markRead(notif)"
+              @click="handleNotifClick(notif)"
             >
               <div class="flex items-start gap-2.5">
                 <div
@@ -184,6 +184,7 @@ function _stopSharedPoll() {
 <script setup lang="ts">
 const store = useWorkspaceStore()
 const pushNotif = usePushNotifications()
+const router = useRouter()
 const lang = useLanguage()
 const t = lang.labels
 
@@ -241,6 +242,45 @@ async function markRead(notif: Notification) {
   } catch {}
 }
 
+async function handleNotifClick(notif: Notification) {
+  markRead(notif)
+  const slug = store.slug
+  if (!slug) return
+
+  const entityType = notif.entity_type
+  const entityId = notif.entity_id
+
+  // Navigate based on entity type
+  if (entityType === 'task' && entityId) {
+    // Fetch task to get its project_id for kanban navigation
+    try {
+      const data = await $fetch<any>(`/api/workspaces/${workspaceId.value}/tasks/${entityId}`)
+      if (data?.task?.project_id) {
+        const task = data.task
+        open.value = false
+        return router.push(`/${slug}/projects/${task.project_id}/kanban`)
+      }
+    } catch {}
+    // Fallback: go to dashboard
+    open.value = false
+    return router.push(`/${slug}/dashboard`)
+  }
+
+  if (entityType === 'meeting' || entityType === 'reserved_date') {
+    open.value = false
+    return router.push(`/${slug}/agenda`)
+  }
+
+  if (entityType === 'project' && entityId) {
+    open.value = false
+    return router.push(`/${slug}/projects/${entityId}/kanban`)
+  }
+
+  // Default: dashboard
+  open.value = false
+  router.push(`/${slug}/dashboard`)
+}
+
 const rsvpStatus = ref<Record<string, 'accepted' | 'declined'>>({})
 const rsvpLoading = ref<Record<string, boolean>>({})
 
@@ -262,30 +302,40 @@ async function respondRsvp(notif: Notification, status: 'accepted' | 'declined')
   }
 }
 
+const meetingTypes = ['meeting_scheduled', 'meeting_rsvp', 'meeting_reminder', 'meeting_rescheduled', 'meeting_cancelled']
+const taskTypes = ['task_assigned', 'task_moved_project']
+
 function notifIcon(type: string) {
   if (type === 'deadline_urgent') return 'i-heroicons-exclamation-triangle'
   if (type === 'deadline_approaching') return 'i-heroicons-clock'
-  if (type === 'task_assigned') return 'i-heroicons-clipboard-document-check'
+  if (taskTypes.includes(type)) return 'i-heroicons-clipboard-document-check'
   if (type === 'workspace_invitation') return 'i-heroicons-user-plus'
-  if (type === 'meeting_scheduled' || type === 'meeting_rsvp' || type === 'meeting_reminder') return 'i-heroicons-video-camera'
+  if (type === 'project_assigned') return 'i-heroicons-folder-plus'
+  if (meetingTypes.includes(type)) return 'i-heroicons-video-camera'
+  if (type === 'reserved_date') return 'i-heroicons-calendar-days'
+  if (type === 'procrastination_alert') return 'i-heroicons-shield-exclamation'
   return 'i-heroicons-bell'
 }
 
 function notifIconBg(type: string) {
   if (type === 'deadline_urgent') return 'bg-red-50 dark:bg-red-500/10'
   if (type === 'deadline_approaching') return 'bg-amber-50 dark:bg-amber-500/10'
-  if (type === 'task_assigned') return 'bg-blue-50 dark:bg-blue-500/10'
-  if (type === 'workspace_invitation') return 'bg-green-50 dark:bg-green-500/10'
-  if (type === 'meeting_scheduled' || type === 'meeting_rsvp' || type === 'meeting_reminder') return 'bg-purple-50 dark:bg-purple-500/10'
+  if (taskTypes.includes(type)) return 'bg-blue-50 dark:bg-blue-500/10'
+  if (type === 'workspace_invitation' || type === 'project_assigned') return 'bg-green-50 dark:bg-green-500/10'
+  if (meetingTypes.includes(type)) return 'bg-purple-50 dark:bg-purple-500/10'
+  if (type === 'reserved_date') return 'bg-teal-50 dark:bg-teal-500/10'
+  if (type === 'procrastination_alert') return 'bg-orange-50 dark:bg-orange-500/10'
   return 'bg-gray-50 dark:bg-white/[0.06]'
 }
 
 function notifIconColor(type: string) {
   if (type === 'deadline_urgent') return 'text-red-500'
   if (type === 'deadline_approaching') return 'text-amber-500'
-  if (type === 'task_assigned') return 'text-blue-500'
-  if (type === 'workspace_invitation') return 'text-green-500'
-  if (type === 'meeting_scheduled' || type === 'meeting_rsvp' || type === 'meeting_reminder') return 'text-purple-500'
+  if (taskTypes.includes(type)) return 'text-blue-500'
+  if (type === 'workspace_invitation' || type === 'project_assigned') return 'text-green-500'
+  if (meetingTypes.includes(type)) return 'text-purple-500'
+  if (type === 'reserved_date') return 'text-teal-500'
+  if (type === 'procrastination_alert') return 'text-orange-500'
   return 'text-gray-500 dark:text-gray-400'
 }
 

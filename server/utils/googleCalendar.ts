@@ -33,25 +33,33 @@ export async function createGoogleMeetEvent(opts: {
     attendees: (opts.attendeeEmails || []).map(email => ({ email })),
   }
 
-  const res = await fetch(
-    'https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1&sendUpdates=all',
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${opts.accessToken}`,
-        'Content-Type': 'application/json',
+  let res: Response
+  try {
+    res = await fetch(
+      'https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1&sendUpdates=all',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${opts.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(event),
       },
-      body: JSON.stringify(event),
-    },
-  )
+    )
+  } catch (err) {
+    console.error('[googleCalendar] Network error:', err)
+    return null
+  }
 
   if (!res.ok) {
-    const err = await res.text()
+    const err = await res.text().catch(() => 'unknown error')
     console.error('[googleCalendar] Failed to create event:', res.status, err)
     return null
   }
 
-  const data = await res.json()
+  const data = await res.json().catch(() => null)
+  if (!data) return null
+
   const meetingUrl = data.conferenceData?.entryPoints?.find(
     (ep: any) => ep.entryPointType === 'video',
   )?.uri || data.hangoutLink || ''
