@@ -66,7 +66,7 @@
       </div>
 
       <!-- Main nav -->
-      <nav class="py-3 space-y-0.5" :class="collapsed ? 'px-2' : 'px-3'">
+      <nav class="py-3 space-y-0.5 flex-1 min-h-0 overflow-y-auto" :class="collapsed ? 'px-2' : 'px-3'">
         <template v-for="item in mainNav" :key="item.to">
           <!-- Item with children (collapsible group) -->
           <div v-if="item.children && item.children.length > 0 && !collapsed">
@@ -125,8 +125,6 @@
         </template>
       </nav>
 
-      <!-- Spacer -->
-      <div class="flex-1" />
 
       <!-- Lofi Player (sidebar mini) -->
       <div class="shrink-0">
