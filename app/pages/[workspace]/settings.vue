@@ -23,6 +23,9 @@
           <UFormField :label="t.slugUrl">
             <UInput :model-value="wsSlug" disabled class="w-full opacity-60" />
           </UFormField>
+          <UFormField :label="t.teamType">
+            <USelect v-model="wsTeamType" :items="teamTypeOptions" class="w-full" size="lg" />
+          </UFormField>
           <div class="flex justify-end">
             <UButton color="primary" :loading="savingWs" class="font-semibold" @click="saveWorkspace">
               {{ t.saveChanges }}
@@ -218,6 +221,15 @@ const supabase = useSupabaseClient()
 const loading = ref(true)
 const wsName = ref('')
 const wsSlug = ref('')
+const wsTeamType = ref('kanban')
+
+const teamTypeOptions = computed(() => [
+  { label: t.value.teamTypeKanban, value: 'kanban' },
+  { label: t.value.teamTypeScrum, value: 'scrum' },
+  { label: t.value.teamTypeDev, value: 'dev' },
+  { label: t.value.teamTypeAudio, value: 'audio' },
+  { label: t.value.teamTypeCreative, value: 'creative' },
+])
 const savingWs = ref(false)
 const wsSaved = ref(false)
 const memberRole = ref('member')
@@ -369,6 +381,7 @@ onMounted(async () => {
     if (!store.workspace) return
     wsName.value = store.workspace.name
     wsSlug.value = store.workspace.slug
+    wsTeamType.value = (store.workspace as any).team_type || 'kanban'
 
     const members = await $fetch<any[]>(`/api/workspaces/${store.workspace.id}/members`)
     const me = members?.find(m => m.user_id === currentUser.value?.id)
@@ -385,8 +398,9 @@ async function saveWorkspace() {
   try {
     await $fetch(`/api/workspaces/${store.workspace!.id}`, {
       method: 'PATCH',
-      body: { name: wsName.value },
+      body: { name: wsName.value, team_type: wsTeamType.value },
     })
+    if (store.workspace) (store.workspace as any).team_type = wsTeamType.value
     wsSaved.value = true
     setTimeout(() => { wsSaved.value = false }, 3000)
   } catch { } finally {
