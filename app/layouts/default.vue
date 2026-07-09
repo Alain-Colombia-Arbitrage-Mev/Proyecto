@@ -247,6 +247,9 @@
     <!-- Time Tracker Widget -->
     <LazyTimeTracker v-if="store.workspace?.id" :workspace-id="store.workspace.id" />
 
+    <!-- Global AI Advisor -->
+    <AiAdvisorPanel v-if="store.workspace?.id && canUseAI" />
+
     <!-- Lofi Player (mobile only — desktop is in sidebar) -->
     <div class="md:hidden">
       <LazyLofiPlayer />
