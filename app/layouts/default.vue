@@ -442,35 +442,27 @@ interface NavItem {
   children?: NavItem[]
 }
 
+// Focused navigation: 5 primary items, everything else under a collapsible "More"
 const allNav = computed<NavItem[]>(() => [
   { label: t.value.dashboard, icon: 'i-heroicons-squares-2x2', to: `/${workspaceSlug.value}/dashboard`, show: true },
+  { label: t.value.myDay, icon: 'i-heroicons-sun', to: `/${workspaceSlug.value}/my-day`, show: true },
   { label: t.value.projects, icon: 'i-heroicons-folder-open', to: `/${workspaceSlug.value}/projects`, show: true },
-  { label: t.value.aiAgents, icon: 'i-heroicons-cpu-chip', to: `/${workspaceSlug.value}/agents`, show: canUseAI.value && moduleEnabled('ai_agents') },
-  { label: t.value.workflows, icon: 'i-heroicons-bolt', to: `/${workspaceSlug.value}/workflows`, show: canUseWorkflows.value && moduleEnabled('workflows') },
-  { label: t.value.timesheet, icon: 'i-heroicons-clock', to: `/${workspaceSlug.value}/timesheet`, show: canViewTimesheets.value && moduleEnabled('timesheet') },
-  { label: t.value.files, icon: 'i-heroicons-document-duplicate', to: `/${workspaceSlug.value}/files`, show: moduleEnabled('files') },
-  { label: lang.language.value === 'en' ? 'Orchestrator' : 'Orquestador', icon: 'i-heroicons-sparkles', to: `/${workspaceSlug.value}/orchestrator`, show: canUseAI.value && moduleEnabled('orchestrator') },
-  { label: t.value.goals, icon: 'i-heroicons-flag', to: `/${workspaceSlug.value}/goals`, show: canViewGoals.value && moduleEnabled('goals') },
-  { label: t.value.roadmap, icon: 'i-heroicons-map', to: `/${workspaceSlug.value}/roadmap`, show: canViewRoadmap.value && moduleEnabled('roadmap') },
+  { label: t.value.agenda, icon: 'i-heroicons-calendar-days', to: `/${workspaceSlug.value}/agenda`, show: canViewAgenda.value && moduleEnabled('agenda') },
+  { label: t.value.team, icon: 'i-heroicons-user-group', to: `/${workspaceSlug.value}/team`, show: canManageMembers.value },
   {
-    label: t.value.team, icon: 'i-heroicons-user-group', to: `/${workspaceSlug.value}/team`, show: canManageMembers.value, id: 'team',
+    label: t.value.more, icon: 'i-heroicons-ellipsis-horizontal-circle', to: `/${workspaceSlug.value}/settings`, show: true, id: 'more',
     children: [
-      { label: t.value.inviteMember, icon: 'i-heroicons-user-plus', to: `/${workspaceSlug.value}/team`, show: true },
-      { label: t.value.roles, icon: 'i-heroicons-shield-check', to: `/${workspaceSlug.value}/roles`, show: true },
-    ],
-  },
-  {
-    label: t.value.agenda, icon: 'i-heroicons-calendar-days', to: `/${workspaceSlug.value}/agenda`, show: canViewAgenda.value && moduleEnabled('agenda'), id: 'agenda',
-    children: [
-      { label: t.value.scheduleMeeting, icon: 'i-heroicons-video-camera', to: `/${workspaceSlug.value}/agenda`, show: true },
-      { label: t.value.reserveTime, icon: 'i-heroicons-clock', to: `/${workspaceSlug.value}/agenda`, show: true },
-    ],
-  },
-  { label: t.value.adminUsers, icon: 'i-heroicons-shield-exclamation', to: `/${workspaceSlug.value}/admin/users`, show: auth.isSuperadmin },
-  { label: t.value.billing, icon: 'i-heroicons-credit-card', to: `/${workspaceSlug.value}/billing`, show: canManageWorkspace.value && moduleEnabled('billing') },
-  { label: t.value.settings, icon: 'i-heroicons-cog-6-tooth', to: `/${workspaceSlug.value}/settings`, show: true, id: 'settings',
-    children: [
-      { label: lang.language.value === 'en' ? 'General' : 'General', icon: 'i-heroicons-cog-6-tooth', to: `/${workspaceSlug.value}/settings`, show: true },
+      { label: t.value.aiAgents, icon: 'i-heroicons-cpu-chip', to: `/${workspaceSlug.value}/agents`, show: canUseAI.value && moduleEnabled('ai_agents') },
+      { label: t.value.workflows, icon: 'i-heroicons-bolt', to: `/${workspaceSlug.value}/workflows`, show: canUseWorkflows.value && moduleEnabled('workflows') },
+      { label: lang.language.value === 'en' ? 'Orchestrator' : 'Orquestador', icon: 'i-heroicons-sparkles', to: `/${workspaceSlug.value}/orchestrator`, show: canUseAI.value && moduleEnabled('orchestrator') },
+      { label: t.value.goals, icon: 'i-heroicons-flag', to: `/${workspaceSlug.value}/goals`, show: canViewGoals.value && moduleEnabled('goals') },
+      { label: t.value.roadmap, icon: 'i-heroicons-map', to: `/${workspaceSlug.value}/roadmap`, show: canViewRoadmap.value && moduleEnabled('roadmap') },
+      { label: t.value.timesheet, icon: 'i-heroicons-clock', to: `/${workspaceSlug.value}/timesheet`, show: canViewTimesheets.value && moduleEnabled('timesheet') },
+      { label: t.value.files, icon: 'i-heroicons-document-duplicate', to: `/${workspaceSlug.value}/files`, show: moduleEnabled('files') },
+      { label: t.value.roles, icon: 'i-heroicons-shield-check', to: `/${workspaceSlug.value}/roles`, show: canManageMembers.value },
+      { label: t.value.billing, icon: 'i-heroicons-credit-card', to: `/${workspaceSlug.value}/billing`, show: canManageWorkspace.value && moduleEnabled('billing') },
+      { label: t.value.adminUsers, icon: 'i-heroicons-shield-exclamation', to: `/${workspaceSlug.value}/admin/users`, show: auth.isSuperadmin },
+      { label: t.value.settings, icon: 'i-heroicons-cog-6-tooth', to: `/${workspaceSlug.value}/settings`, show: true },
       { label: 'Workspaces', icon: 'i-heroicons-building-office-2', to: `/${workspaceSlug.value}/workspaces`, show: true },
       { label: lang.language.value === 'en' ? 'Modules' : 'Modulos', icon: 'i-heroicons-square-3-stack-3d', to: `/${workspaceSlug.value}/modules`, show: canManageWorkspace.value },
       { label: 'MCP/API', icon: 'i-heroicons-puzzle-piece', to: `/${workspaceSlug.value}/integrations`, show: moduleEnabled('integrations') },
@@ -483,7 +475,17 @@ const mainNav = computed(() => allNav.value.filter(i => i.show))
 function toggleGroup(id: string) {
   if (expandedGroups.value.has(id)) expandedGroups.value.delete(id)
   else expandedGroups.value.add(id)
+  if (import.meta.client && id === 'more') {
+    localStorage.setItem('focusflow_nav_more', expandedGroups.value.has('more') ? '1' : '0')
+  }
 }
+
+// Restore "More" expanded preference
+onMounted(() => {
+  if (localStorage.getItem('focusflow_nav_more') === '1') {
+    expandedGroups.value.add('more')
+  }
+})
 
 function isGroupExpanded(id: string) {
   return expandedGroups.value.has(id)
@@ -508,9 +510,9 @@ watch(() => route.path, () => {
 // Mobile nav: 4 primary items + "More" button for the rest
 const primaryPaths = computed(() => new Set([
   `/${workspaceSlug.value}/dashboard`,
+  `/${workspaceSlug.value}/my-day`,
   `/${workspaceSlug.value}/projects`,
   `/${workspaceSlug.value}/agenda`,
-  `/${workspaceSlug.value}/files`,
 ]))
 
 // Flatten nav for mobile (expand children into top-level items)
@@ -570,6 +572,6 @@ watch(() => route.fullPath, () => { showMobileMore.value = false })
   max-height: 0;
 }
 .submenu-enter-to {
-  max-height: 200px;
+  max-height: 640px;
 }
 </style>
