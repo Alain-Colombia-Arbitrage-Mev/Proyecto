@@ -340,8 +340,21 @@
 
       </InspiraBentoGrid>
 
-      <!-- ═══════ SECOND SECTION: Coach + Rankings + AI Details ═══════ -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- ═══════ SECOND SECTION: Coach + Rankings + AI Details (collapsible) ═══════ -->
+      <button
+        class="w-full flex items-center justify-between bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 shadow-card px-5 py-3.5 hover:shadow-card-hover transition-all cursor-pointer"
+        @click="toggleMoreWidgets"
+      >
+        <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+          {{ lang.language.value === 'en' ? 'Coach, rankings & AI details' : 'Coach, rankings y detalles AI' }}
+        </span>
+        <UIcon
+          name="i-heroicons-chevron-down"
+          class="w-4 h-4 text-gray-400 transition-transform duration-200"
+          :class="showMoreWidgets ? 'rotate-180' : ''"
+        />
+      </button>
+      <div v-show="showMoreWidgets" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
         <!-- ── Coach Anti-Procrastinación ── -->
         <InspiraBlurReveal :delay="100" class="lg:col-span-1">
@@ -738,6 +751,20 @@ const t = lang.labels
 const taskCount = ref(0)
 const completedTasks = ref(0)
 const showCreate = ref(false)
+
+// Secondary widgets collapsed by default to keep the dashboard focused
+const showMoreWidgets = ref(false)
+function toggleMoreWidgets() {
+  showMoreWidgets.value = !showMoreWidgets.value
+  if (import.meta.client) {
+    localStorage.setItem('focusflow_dash_sections', showMoreWidgets.value ? '1' : '0')
+  }
+}
+onMounted(() => {
+  if (localStorage.getItem('focusflow_dash_sections') === '1') {
+    showMoreWidgets.value = true
+  }
+})
 const creating = ref(false)
 const createError = ref('')
 const newName = ref('')
