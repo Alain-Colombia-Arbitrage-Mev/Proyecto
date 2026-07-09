@@ -1,134 +1,5 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 
-const TEMPLATES: Record<string, { title: string; color: string; wip_limit?: number }[]> = {
-  simple: [
-    { title: 'Pendiente', color: '#3B82F6' },
-    { title: 'En Progreso', color: '#F59E0B', wip_limit: 5 },
-    { title: 'Hecho', color: '#10B981' },
-  ],
-  kanban: [
-    { title: 'Backlog', color: '#6B7280' },
-    { title: 'To Do', color: '#3B82F6' },
-    { title: 'En Progreso', color: '#F59E0B', wip_limit: 5 },
-    { title: 'Revisión', color: '#8B5CF6', wip_limit: 3 },
-    { title: 'Hecho', color: '#10B981' },
-  ],
-  dev: [
-    { title: 'Backlog', color: '#6B7280' },
-    { title: 'Análisis', color: '#8B5CF6' },
-    { title: 'Dev', color: '#3B82F6', wip_limit: 5 },
-    { title: 'Code Review', color: '#F59E0B', wip_limit: 3 },
-    { title: 'QA', color: '#F97316', wip_limit: 3 },
-    { title: 'Producción', color: '#10B981' },
-  ],
-  devops: [
-    { title: 'Backlog', color: '#6B7280' },
-    { title: 'Diseño', color: '#8B5CF6' },
-    { title: 'Desarrollo', color: '#3B82F6', wip_limit: 4 },
-    { title: 'Code Review', color: '#6366F1', wip_limit: 3 },
-    { title: 'CI/CD', color: '#F59E0B', wip_limit: 3 },
-    { title: 'Staging', color: '#F97316', wip_limit: 3 },
-    { title: 'Producción', color: '#10B981' },
-    { title: 'Monitoreo', color: '#14B8A6' },
-  ],
-  support: [
-    { title: 'Nuevo', color: '#3B82F6' },
-    { title: 'Triaje', color: '#6366F1' },
-    { title: 'Asignado', color: '#8B5CF6' },
-    { title: 'En Proceso', color: '#F59E0B', wip_limit: 5 },
-    { title: 'Esperando', color: '#F97316' },
-    { title: 'Cerrado', color: '#10B981' },
-  ],
-  scrum: [
-    { title: 'Product Backlog', color: '#6B7280' },
-    { title: 'Sprint Backlog', color: '#6366F1' },
-    { title: 'En Progreso', color: '#3B82F6', wip_limit: 4 },
-    { title: 'En Review', color: '#F59E0B', wip_limit: 3 },
-    { title: 'QA', color: '#8B5CF6', wip_limit: 3 },
-    { title: 'Done', color: '#10B981' },
-  ],
-  scrumban: [
-    { title: 'Backlog', color: '#6B7280' },
-    { title: 'Listo para Pull', color: '#6366F1' },
-    { title: 'En Progreso', color: '#3B82F6', wip_limit: 4 },
-    { title: 'Review', color: '#F59E0B', wip_limit: 3 },
-    { title: 'Testing', color: '#8B5CF6', wip_limit: 3 },
-    { title: 'Deploy', color: '#F97316' },
-    { title: 'Done', color: '#10B981' },
-    { title: 'Archivado', color: '#9CA3AF' },
-  ],
-  marketing: [
-    { title: 'Ideas', color: '#EC4899' },
-    { title: 'Planificación', color: '#8B5CF6' },
-    { title: 'Creación', color: '#3B82F6', wip_limit: 5 },
-    { title: 'Revisión', color: '#F59E0B', wip_limit: 3 },
-    { title: 'Aprobado', color: '#10B981' },
-    { title: 'Publicado', color: '#06B6D4' },
-    { title: 'Análisis', color: '#6366F1' },
-  ],
-  ai_agents: [
-    { title: 'Prompts Pendientes', color: '#6B7280' },
-    { title: 'Diseño de Agente', color: '#8B5CF6' },
-    { title: 'Entrenamiento', color: '#3B82F6', wip_limit: 3 },
-    { title: 'Testing', color: '#F59E0B', wip_limit: 3 },
-    { title: 'Evaluación', color: '#F97316' },
-    { title: 'Producción', color: '#10B981' },
-    { title: 'Monitoreo', color: '#06B6D4' },
-  ],
-  backend_senior_dev: [
-    { title: 'Backlog', color: '#6B7280' },
-    { title: 'Diseño de API', color: '#8B5CF6' },
-    { title: 'Desarrollo', color: '#3B82F6', wip_limit: 4 },
-    { title: 'Code Review', color: '#6366F1', wip_limit: 3 },
-    { title: 'Testing / QA', color: '#F59E0B', wip_limit: 3 },
-    { title: 'Seguridad / RLS', color: '#EF4444' },
-    { title: 'Deploy / DevOps', color: '#F97316' },
-    { title: 'Producción', color: '#10B981' },
-    { title: 'Monitoreo', color: '#14B8A6' },
-  ],
-  frontend_design: [
-    { title: 'Inspiración', color: '#EC4899' },
-    { title: 'Wireframes', color: '#8B5CF6' },
-    { title: 'Diseño UI', color: '#6366F1' },
-    { title: 'Prototipo', color: '#3B82F6' },
-    { title: 'Desarrollo Frontend', color: '#F59E0B', wip_limit: 4 },
-    { title: 'Review / QA Visual', color: '#F97316', wip_limit: 3 },
-    { title: 'Integración', color: '#14B8A6' },
-    { title: 'Publicado', color: '#10B981' },
-  ],
-  app_development: [
-    { title: 'Backlog', color: '#6B7280' },
-    { title: 'Diseño UX/UI', color: '#EC4899' },
-    { title: 'Desarrollo', color: '#3B82F6', wip_limit: 4 },
-    { title: 'Code Review', color: '#6366F1', wip_limit: 3 },
-    { title: 'QA / Testing', color: '#F59E0B', wip_limit: 3 },
-    { title: 'Beta', color: '#F97316' },
-    { title: 'Release', color: '#10B981' },
-    { title: 'Post-Launch', color: '#14B8A6' },
-  ],
-  frontend_dev: [
-    { title: 'Backlog', color: '#6B7280' },
-    { title: 'Maquetación', color: '#EC4899' },
-    { title: 'Componentes', color: '#8B5CF6', wip_limit: 4 },
-    { title: 'Integración API', color: '#3B82F6', wip_limit: 4 },
-    { title: 'Estado / Store', color: '#6366F1', wip_limit: 3 },
-    { title: 'Responsive / A11y', color: '#F59E0B', wip_limit: 3 },
-    { title: 'Code Review', color: '#F97316', wip_limit: 3 },
-    { title: 'QA Visual', color: '#EF4444', wip_limit: 3 },
-    { title: 'Deploy', color: '#10B981' },
-  ],
-  backend_dev: [
-    { title: 'Backlog', color: '#6B7280' },
-    { title: 'Diseño DB / Schema', color: '#8B5CF6' },
-    { title: 'Endpoints / API', color: '#3B82F6', wip_limit: 4 },
-    { title: 'Lógica de Negocio', color: '#6366F1', wip_limit: 4 },
-    { title: 'Auth / Permisos', color: '#EF4444', wip_limit: 3 },
-    { title: 'Testing / Unit', color: '#F59E0B', wip_limit: 3 },
-    { title: 'Code Review', color: '#F97316', wip_limit: 3 },
-    { title: 'Migraciones', color: '#14B8A6' },
-    { title: 'Deploy', color: '#10B981' },
-  ],
-}
 
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
@@ -137,8 +8,8 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   if (!body.name) throw createError({ statusCode: 400, message: 'Project name is required' })
 
-  const rawTemplate = body.kanban_template || 'simple'
-  const template = typeof rawTemplate === 'object' ? rawTemplate.value || 'simple' : rawTemplate
+  const rawTemplate = body.kanban_template || 'kanban'
+  const template = typeof rawTemplate === 'object' ? rawTemplate.value || 'kanban' : rawTemplate
 
   const rawPriority = body.priority || 'medium'
   const priority = typeof rawPriority === 'object' ? rawPriority.value || 'medium' : rawPriority
@@ -161,7 +32,7 @@ export default defineEventHandler(async (event) => {
     .single()
   if (projErr) throw createError({ statusCode: 500, message: 'Error creating project' })
 
-  const cols = (TEMPLATES[template] || TEMPLATES.simple!).map((col, i) => ({
+  const cols = (KANBAN_TEMPLATES[template] || KANBAN_TEMPLATES.kanban!).map((col, i) => ({
     project_id: project.id,
     title: col.title,
     color: col.color,
@@ -197,6 +68,8 @@ export default defineEventHandler(async (event) => {
     app_development: ['/app', '/app/design', '/app/releases', '/app/tests'],
     frontend_dev: ['/frontend', '/frontend/components', '/frontend/pages', '/frontend/stores', '/frontend/assets'],
     backend_dev: ['/backend', '/backend/api', '/backend/migrations', '/backend/tests', '/backend/utils'],
+    audio: ['/audio', '/audio/grabaciones', '/audio/mezclas', '/audio/masters'],
+    creative: ['/creativo', '/creativo/briefs', '/creativo/conceptos', '/creativo/entregables'],
   }
 
   const projectSlug = body.name.replace(/[^a-zA-Z0-9 _-]/g, '').replace(/\s+/g, '_').slice(0, 50).toLowerCase()
