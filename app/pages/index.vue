@@ -59,7 +59,13 @@ async function redirectToWorkspace() {
   if (workspaces && workspaces.length > 0) {
     await router.push(`/${workspaces[0].slug}/dashboard`)
   } else if (workspaces && workspaces.length === 0) {
-    await router.push('/onboarding')
+    // No workspace yet — auto-create the default personal workspace
+    try {
+      const ws = await $fetch<{ slug: string }>('/api/user/ensure-workspace', { method: 'POST' })
+      await router.push(`/${ws.slug}/dashboard`)
+    } catch {
+      await router.push('/onboarding')
+    }
   } else {
     // All retries failed — likely cookie not synced yet
     await new Promise(r => setTimeout(r, 1500))
@@ -71,6 +77,9 @@ async function redirectToWorkspace() {
         await router.push(`/${data[0].slug}/dashboard`)
         return
       }
+      const ws = await $fetch<{ slug: string }>('/api/user/ensure-workspace', { method: 'POST' })
+      await router.push(`/${ws.slug}/dashboard`)
+      return
     } catch { /* */ }
     await router.push('/onboarding')
   }
