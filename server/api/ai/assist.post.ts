@@ -223,6 +223,98 @@ Específico, basado en datos reales. Solo JSON.`
       break
     }
 
+    case 'advisor': {
+      const advisorMessage = String(context.message || '').slice(0, MAX_MESSAGE_LENGTH)
+      if (!advisorMessage) throw createError({ statusCode: 400, message: 'message is required' })
+      if (!context.workspaceId || typeof context.workspaceId !== 'string') {
+        throw createError({ statusCode: 400, message: 'workspaceId is required' })
+      }
+      await requirePermission(event, context.workspaceId, 'use_ai_basic')
+      resolvedWorkspaceId = context.workspaceId
+
+      const isEnglish = context.lang === 'en'
+      const today = new Date().toISOString().slice(0, 10)
+      const in7days = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
+
+      const [{ data: advisorWs }, { data: advisorProjects }] = await Promise.all([
+        supabase
+          .from('workspaces')
+          .select('name, team_type')
+          .eq('id', context.workspaceId)
+          .maybeSingle(),
+        supabase
+          .from('projects')
+          .select('id, name, status, kanban_template')
+          .eq('workspace_id', context.workspaceId)
+          .neq('status', 'completed')
+          .limit(20),
+      ])
+
+      const advisorProjectIds = (advisorProjects || []).map((p: any) => p.id)
+      let overdueCount = 0
+      let upcomingCount = 0
+      if (advisorProjectIds.length > 0) {
+        const [{ count: overdue }, { count: upcoming }] = await Promise.all([
+          supabase
+            .from('tasks')
+            .select('id', { count: 'exact', head: true })
+            .in('project_id', advisorProjectIds)
+            .lt('due_date', today),
+          supabase
+            .from('tasks')
+            .select('id', { count: 'exact', head: true })
+            .in('project_id', advisorProjectIds)
+            .gte('due_date', today)
+            .lte('due_date', in7days),
+        ])
+        overdueCount = overdue || 0
+        upcomingCount = upcoming || 0
+      }
+
+      const teamType = advisorWs?.team_type || 'kanban'
+
+      // Active sprint context for scrum teams (best-effort — table may not exist)
+      let sprintInfo = ''
+      if (teamType === 'scrum' && advisorProjectIds.length > 0) {
+        try {
+          const { data: activeSprint } = await supabase
+            .from('sprints')
+            .select('name, start_date, end_date, goal')
+            .in('project_id', advisorProjectIds)
+            .eq('status', 'active')
+            .limit(1)
+            .maybeSingle()
+          if (activeSprint) {
+            sprintInfo = `Sprint activo: ${activeSprint.name} (${activeSprint.start_date} → ${activeSprint.end_date})${activeSprint.goal ? ` Meta: ${activeSprint.goal}` : ''}.`
+          }
+        } catch { /* sprints table optional */ }
+      }
+
+      const projectsSummary = (advisorProjects || [])
+        .map((p: any) => `${p.name} [${p.kanban_template}/${p.status}]`)
+        .join(', ') || (isEnglish ? 'none' : 'ninguno')
+
+      systemPrompt = `Eres el Asesor de FocusFlow para un equipo tipo "${teamType}".
+Workspace: ${advisorWs?.name || ''}. Proyectos activos: ${projectsSummary}.
+Tareas atrasadas: ${overdueCount}. Tareas próximas 7 días: ${upcomingCount}. ${sprintInfo}
+Da consejos accionables y breves según la metodología del equipo:
+- scrum: salud del sprint, bloqueos, velocity
+- kanban/dev: cuellos de botella, límites WIP
+- audio: etapas de producción estancadas (grabación→master)
+- creative: revisiones y aprobaciones pendientes
+Responde en ${isEnglish ? 'inglés' : 'español'}, máximo 8 líneas, texto plano sin markdown pesado. No <think>.`
+      userPrompt = advisorMessage
+
+      const advisorHistory = Array.isArray(context.history) ? context.history.slice(-MAX_HISTORY_MESSAGES) : []
+      ;(event.context as any)._chatHistory = advisorHistory
+        .filter((h: any) => h.role && h.text && String(h.text).trim().length > 0)
+        .map((h: any) => ({
+          role: h.role === 'user' ? 'user' : 'assistant',
+          content: String(h.text).slice(0, MAX_HISTORY_MSG_LENGTH),
+        }))
+      break
+    }
+
     case 'chat': {
       const message = String(context.message || '').slice(0, MAX_MESSAGE_LENGTH)
       if (!message) throw createError({ statusCode: 400, message: 'message is required' })
@@ -485,7 +577,7 @@ ${JSON.stringify((tasksFull || []).map((t: any) => ({
   }
 
   // Call OpenRouter — try primary model, fallback to secondary on failure
-  const primaryModel = 'minimax/minimax-m2.5'
+  const primaryModel = 'deepseek/deepseek-v4-pro'
   const fallbackModel = 'google/gemini-2.0-flash-001'
   const maxTokens = action === 'document_architecture' ? 16384
     : (event.context as any)._docAgentMeta?.config?.maxTokens
@@ -554,6 +646,11 @@ ${JSON.stringify((tasksFull || []).map((t: any) => ({
       model: usedModel,
       usage: response.usage,
     }).catch(() => {})
+  }
+
+  // Advisor always answers in plain text — never treat its output as JSON
+  if (action === 'advisor') {
+    return { type: 'text', data: stripThinkTags(content) }
   }
 
   const parsed = extractJSON(content)
@@ -631,7 +728,7 @@ ${JSON.stringify((tasksFull || []).map((t: any) => ({
                   'X-Title': 'FocusFlow',
                 },
                 body: {
-                  model: 'minimax/minimax-m2.5',
+                  model: 'deepseek/deepseek-v4-pro',
                   messages: [
                     {
                       role: 'system',
@@ -657,7 +754,7 @@ Description: objetivo + pasos implementación + archivos + criterios ✅ + notas
                   userId: user.id,
                   workspaceId: resolvedWorkspaceId,
                   action: 'document_architecture_tasks',
-                  model: 'minimax/minimax-m2.5',
+                  model: 'deepseek/deepseek-v4-pro',
                   usage: taskGenResponse.usage,
                 }).catch(() => {})
               }
