@@ -2,6 +2,7 @@
   <div class="min-h-screen bg-[#f8f9fb] dark:bg-[#111] transition-colors">
     <!-- Desktop Sidebar -->
     <aside
+      v-show="!focusMode"
       class="dark hidden md:flex fixed inset-y-0 left-0 z-30 flex-col bg-[#0d0d0d] border-r border-white/10 transition-all duration-300 ease-out"
       style="color-scheme: dark"
       :class="collapsed ? 'w-[68px]' : 'w-[252px]'"
@@ -195,7 +196,7 @@
     </aside>
 
     <!-- Mobile Header -->
-    <header class="md:hidden fixed top-0 inset-x-0 z-30 h-14 flex items-center justify-between px-4 bg-white/90 dark:bg-[#111]/90 backdrop-blur-xl border-b border-gray-200/60 dark:border-white/10">
+    <header v-show="!focusMode" class="md:hidden fixed top-0 inset-x-0 z-30 h-14 flex items-center justify-between px-4 bg-white/90 dark:bg-[#111]/90 backdrop-blur-xl border-b border-gray-200/60 dark:border-white/10">
       <button class="flex items-center gap-2.5 cursor-pointer" @click="toggleMobileWsSwitcher">
         <img src="/logo.png" alt="FocusFlow" class="w-8 h-8 rounded-lg shadow-sm shadow-[#75fc96]/20" />
         <div class="min-w-0">
@@ -213,8 +214,8 @@
     <main
       class="transition-all duration-300 ease-out"
       :class="[
-        'md:pt-0 pt-14 pb-24 md:pb-0',
-        collapsed ? 'md:pl-[68px]' : 'md:pl-[252px]',
+        focusMode ? 'pt-0 pb-0' : 'md:pt-0 pt-14 pb-24 md:pb-0',
+        focusMode ? 'md:pl-0' : (collapsed ? 'md:pl-[68px]' : 'md:pl-[252px]'),
       ]"
     >
       <div class="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto">
@@ -298,7 +299,7 @@
     </Teleport>
 
     <!-- Mobile Bottom Nav -->
-    <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/80 dark:bg-[#111]/80 backdrop-blur-xl border-t border-gray-200 dark:border-white/10">
+    <nav v-show="!focusMode" class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/80 dark:bg-[#111]/80 backdrop-blur-xl border-t border-gray-200 dark:border-white/10">
       <div class="flex items-stretch justify-around h-16 px-2">
         <NuxtLink
           v-for="item in mobileNavPrimary"
@@ -370,6 +371,8 @@ const { isEnabled: moduleEnabled } = useModules()
 
 const collapsed = ref(false)
 const showMobileMore = ref(false)
+// Set by the kanban board's focus-mode toggle — hides all chrome
+const focusMode = useState('focusMode', () => false)
 const expandedGroups = ref<Set<string>>(new Set())
 const router = useRouter()
 const supabaseClient = useSupabaseClient()

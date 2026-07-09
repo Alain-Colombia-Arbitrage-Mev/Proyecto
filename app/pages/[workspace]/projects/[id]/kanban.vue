@@ -23,15 +23,26 @@
         <UButton v-if="canImportTasks" size="sm" variant="outline" icon="i-heroicons-arrow-up-tray" @click="showImportModal = true" class="font-medium hidden sm:inline-flex">
           {{ t.import }}
         </UButton>
+        <UButton
+          size="sm"
+          :variant="focusMode ? 'solid' : 'outline'"
+          :color="focusMode ? 'primary' : 'neutral'"
+          icon="i-heroicons-viewfinder-circle"
+          class="font-medium hidden sm:inline-flex"
+          @click="toggleFocusMode"
+        >
+          {{ t.focusMode }}
+        </UButton>
         <!-- Icon-only on mobile -->
         <UButton v-if="canUseAI" size="sm" variant="soft" icon="i-heroicons-sparkles" @click="aiPanelRef?.handleSuggestTasks()" :loading="aiPanelRef?.aiLoading" class="sm:hidden" />
         <UButton v-if="canUseAI" size="sm" variant="soft" color="success" icon="i-heroicons-bolt" @click="aiPanelRef?.handleAntiProcrastination()" :loading="aiPanelRef?.aiLoading" class="sm:hidden" />
         <UButton v-if="canImportTasks" size="sm" variant="outline" icon="i-heroicons-arrow-up-tray" @click="showImportModal = true" class="sm:hidden" />
+        <UButton size="sm" :variant="focusMode ? 'solid' : 'outline'" :color="focusMode ? 'primary' : 'neutral'" icon="i-heroicons-viewfinder-circle" class="sm:hidden" @click="toggleFocusMode" />
       </div>
     </div>
 
-    <!-- Stat Cards Row -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 animate-fade-up">
+    <!-- Stat Cards Row (hidden in focus mode) -->
+    <div v-show="!focusMode" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 animate-fade-up">
       <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-200/80 dark:border-white/10 p-3.5">
         <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5">{{ language === 'en' ? 'Total Tasks' : 'Tareas Totales' }}</p>
         <div class="flex items-end justify-between">
@@ -685,6 +696,27 @@ const tasks = ref<Task[]>([])
 const loading = ref(true)
 
 const aiPanelRef = ref<InstanceType<typeof import('~/components/kanban/KanbanAIPanel.vue').default> | null>(null)
+
+// ── Focus mode: hide sidebar/nav + stat cards, board only ──
+const focusMode = useState('focusMode', () => false)
+
+function toggleFocusMode() {
+  focusMode.value = !focusMode.value
+  if (import.meta.client) {
+    localStorage.setItem('focusflow_focus_mode', focusMode.value ? '1' : '0')
+  }
+}
+
+onMounted(() => {
+  if (localStorage.getItem('focusflow_focus_mode') === '1') {
+    focusMode.value = true
+  }
+})
+
+// Leaving the board always restores the normal layout
+onUnmounted(() => {
+  focusMode.value = false
+})
 
 
 const workspaceId = computed(() => store.workspace?.id || '')
