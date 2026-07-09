@@ -3,21 +3,6 @@ import { parseImportCsv } from '~~/server/utils/csvImporter'
 
 const MAX_IMPORT_TASKS = 500
 
-const TEMPLATES: Record<string, { title: string; color: string; wip_limit?: number }[]> = {
-  simple: [
-    { title: 'Pendiente', color: '#3B82F6' },
-    { title: 'En Progreso', color: '#F59E0B', wip_limit: 5 },
-    { title: 'Hecho', color: '#10B981' },
-  ],
-  kanban: [
-    { title: 'Backlog', color: '#6B7280' },
-    { title: 'To Do', color: '#3B82F6' },
-    { title: 'En Progreso', color: '#F59E0B', wip_limit: 5 },
-    { title: 'Revisión', color: '#8B5CF6', wip_limit: 3 },
-    { title: 'Hecho', color: '#10B981' },
-  ],
-}
-
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
   const { user, membership } = await requirePermission(event, workspaceId, 'create_tasks')
@@ -38,8 +23,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: `Maximum ${MAX_IMPORT_TASKS} tasks per import` })
   }
 
-  const rawTemplate = body.kanban_template || 'simple'
-  const template = typeof rawTemplate === 'object' ? rawTemplate.value || 'simple' : rawTemplate
+  const rawTemplate = body.kanban_template || 'kanban'
+  const template = typeof rawTemplate === 'object' ? rawTemplate.value || 'kanban' : rawTemplate
   const rawPriority = body.priority || 'medium'
   const priority = typeof rawPriority === 'object' ? rawPriority.value || 'medium' : rawPriority
 
@@ -62,7 +47,7 @@ export default defineEventHandler(async (event) => {
   if (projErr) throw createError({ statusCode: 500, message: 'Error creating project' })
 
   // 2. Create kanban columns
-  const cols = (TEMPLATES[template] || TEMPLATES.simple!).map((col, i) => ({
+  const cols = (KANBAN_TEMPLATES[template] || KANBAN_TEMPLATES.kanban!).map((col, i) => ({
     project_id: project.id,
     title: col.title,
     color: col.color,
