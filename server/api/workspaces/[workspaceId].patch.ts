@@ -18,6 +18,13 @@ export default defineEventHandler(async (event) => {
   if (body.name !== undefined) updates.name = body.name
   if (body.color !== undefined) updates.color = body.color
   if (body.ai_enabled !== undefined) updates.ai_enabled = body.ai_enabled
+  if (body.team_type !== undefined) {
+    const validTeamTypes = ['kanban', 'scrum', 'dev', 'audio', 'creative']
+    if (!validTeamTypes.includes(body.team_type)) {
+      throw createError({ statusCode: 400, message: 'Invalid team_type' })
+    }
+    updates.team_type = body.team_type
+  }
 
   // Deep merge ai_config to preserve existing keys
   if (body.ai_config !== undefined) {

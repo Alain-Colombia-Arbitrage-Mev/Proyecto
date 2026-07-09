@@ -14,6 +14,7 @@ export interface Workspace {
   color: string
   ai_enabled: boolean
   ai_config: Record<string, unknown>
+  team_type?: 'kanban' | 'scrum' | 'dev' | 'audio' | 'creative'
   token_limit?: number
   subscription_id?: string
   created_at: string
