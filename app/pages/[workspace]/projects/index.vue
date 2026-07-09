@@ -388,7 +388,7 @@ function showActionToast(message: string, type: 'success' | 'error' = 'success')
 const showCreate = ref(false)
 const creating = ref(false)
 const createError = ref('')
-const newProject = reactive({ name: '', description: '', priority: 'medium', template: 'simple' })
+const newProject = reactive({ name: '', description: '', priority: 'medium', template: 'kanban' })
 
 // CSV import at project creation
 const importCsv = ref('')
@@ -522,7 +522,7 @@ function suggestTemplateClient(statuses: string[]): { template: string; score: n
   if (statuses.length === 0) return null
   const normalized = statuses.map(s => clientSynLookup.get(stripAccents(s.trim().toLowerCase())) || stripAccents(s.trim().toLowerCase()))
   const uniqueNorm = new Set(normalized)
-  let best = { template: 'simple', score: 0, matched: 0, total: 3 }
+  let best = { template: 'kanban', score: 0, matched: 0, total: 3 }
   for (const [tpl, sig] of Object.entries(clientTemplateSignatures)) {
     const sigSet = new Set(sig)
     const matched = normalized.filter(n => sigSet.has(n)).length
@@ -643,58 +643,16 @@ const priorityOptions = computed(() => [
   { label: t.value.priorityHigh, value: 'high' },
   { label: t.value.priorityCritical, value: 'critical' },
 ])
+// 5 team-oriented templates — column previews must match server KANBAN_TEMPLATES
 const templateConfigs = [
   {
-    label: 'Simple', value: 'simple', cols: 3,
-    columns: [
-      { title: 'Pendiente', color: '#3B82F6' },
-      { title: 'En Progreso', color: '#F59E0B' },
-      { title: 'Hecho', color: '#10B981' },
-    ],
-  },
-  {
-    label: 'Kanban Clásico', value: 'kanban', cols: 5,
+    label: 'Kanban', value: 'kanban', cols: 5,
     columns: [
       { title: 'Backlog', color: '#6B7280' },
       { title: 'To Do', color: '#3B82F6' },
       { title: 'En Progreso', color: '#F59E0B' },
       { title: 'Revisión', color: '#8B5CF6' },
       { title: 'Hecho', color: '#10B981' },
-    ],
-  },
-  {
-    label: 'Desarrollo IT', value: 'dev', cols: 6,
-    columns: [
-      { title: 'Backlog', color: '#6B7280' },
-      { title: 'Análisis', color: '#8B5CF6' },
-      { title: 'Dev', color: '#3B82F6' },
-      { title: 'Code Review', color: '#F59E0B' },
-      { title: 'QA', color: '#F97316' },
-      { title: 'Producción', color: '#10B981' },
-    ],
-  },
-  {
-    label: 'DevOps', value: 'devops', cols: 8,
-    columns: [
-      { title: 'Backlog', color: '#6B7280' },
-      { title: 'Diseño', color: '#8B5CF6' },
-      { title: 'Desarrollo', color: '#3B82F6' },
-      { title: 'Code Review', color: '#6366F1' },
-      { title: 'CI/CD', color: '#F59E0B' },
-      { title: 'Staging', color: '#F97316' },
-      { title: 'Producción', color: '#10B981' },
-      { title: 'Monitoreo', color: '#14B8A6' },
-    ],
-  },
-  {
-    label: 'Soporte', value: 'support', cols: 6,
-    columns: [
-      { title: 'Nuevo', color: '#3B82F6' },
-      { title: 'Triaje', color: '#6366F1' },
-      { title: 'Asignado', color: '#8B5CF6' },
-      { title: 'En Proceso', color: '#F59E0B' },
-      { title: 'Esperando', color: '#F97316' },
-      { title: 'Cerrado', color: '#10B981' },
     ],
   },
   {
@@ -709,108 +667,36 @@ const templateConfigs = [
     ],
   },
   {
-    label: 'Scrumban', value: 'scrumban', cols: 8,
+    label: 'Desarrollo', value: 'dev', cols: 6,
     columns: [
       { title: 'Backlog', color: '#6B7280' },
-      { title: 'Listo para Pull', color: '#6366F1' },
-      { title: 'En Progreso', color: '#3B82F6' },
-      { title: 'Review', color: '#F59E0B' },
-      { title: 'Testing', color: '#8B5CF6' },
-      { title: 'Deploy', color: '#F97316' },
-      { title: 'Done', color: '#10B981' },
-      { title: 'Archivado', color: '#9CA3AF' },
-    ],
-  },
-  {
-    label: 'Marketing', value: 'marketing', cols: 7,
-    columns: [
-      { title: 'Ideas', color: '#EC4899' },
-      { title: 'Planificación', color: '#8B5CF6' },
-      { title: 'Creación', color: '#3B82F6' },
-      { title: 'Revisión', color: '#F59E0B' },
-      { title: 'Aprobado', color: '#10B981' },
-      { title: 'Publicado', color: '#06B6D4' },
-      { title: 'Análisis', color: '#6366F1' },
-    ],
-  },
-  {
-    label: 'Agentes AI', value: 'ai_agents', cols: 7,
-    columns: [
-      { title: 'Prompts Pendientes', color: '#6B7280' },
-      { title: 'Diseño de Agente', color: '#8B5CF6' },
-      { title: 'Entrenamiento', color: '#3B82F6' },
-      { title: 'Testing', color: '#F59E0B' },
-      { title: 'Evaluación', color: '#F97316' },
+      { title: 'Análisis', color: '#8B5CF6' },
+      { title: 'Dev', color: '#3B82F6' },
+      { title: 'Code Review', color: '#F59E0B' },
+      { title: 'QA', color: '#F97316' },
       { title: 'Producción', color: '#10B981' },
-      { title: 'Monitoreo', color: '#06B6D4' },
     ],
   },
   {
-    label: 'Backend Senior Dev', value: 'backend_senior_dev', cols: 9,
+    label: 'Audio', value: 'audio', cols: 6,
     columns: [
-      { title: 'Backlog', color: '#6B7280' },
-      { title: 'Diseño de API', color: '#8B5CF6' },
-      { title: 'Desarrollo', color: '#3B82F6' },
-      { title: 'Code Review', color: '#6366F1' },
-      { title: 'Testing / QA', color: '#F59E0B' },
-      { title: 'Seguridad / RLS', color: '#EF4444' },
-      { title: 'Deploy / DevOps', color: '#F97316' },
-      { title: 'Producción', color: '#10B981' },
-      { title: 'Monitoreo', color: '#14B8A6' },
-    ],
-  },
-  {
-    label: 'Frontend & Design', value: 'frontend_design', cols: 8,
-    columns: [
-      { title: 'Inspiración', color: '#EC4899' },
-      { title: 'Wireframes', color: '#8B5CF6' },
-      { title: 'Diseño UI', color: '#6366F1' },
-      { title: 'Prototipo', color: '#3B82F6' },
-      { title: 'Desarrollo Frontend', color: '#F59E0B' },
-      { title: 'Review / QA Visual', color: '#F97316' },
-      { title: 'Integración', color: '#14B8A6' },
+      { title: 'Idea', color: '#EC4899' },
+      { title: 'Grabación', color: '#8B5CF6' },
+      { title: 'Edición', color: '#3B82F6' },
+      { title: 'Mezcla', color: '#F59E0B' },
+      { title: 'Master', color: '#F97316' },
       { title: 'Publicado', color: '#10B981' },
     ],
   },
   {
-    label: 'App Development', value: 'app_development', cols: 8,
+    label: 'Creativo', value: 'creative', cols: 6,
     columns: [
-      { title: 'Backlog', color: '#6B7280' },
-      { title: 'Diseño UX/UI', color: '#EC4899' },
-      { title: 'Desarrollo', color: '#3B82F6' },
-      { title: 'Code Review', color: '#6366F1' },
-      { title: 'QA / Testing', color: '#F59E0B' },
-      { title: 'Beta', color: '#F97316' },
-      { title: 'Release', color: '#10B981' },
-      { title: 'Post-Launch', color: '#14B8A6' },
-    ],
-  },
-  {
-    label: 'Frontend Dev', value: 'frontend_dev', cols: 9,
-    columns: [
-      { title: 'Backlog', color: '#6B7280' },
-      { title: 'Maquetación', color: '#EC4899' },
-      { title: 'Componentes', color: '#8B5CF6' },
-      { title: 'Integración API', color: '#3B82F6' },
-      { title: 'Estado / Store', color: '#6366F1' },
-      { title: 'Responsive / A11y', color: '#F59E0B' },
-      { title: 'Code Review', color: '#F97316' },
-      { title: 'QA Visual', color: '#EF4444' },
-      { title: 'Deploy', color: '#10B981' },
-    ],
-  },
-  {
-    label: 'Backend Dev', value: 'backend_dev', cols: 9,
-    columns: [
-      { title: 'Backlog', color: '#6B7280' },
-      { title: 'Diseño DB / Schema', color: '#8B5CF6' },
-      { title: 'Endpoints / API', color: '#3B82F6' },
-      { title: 'Lógica de Negocio', color: '#6366F1' },
-      { title: 'Auth / Permisos', color: '#EF4444' },
-      { title: 'Testing / Unit', color: '#F59E0B' },
-      { title: 'Code Review', color: '#F97316' },
-      { title: 'Migraciones', color: '#14B8A6' },
-      { title: 'Deploy', color: '#10B981' },
+      { title: 'Brief', color: '#6B7280' },
+      { title: 'Concepto', color: '#EC4899' },
+      { title: 'Diseño', color: '#3B82F6' },
+      { title: 'Revisión', color: '#F59E0B' },
+      { title: 'Aprobado', color: '#8B5CF6' },
+      { title: 'Entregado', color: '#10B981' },
     ],
   },
 ]
@@ -835,7 +721,7 @@ async function handleCreateProject() {
       await store.loadProjects()
       showCreate.value = false
       const importedName = newProject.name
-      Object.assign(newProject, { name: '', description: '', priority: 'medium', template: 'simple' })
+      Object.assign(newProject, { name: '', description: '', priority: 'medium', template: 'kanban' })
       clearImportCsv()
       showActionToast(lang.language.value === 'en'
         ? `"${importedName}" created with imported tasks`
@@ -854,7 +740,7 @@ async function handleCreateProject() {
       })
       showCreate.value = false
       const createdName = newProject.name
-      Object.assign(newProject, { name: '', description: '', priority: 'medium', template: 'simple' })
+      Object.assign(newProject, { name: '', description: '', priority: 'medium', template: 'kanban' })
       showActionToast(lang.language.value === 'en'
         ? `"${createdName}" created successfully`
         : `"${createdName}" creado exitosamente`)
