@@ -1,6 +1,7 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import { notifyUser } from '~~/server/utils/notifications'
 import { taskAssignedEmailHtml } from '~~/server/utils/email'
+import { VALID_AGENT_TYPES } from '~~/server/utils/agentAI'
 
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
@@ -135,6 +136,11 @@ export default defineEventHandler(async (event) => {
     insertPayload.figma_links = body.figma_links
   }
   if (body.color !== undefined) insertPayload.color = body.color
+
+  // Delegate to AI agent by specialty (see server/utils/agentAI.ts registry)
+  if (body.ai_agent && VALID_AGENT_TYPES.includes(body.ai_agent)) {
+    insertPayload.ai_agent = body.ai_agent
+  }
 
   const { data: task, error } = await supabase
     .from('tasks')

@@ -65,6 +65,30 @@
             </div>
           </UFormField>
 
+          <!-- Delegate to AI agent by specialty -->
+          <UFormField :label="language === 'en' ? 'Delegate to AI Agent' : 'Delegar a Agente AI'">
+            <div class="flex flex-wrap gap-1.5">
+              <button
+                v-for="agent in AI_AGENTS"
+                :key="agent.type"
+                type="button"
+                class="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border"
+                :class="form.ai_agent === agent.type
+                  ? 'text-gray-900 dark:text-white border-transparent'
+                  : 'bg-white dark:bg-white/5 text-gray-500 dark:text-gray-400 border-gray-200/80 dark:border-white/10 hover:border-gray-200 dark:hover:border-white/20'"
+                :style="form.ai_agent === agent.type ? { backgroundColor: agent.color + '2e', borderColor: agent.color + '66' } : {}"
+                :title="language === 'en' ? agent.specialtyEn : agent.specialty"
+                @click="form.ai_agent = form.ai_agent === agent.type ? '' : agent.type"
+              >
+                <span>{{ agent.emoji }}</span>
+                {{ language === 'en' ? agent.nameEn : agent.name }}
+              </button>
+            </div>
+            <p v-if="selectedAgent" class="text-[10px] text-gray-400 dark:text-gray-500 mt-1.5">
+              {{ language === 'en' ? selectedAgent.specialtyEn : selectedAgent.specialty }}
+            </p>
+          </UFormField>
+
           <!-- Card Color -->
           <UFormField :label="language === 'en' ? 'Card Color' : 'Color de tarjeta'">
             <div class="flex items-center gap-1.5 flex-wrap">
@@ -152,7 +176,10 @@ const form = reactive({
   figma_links: [] as FigmaLink[],
   color: '',
   tagsStr: '',
+  ai_agent: '',
 })
+
+const selectedAgent = computed(() => AI_AGENTS.find(a => a.type === form.ai_agent) || null)
 
 const priorityOptions = computed(() => [
   { label: t.value.priorityLow, value: 'low' },
@@ -171,7 +198,8 @@ const draftKey = computed(() => `focusflow_task_draft_${props.projectId}`)
 function hasFormData(): boolean {
   return !!(form.title.trim() || form.description.trim() || form.due_date
     || form.estimated_hours || form.assignees.length || form.tagsStr.trim()
-    || form.color || form.figma_links.length || form.priority !== 'medium')
+    || form.color || form.figma_links.length || form.priority !== 'medium'
+    || form.ai_agent)
 }
 
 function saveDraft() {
@@ -190,6 +218,7 @@ function saveDraft() {
     figma_links: form.figma_links,
     color: form.color,
     tagsStr: form.tagsStr,
+    ai_agent: form.ai_agent,
     savedAt: Date.now(),
   }
   localStorage.setItem(draftKey.value, JSON.stringify(draft))
@@ -216,6 +245,7 @@ function loadDraft(): boolean {
       figma_links: draft.figma_links || [],
       color: draft.color || '',
       tagsStr: draft.tagsStr || '',
+      ai_agent: draft.ai_agent || '',
     })
     return true
   } catch {
@@ -233,7 +263,7 @@ function discardDraft() {
   Object.assign(form, {
     title: '', description: '', priority: 'medium', due_date: '',
     column_id: props.columnId, estimated_hours: '', assignees: [],
-    figma_links: [], color: '', tagsStr: '',
+    figma_links: [], color: '', tagsStr: '', ai_agent: '',
   })
 }
 
@@ -252,7 +282,7 @@ watch(() => props.open, (val) => {
       Object.assign(form, {
         title: '', description: '', priority: 'medium', due_date: '',
         column_id: props.columnId, estimated_hours: '', assignees: [],
-        figma_links: [], color: '', tagsStr: '',
+        figma_links: [], color: '', tagsStr: '', ai_agent: '',
       })
     }
   } else {
@@ -269,7 +299,7 @@ watch(() => props.open, (val) => {
 let draftTimer: ReturnType<typeof setTimeout> | null = null
 watch(
   () => [form.title, form.description, form.priority, form.due_date,
-    form.estimated_hours, form.color, form.tagsStr, form.assignees.length, form.figma_links.length],
+    form.estimated_hours, form.color, form.tagsStr, form.assignees.length, form.figma_links.length, form.ai_agent],
   () => {
     if (!props.open) return
     if (draftTimer) clearTimeout(draftTimer)
@@ -309,13 +339,14 @@ async function handleCreate() {
         assignees: form.assignees,
         figma_links: form.figma_links,
         color: form.color || null,
+        ai_agent: form.ai_agent || null,
       },
     })
     clearDraft()
     Object.assign(form, {
       title: '', description: '', priority: 'medium', due_date: '',
       column_id: props.columnId, estimated_hours: '', assignees: [],
-      figma_links: [], color: '', tagsStr: '',
+      figma_links: [], color: '', tagsStr: '', ai_agent: '',
     })
     justCreated.value = true
     isOpen.value = false

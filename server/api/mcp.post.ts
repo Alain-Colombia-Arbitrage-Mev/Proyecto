@@ -1,5 +1,9 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import { authenticateApiToken } from '~~/server/utils/apiTokens'
+import { KANBAN_TEMPLATES } from '~~/server/utils/kanbanTemplates'
+import { AGENT_REGISTRY, VALID_AGENT_TYPES, agentRegistryPrompt, callAgentAI, extractAgentJSON } from '~~/server/utils/agentAI'
+import { recordTokenUsage, isTokenLimitExceeded } from '~~/server/utils/tokens'
+import { storeMemory } from '~~/server/utils/embeddings'
 
 /**
  * FocusFlow MCP Server — JSON-RPC 2.0 over HTTP
@@ -7,6 +11,11 @@ import { authenticateApiToken } from '~~/server/utils/apiTokens'
  * Connect from Cursor/Claude using:
  *   URL: https://your-domain.com/api/mcp
  *   Header: Authorization: Bearer ff_<token>
+ *
+ * v3: agent orchestration suite — auto_plan, auto_orchestrate, improve_task,
+ * generate_test_plan, qa_review, launch_audit (security/seo/quality),
+ * agent_message (A2A), record_decision, project lifecycle management,
+ * and member/agent specialty profiles.
  */
 
 interface JsonRpcRequest {
@@ -41,7 +50,7 @@ function sanitize(val: string | undefined, maxLen: number): string | null {
   return String(val).slice(0, maxLen)
 }
 
-const SERVER_INFO = { name: 'FocusFlow by Fidubit', version: '2.0.0' }
+const SERVER_INFO = { name: 'FocusFlow by Fidubit', version: '3.0.0' }
 
 // ── Rate limiting (in-memory, per token) ──
 const rateLimits = new Map<string, { count: number; resetAt: number }>()
@@ -163,7 +172,7 @@ const TOOLS = [
         assignees: { type: 'array', items: { type: 'string' }, description: 'User UUIDs (get from list_members)' },
         due_date: { type: 'string', description: 'ISO date: 2025-12-31' },
         tags: { type: 'array', items: { type: 'string' }, description: 'Tag strings' },
-        ai_agent: { type: 'string', description: 'Delegate to AI agent: backend, frontend, qa, devops, designer, copywriter, data, security' },
+        ai_agent: { type: 'string', description: 'Delegate to AI agent: backend, frontend, qa, devops, designer, copywriter, content_creator, data, security, seo, planner, reviewer, orchestrator (see list_agents)' },
         parent_task_id: { type: 'string', description: 'Parent task UUID to create as subtask' },
       },
       required: ['project_id', 'column_id', 'title'],
@@ -273,7 +282,7 @@ const TOOLS = [
       properties: {
         name: { type: 'string', description: 'Project name (max 200 chars)' },
         description: { type: 'string', description: 'Project description' },
-        template: { type: 'string', description: 'Kanban template: simple, kanban, dev, devops, scrum, scrumban, marketing, ai_agents, support, backend_senior_dev, frontend_design, frontend_dev, backend_dev, app_development. Default: simple' },
+        template: { type: 'string', description: 'Kanban template: deep_work, simple, kanban, dev, devops, scrum, scrumban, marketing, ai_agents, support, audio, creative, backend_senior_dev, frontend_design, frontend_dev, backend_dev, app_development. Default: simple' },
         priority: { type: 'string', description: 'low, medium, high. Default: medium' },
         color: { type: 'string', description: 'Hex color (e.g. #0ea5e9). Default: #0ea5e9' },
       },
@@ -287,7 +296,7 @@ const TOOLS = [
       type: 'object',
       properties: {
         task_id: { type: 'string', description: 'Task UUID to delegate' },
-        agent_type: { type: 'string', description: 'Agent: backend, frontend, qa, devops, designer, copywriter, data, security, orchestrator' },
+        agent_type: { type: 'string', description: 'Agent: backend, frontend, qa, devops, designer, copywriter, content_creator, data, security, seo, planner, reviewer, orchestrator (see list_agents for specialties)' },
         decompose: { type: 'boolean', description: 'If true, create subtasks for the agent to work on (default false)' },
         subtasks: {
           type: 'array',
@@ -304,6 +313,191 @@ const TOOLS = [
         },
       },
       required: ['task_id', 'agent_type'],
+    },
+  },
+  // ── Agent & member profiles ──
+  {
+    name: 'list_agents',
+    description: 'List all available AI agents with their role and specialty, plus workspace members with their configured specialty profiles. Use this to decide who should get each task.',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'set_member_profile',
+    description: 'Set the role title, specialty and skills of a workspace member. Profiles are used by auto_plan and auto_orchestrate to assign tasks to the right person.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        user_id: { type: 'string', description: 'Member user UUID (get from list_members)' },
+        role_title: { type: 'string', description: 'e.g. "Senior Backend Dev", "Diseñadora UX"' },
+        specialty: { type: 'string', description: 'Main specialty description (max 300 chars)' },
+        skills: { type: 'array', items: { type: 'string' }, description: 'Skill tags, e.g. ["vue", "supabase", "figma"]' },
+      },
+      required: ['user_id', 'specialty'],
+    },
+  },
+  // ── Project lifecycle ──
+  {
+    name: 'update_project',
+    description: 'Update project fields: name, description, status (planning|active|review|completed|paused), priority, color, archived. Only provided fields change.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        project_id: { type: 'string', description: 'Project UUID' },
+        name: { type: 'string' },
+        description: { type: 'string' },
+        status: { type: 'string', description: 'planning, active, review, completed, paused' },
+        priority: { type: 'string', description: 'low, medium, high' },
+        color: { type: 'string', description: 'Hex color' },
+        archived: { type: 'boolean', description: 'Archive (true) or restore (false) the project' },
+      },
+      required: ['project_id'],
+    },
+  },
+  {
+    name: 'complete_project',
+    description: 'Mark a project as completed. Optionally archive it. Returns a completion summary with task stats.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        project_id: { type: 'string', description: 'Project UUID' },
+        archive: { type: 'boolean', description: 'Also archive the project (default false)' },
+      },
+      required: ['project_id'],
+    },
+  },
+  {
+    name: 'assign_project',
+    description: 'Assign a project to a workspace member as owner/responsible.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        project_id: { type: 'string', description: 'Project UUID' },
+        owner_id: { type: 'string', description: 'User UUID of the new owner (get from list_members)' },
+      },
+      required: ['project_id', 'owner_id'],
+    },
+  },
+  // ── AI agent tools ──
+  {
+    name: 'auto_plan',
+    description: 'AUTOPLAN: the planner agent decomposes a goal into concrete tasks and creates them on the board, auto-assigning each one to the best AI agent and/or human member based on specialties. Returns created tasks.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        project_id: { type: 'string', description: 'Project UUID' },
+        goal: { type: 'string', description: 'The objective to plan, e.g. "Launch landing page with waitlist"' },
+        column_id: { type: 'string', description: 'Column for new tasks (default: first column)' },
+        max_tasks: { type: 'number', description: 'Max tasks to create (default 8, max 15)' },
+        assign: { type: 'boolean', description: 'Auto-assign agents/members by specialty (default true)' },
+      },
+      required: ['project_id', 'goal'],
+    },
+  },
+  {
+    name: 'auto_orchestrate',
+    description: 'AUTO ORCHESTRATION: the orchestrator agent reviews unassigned tasks in a project and assigns each one to the best AI agent and/or member based on specialties. Optionally rebalances columns. Returns the assignment report.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        project_id: { type: 'string', description: 'Project UUID' },
+        max_tasks: { type: 'number', description: 'Max tasks to process (default 20, max 30)' },
+      },
+      required: ['project_id'],
+    },
+  },
+  {
+    name: 'improve_task',
+    description: 'IMPROVEMENT: the reviewer agent rewrites a task with a clearer title, structured description and acceptance criteria (added as checklist items). Updates the task in place.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        task_id: { type: 'string', description: 'Task UUID' },
+        instructions: { type: 'string', description: 'Optional focus, e.g. "make it technical" or "add edge cases"' },
+      },
+      required: ['task_id'],
+    },
+  },
+  {
+    name: 'generate_test_plan',
+    description: 'TESTING: the QA agent generates a test plan for a task and adds the test cases as checklist items (prefixed 🧪). Returns the test plan.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        task_id: { type: 'string', description: 'Task UUID' },
+        max_cases: { type: 'number', description: 'Max test cases (default 8, max 15)' },
+      },
+      required: ['task_id'],
+    },
+  },
+  {
+    name: 'qa_review',
+    description: 'QA REVIEW: the QA agent reviews a task (description, checklist progress, comments) and posts a verdict comment: approved or needs_work with issues found. Optionally moves the task to a column when approved.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        task_id: { type: 'string', description: 'Task UUID' },
+        criteria: { type: 'string', description: 'Optional extra acceptance criteria to check against' },
+        move_on_pass: { type: 'string', description: 'Column UUID to move the task to if approved' },
+      },
+      required: ['task_id'],
+    },
+  },
+  {
+    name: 'launch_audit',
+    description: 'SPECIALIST AUDIT: launch a security, SEO or quality audit. The specialist agent (security/seo/qa) generates a full audit checklist for the target and creates an audit task with all checks ready to execute.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        project_id: { type: 'string', description: 'Project UUID where the audit task is created' },
+        audit_type: { type: 'string', description: '"security", "seo", or "quality"' },
+        target: { type: 'string', description: 'What to audit: URL, feature, repo area, or description of scope' },
+        column_id: { type: 'string', description: 'Column for the audit task (default: first column)' },
+      },
+      required: ['project_id', 'audit_type', 'target'],
+    },
+  },
+  // ── Agent communication & decisions ──
+  {
+    name: 'agent_message',
+    description: 'AGENT-TO-AGENT COMMUNICATION: post a message from one agent to another on a task thread. Messages are stored as [A2A] comments so any agent can read them with list_agent_messages.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        task_id: { type: 'string', description: 'Task UUID (the conversation thread)' },
+        from_agent: { type: 'string', description: 'Sender agent type, e.g. "backend"' },
+        to_agent: { type: 'string', description: 'Recipient agent type, e.g. "qa"' },
+        message: { type: 'string', description: 'Message content (max 4000 chars)' },
+      },
+      required: ['task_id', 'from_agent', 'to_agent', 'message'],
+    },
+  },
+  {
+    name: 'list_agent_messages',
+    description: 'Read agent-to-agent [A2A] messages. Filter by task or by recipient agent to build an agent inbox.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        task_id: { type: 'string', description: 'Filter by task UUID' },
+        agent: { type: 'string', description: 'Filter messages addressed TO this agent type' },
+        limit: { type: 'number', description: 'Max messages (default 30, max 100)' },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'record_decision',
+    description: 'DECISIONS: record a decision with its rationale. Stored in workspace memory (searchable) and optionally posted as a [Decisión] comment on a task.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string', description: 'Short decision title' },
+        decision: { type: 'string', description: 'What was decided' },
+        rationale: { type: 'string', description: 'Why it was decided' },
+        project_id: { type: 'string', description: 'Related project UUID' },
+        task_id: { type: 'string', description: 'If provided, also posts a comment on this task' },
+        decided_by: { type: 'string', description: 'Agent type or member name who decided' },
+      },
+      required: ['title', 'decision'],
     },
   },
 ]
@@ -403,7 +597,43 @@ async function handleTool(
     }
   }
 
-  const VALID_AGENTS = ['backend', 'frontend', 'qa', 'devops', 'designer', 'copywriter', 'data', 'security', 'orchestrator', 'custom']
+  const VALID_AGENTS = VALID_AGENT_TYPES
+
+  /** Check workspace token budget, run the AI call, record usage. */
+  async function runAgentAI(action: string, system: string, user: string, maxTokens = 4096) {
+    const overLimit = await isTokenLimitExceeded({ supabase, workspaceId })
+    if (overLimit) throw new Error('Token limit exceeded for this workspace')
+    const res = await callAgentAI({ system, user, maxTokens })
+    if (res.usage) {
+      recordTokenUsage({ supabase, userId: ctx.userId, workspaceId, action, model: res.model, usage: res.usage }).catch(() => {})
+    }
+    return res
+  }
+
+  /** Load member specialty profiles from workspace.ai_config.member_profiles */
+  async function getMemberProfiles(): Promise<Record<string, any>> {
+    const { data: ws } = await supabase.from('workspaces').select('ai_config').eq('id', workspaceId).maybeSingle()
+    return ((ws?.ai_config as any)?.member_profiles) || {}
+  }
+
+  /** Compact roster of members + profiles for AI prompts */
+  async function getMemberRoster(): Promise<Array<{ id: string; name: string; role: string; specialty?: string; skills?: string[] }>> {
+    const [{ data: members }, profiles] = await Promise.all([
+      supabase.from('workspace_members').select('user_id, role').eq('workspace_id', workspaceId),
+      getMemberProfiles(),
+    ])
+    const roster = []
+    for (const m of (members || [])) {
+      let name = ''
+      try {
+        const { data: profile } = await supabase.auth.admin.getUserById(m.user_id)
+        name = profile?.user?.user_metadata?.full_name || profile?.user?.email || ''
+      } catch {}
+      const p = profiles[m.user_id] || {}
+      roster.push({ id: m.user_id, name, role: p.role_title || m.role, specialty: p.specialty, skills: p.skills })
+    }
+    return roster
+  }
 
   switch (name) {
     // ── list_workspaces ──
@@ -830,31 +1060,8 @@ async function handleTool(
 
       if (error) throw new Error(`Failed to create project: ${error.message}`)
 
-      // Create kanban columns from template
-      const TEMPLATES: Record<string, { title: string; color: string; wip_limit?: number }[]> = {
-        simple: [
-          { title: 'Pendiente', color: '#3B82F6' },
-          { title: 'En Progreso', color: '#F59E0B', wip_limit: 5 },
-          { title: 'Hecho', color: '#10B981' },
-        ],
-        kanban: [
-          { title: 'Backlog', color: '#6B7280' },
-          { title: 'To Do', color: '#3B82F6' },
-          { title: 'En Progreso', color: '#F59E0B', wip_limit: 5 },
-          { title: 'Revision', color: '#8B5CF6', wip_limit: 3 },
-          { title: 'Hecho', color: '#10B981' },
-        ],
-        dev: [
-          { title: 'Backlog', color: '#6B7280' },
-          { title: 'Analisis', color: '#8B5CF6' },
-          { title: 'Dev', color: '#3B82F6', wip_limit: 5 },
-          { title: 'Code Review', color: '#F59E0B', wip_limit: 3 },
-          { title: 'QA', color: '#F97316', wip_limit: 3 },
-          { title: 'Produccion', color: '#10B981' },
-        ],
-      }
-
-      const cols = (TEMPLATES[args.template || 'simple'] || TEMPLATES.simple!).map((col, i) => ({
+      // Create kanban columns from the shared template registry
+      const cols = (KANBAN_TEMPLATES[args.template || 'simple'] || KANBAN_TEMPLATES.simple!).map((col, i) => ({
         project_id: project.id,
         title: col.title,
         color: col.color,
@@ -933,6 +1140,566 @@ async function handleTool(
         subtasks_created: createdSubtasks.length,
         subtasks: createdSubtasks,
       })
+    }
+
+    // ── list_agents ──
+    case 'list_agents': {
+      requireScope('read')
+      const roster = await getMemberRoster()
+      return textContent({
+        ai_agents: AGENT_REGISTRY.filter(a => a.type !== 'custom'),
+        members: roster,
+        hint: 'Use ai_agent for AI delegation and assignees[] for human members. auto_plan / auto_orchestrate use these specialties automatically.',
+      })
+    }
+
+    // ── set_member_profile ──
+    case 'set_member_profile': {
+      requireScope('write')
+      if (!args.user_id || !args.specialty) throw new Error('user_id and specialty are required')
+
+      const { data: member } = await supabase
+        .from('workspace_members').select('user_id').eq('workspace_id', workspaceId).eq('user_id', args.user_id).maybeSingle()
+      if (!member) throw new Error('User is not a member of this workspace')
+
+      const { data: ws } = await supabase.from('workspaces').select('ai_config').eq('id', workspaceId).maybeSingle()
+      const config = (ws?.ai_config as any) || {}
+      const profiles = config.member_profiles || {}
+      profiles[args.user_id] = {
+        role_title: sanitize(args.role_title, 100) || profiles[args.user_id]?.role_title || null,
+        specialty: sanitize(args.specialty, 300),
+        skills: Array.isArray(args.skills) ? args.skills.slice(0, 20).map((s: any) => String(s).slice(0, 40)) : (profiles[args.user_id]?.skills || []),
+      }
+
+      const { error } = await supabase
+        .from('workspaces')
+        .update({ ai_config: { ...config, member_profiles: profiles }, updated_at: new Date().toISOString() })
+        .eq('id', workspaceId)
+      if (error) throw new Error(`Failed to save profile: ${error.message}`)
+
+      return textContent({ user_id: args.user_id, profile: profiles[args.user_id] })
+    }
+
+    // ── update_project ──
+    case 'update_project': {
+      requireScope('write')
+      if (!args.project_id) throw new Error('project_id is required')
+      await verifyProject(supabase, args.project_id, workspaceId)
+
+      const VALID_STATUS = ['planning', 'active', 'review', 'completed', 'paused']
+      const updates: Record<string, any> = { updated_at: new Date().toISOString() }
+      if (args.name !== undefined) updates.name = sanitize(args.name, 200)
+      if (args.description !== undefined) updates.description = sanitize(args.description, 5000)
+      if (args.status !== undefined) {
+        if (!VALID_STATUS.includes(args.status)) throw new Error(`Invalid status. Valid: ${VALID_STATUS.join(', ')}`)
+        updates.status = args.status
+      }
+      if (args.priority !== undefined) updates.priority = args.priority
+      if (args.color !== undefined) updates.color = sanitize(args.color, 20)
+      if (args.archived !== undefined) updates.archived = !!args.archived
+
+      const { data: project, error } = await supabase
+        .from('projects').update(updates).eq('id', args.project_id).select().single()
+      if (error) throw new Error(`Failed to update project: ${error.message}`)
+      return textContent(project)
+    }
+
+    // ── complete_project ──
+    case 'complete_project': {
+      requireScope('write')
+      if (!args.project_id) throw new Error('project_id is required')
+      await verifyProject(supabase, args.project_id, workspaceId)
+
+      const updates: Record<string, any> = { status: 'completed', updated_at: new Date().toISOString() }
+      if (args.archive) updates.archived = true
+
+      const { data: project, error } = await supabase
+        .from('projects').update(updates).eq('id', args.project_id).select().single()
+      if (error) throw new Error(`Failed to complete project: ${error.message}`)
+
+      // Completion stats
+      const { data: tasks } = await supabase
+        .from('tasks').select('id, column_id').eq('project_id', args.project_id)
+      const { data: columns } = await supabase
+        .from('kanban_columns').select('id, title').eq('project_id', args.project_id).order('position')
+      const lastColumn = columns?.[columns.length - 1]
+      const doneCount = lastColumn ? (tasks || []).filter((t: any) => t.column_id === lastColumn.id).length : 0
+
+      return textContent({
+        project,
+        summary: {
+          total_tasks: (tasks || []).length,
+          in_final_column: doneCount,
+          archived: !!args.archive,
+        },
+      })
+    }
+
+    // ── assign_project ──
+    case 'assign_project': {
+      requireScope('write')
+      if (!args.project_id || !args.owner_id) throw new Error('project_id and owner_id are required')
+      await verifyProject(supabase, args.project_id, workspaceId)
+
+      const { data: member } = await supabase
+        .from('workspace_members').select('user_id').eq('workspace_id', workspaceId).eq('user_id', args.owner_id).maybeSingle()
+      if (!member) throw new Error('owner_id is not a member of this workspace')
+
+      const { data: project, error } = await supabase
+        .from('projects')
+        .update({ owner_id: args.owner_id, updated_at: new Date().toISOString() })
+        .eq('id', args.project_id)
+        .select()
+        .single()
+      if (error) throw new Error(`Failed to assign project: ${error.message}`)
+      return textContent(project)
+    }
+
+    // ── auto_plan ──
+    case 'auto_plan': {
+      requireScope('write')
+      if (!args.project_id || !args.goal) throw new Error('project_id and goal are required')
+      await verifyProject(supabase, args.project_id, workspaceId)
+
+      const maxTasks = Math.min(args.max_tasks || 8, 15)
+      const assign = args.assign !== false
+
+      const { data: columns } = await supabase
+        .from('kanban_columns').select('id, title, position').eq('project_id', args.project_id).order('position')
+      if (!columns?.length) throw new Error('Project has no columns')
+      const targetColumn = args.column_id
+        ? columns.find((c: any) => c.id === args.column_id)
+        : columns[0]
+      if (!targetColumn) throw new Error('Column not found in this project')
+
+      const roster = assign ? await getMemberRoster() : []
+      const rosterText = roster
+        .map(m => `- id:${m.id} | ${m.name || 'sin nombre'} | rol: ${m.role}${m.specialty ? ` | especialidad: ${m.specialty}` : ''}${m.skills?.length ? ` | skills: ${m.skills.join(', ')}` : ''}`)
+        .join('\n') || '(sin miembros con perfil)'
+
+      const system = `Eres el agente PLANNER de FocusFlow. Descompones objetivos en tareas concretas y accionables.
+Agentes AI disponibles (campo ai_agent):
+${agentRegistryPrompt()}
+Miembros humanos (campo assignee_id, usa el id exacto):
+${rosterText}
+Responde SOLO JSON: {"tasks":[{"title":"...","description":"...","priority":"low|medium|high|critical","ai_agent":"tipo o null","assignee_id":"uuid o null","tags":["..."]}]}
+Máximo ${maxTasks} tareas. Asigna ai_agent y/o assignee_id según la especialidad más adecuada${assign ? '' : ' (deja ambos en null)'}. Títulos en el idioma del objetivo.`
+
+      const ai = await runAgentAI('mcp_auto_plan', system, `Objetivo: ${sanitize(args.goal, 2000)}`, 8192)
+      const parsed = extractAgentJSON(ai.content)
+      if (!parsed?.tasks?.length) throw new Error('Planner returned no tasks — try a more specific goal')
+
+      const validAssignees = new Set(roster.map(m => m.id))
+      let position = await getAppendPosition(supabase, targetColumn.id)
+      const inserts = parsed.tasks.slice(0, maxTasks).map((t: any) => ({
+        project_id: args.project_id,
+        column_id: targetColumn.id,
+        title: sanitize(t.title, 500),
+        description: sanitize(t.description, 10000),
+        priority: ['low', 'medium', 'high', 'critical'].includes(t.priority) ? t.priority : 'medium',
+        assignees: assign && t.assignee_id && validAssignees.has(t.assignee_id) ? [t.assignee_id] : [],
+        tags: Array.isArray(t.tags) ? t.tags.slice(0, 8) : [],
+        ai_agent: assign && t.ai_agent && VALID_AGENTS.includes(t.ai_agent) ? t.ai_agent : null,
+        reporter_id: ctx.userId,
+        position: position++,
+      }))
+
+      const { data: created, error } = await supabase.from('tasks').insert(inserts).select()
+      if (error) throw new Error(`Failed to create planned tasks: ${error.message}`)
+
+      supabase.from('ai_orchestrator_runs').insert({
+        workspace_id: workspaceId,
+        project_id: args.project_id,
+        triggered_by: ctx.userId,
+        prompt: `auto_plan: ${args.goal}`,
+        agent_type: 'planner',
+        status: 'completed',
+        result: { tasks_created: (created || []).length, model: ai.model },
+        tasks_created: (created || []).map((t: any) => t.id),
+        completed_at: new Date().toISOString(),
+      }).then(() => {}, () => {})
+
+      return textContent({
+        goal: args.goal,
+        column: targetColumn.title,
+        tasks_created: (created || []).length,
+        tasks: created,
+      })
+    }
+
+    // ── auto_orchestrate ──
+    case 'auto_orchestrate': {
+      requireScope('write')
+      if (!args.project_id) throw new Error('project_id is required')
+      await verifyProject(supabase, args.project_id, workspaceId)
+
+      const maxTasks = Math.min(args.max_tasks || 20, 30)
+
+      const { data: tasks } = await supabase
+        .from('tasks')
+        .select('id, title, description, priority, tags, ai_agent, assignees, column_id')
+        .eq('project_id', args.project_id)
+        .is('parent_task_id', null)
+        .is('ai_agent', null)
+        .order('position')
+        .limit(maxTasks * 2)
+
+      const unassigned = (tasks || []).filter((t: any) => !t.assignees?.length).slice(0, maxTasks)
+      if (!unassigned.length) return textContent({ message: 'No unassigned tasks found', assigned: 0 })
+
+      const roster = await getMemberRoster()
+      const rosterText = roster
+        .map(m => `- id:${m.id} | ${m.name || 'sin nombre'} | rol: ${m.role}${m.specialty ? ` | especialidad: ${m.specialty}` : ''}`)
+        .join('\n') || '(sin miembros)'
+      const tasksText = unassigned
+        .map((t: any) => `- id:${t.id} | ${t.title} | prioridad:${t.priority}${t.tags?.length ? ` | tags:${t.tags.join(',')}` : ''}${t.description ? ` | ${String(t.description).slice(0, 150)}` : ''}`)
+        .join('\n')
+
+      const system = `Eres el agente ORCHESTRATOR de FocusFlow. Asignas cada tarea al agente AI y/o miembro humano más adecuado según especialidades.
+Agentes AI (ai_agent):
+${agentRegistryPrompt()}
+Miembros (assignee_id, id exacto):
+${rosterText}
+Responde SOLO JSON: {"assignments":[{"task_id":"uuid","ai_agent":"tipo o null","assignee_id":"uuid o null","reason":"breve"}]}`
+
+      const ai = await runAgentAI('mcp_auto_orchestrate', system, `Tareas sin asignar:\n${tasksText}`, 6144)
+      const parsed = extractAgentJSON(ai.content)
+      if (!parsed?.assignments?.length) throw new Error('Orchestrator returned no assignments')
+
+      const validAssignees = new Set(roster.map(m => m.id))
+      const taskIds = new Set(unassigned.map((t: any) => t.id))
+      const report: any[] = []
+
+      for (const a of parsed.assignments) {
+        if (!taskIds.has(a.task_id)) continue
+        const updates: Record<string, any> = { updated_at: new Date().toISOString() }
+        if (a.ai_agent && VALID_AGENTS.includes(a.ai_agent)) updates.ai_agent = a.ai_agent
+        if (a.assignee_id && validAssignees.has(a.assignee_id)) updates.assignees = [a.assignee_id]
+        if (!updates.ai_agent && !updates.assignees) continue
+        const { error } = await supabase.from('tasks').update(updates).eq('id', a.task_id)
+        if (!error) report.push({ task_id: a.task_id, ai_agent: updates.ai_agent || null, assignee_id: a.assignee_id || null, reason: String(a.reason || '').slice(0, 200) })
+      }
+
+      supabase.from('ai_orchestrator_runs').insert({
+        workspace_id: workspaceId,
+        project_id: args.project_id,
+        triggered_by: ctx.userId,
+        prompt: `auto_orchestrate: ${unassigned.length} tasks`,
+        agent_type: 'orchestrator',
+        status: 'completed',
+        result: { assigned: report.length, model: ai.model },
+        completed_at: new Date().toISOString(),
+      }).then(() => {}, () => {})
+
+      return textContent({ analyzed: unassigned.length, assigned: report.length, assignments: report })
+    }
+
+    // ── improve_task ──
+    case 'improve_task': {
+      requireScope('write')
+      if (!args.task_id) throw new Error('task_id is required')
+      const existing = await verifyTask(supabase, args.task_id, workspaceId, ', title, description, priority')
+
+      const system = `Eres el agente REVIEWER de FocusFlow. Mejoras tareas para que sean claras, accionables y verificables.
+Responde SOLO JSON: {"title":"título mejorado","description":"descripción markdown estructurada (contexto, alcance, notas técnicas)","acceptance_criteria":["criterio verificable", "..."]}
+Máximo 6 criterios. Mantén el idioma original de la tarea.`
+      const user = `Tarea actual:\nTítulo: ${existing.title}\nDescripción: ${existing.description || '(vacía)'}${args.instructions ? `\nInstrucciones extra: ${sanitize(args.instructions, 500)}` : ''}`
+
+      const ai = await runAgentAI('mcp_improve_task', system, user, 4096)
+      const parsed = extractAgentJSON(ai.content)
+      if (!parsed?.title) throw new Error('Reviewer returned invalid result')
+
+      const { data: task, error } = await supabase
+        .from('tasks')
+        .update({
+          title: sanitize(parsed.title, 500),
+          description: sanitize(parsed.description, 10000),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', args.task_id)
+        .select()
+        .single()
+      if (error) throw new Error(`Failed to update task: ${error.message}`)
+
+      // Acceptance criteria → checklist
+      const criteria = Array.isArray(parsed.acceptance_criteria) ? parsed.acceptance_criteria.slice(0, 6) : []
+      if (criteria.length) {
+        const { data: maxPos } = await supabase
+          .from('task_checklist').select('position').eq('task_id', args.task_id).order('position', { ascending: false }).limit(1)
+        let pos = maxPos?.[0]?.position != null ? maxPos[0].position + 1 : 0
+        await supabase.from('task_checklist').insert(
+          criteria.map((c: any) => ({ task_id: args.task_id, text: sanitize(`✅ ${c}`, 500), position: pos++ }))
+        )
+      }
+
+      return textContent({ task, acceptance_criteria_added: criteria.length, improved_by: 'reviewer', model: ai.model })
+    }
+
+    // ── generate_test_plan ──
+    case 'generate_test_plan': {
+      requireScope('write')
+      if (!args.task_id) throw new Error('task_id is required')
+      const existing = await verifyTask(supabase, args.task_id, workspaceId, ', title, description')
+
+      const maxCases = Math.min(args.max_cases || 8, 15)
+      const system = `Eres el agente QA de FocusFlow. Generas planes de prueba concretos y ejecutables.
+Responde SOLO JSON: {"summary":"resumen del plan","test_cases":[{"text":"caso de prueba con pasos y resultado esperado"}]}
+Máximo ${maxCases} casos. Incluye happy path, edge cases y errores. Idioma de la tarea.`
+      const user = `Tarea a probar:\nTítulo: ${existing.title}\nDescripción: ${existing.description || '(vacía)'}`
+
+      const ai = await runAgentAI('mcp_generate_test_plan', system, user, 4096)
+      const parsed = extractAgentJSON(ai.content)
+      if (!parsed?.test_cases?.length) throw new Error('QA agent returned no test cases')
+
+      const { data: maxPos } = await supabase
+        .from('task_checklist').select('position').eq('task_id', args.task_id).order('position', { ascending: false }).limit(1)
+      let pos = maxPos?.[0]?.position != null ? maxPos[0].position + 1 : 0
+      const cases = parsed.test_cases.slice(0, maxCases)
+      await supabase.from('task_checklist').insert(
+        cases.map((c: any) => ({ task_id: args.task_id, text: sanitize(`🧪 ${c.text || c}`, 500), position: pos++ }))
+      )
+
+      await supabase.from('task_comments').insert({
+        task_id: args.task_id,
+        user_id: ctx.userId,
+        content: sanitize(`🧪 **Plan de pruebas generado por el agente QA**\n\n${parsed.summary || ''}\n\n${cases.length} casos añadidos al checklist.`, 5000),
+      })
+
+      return textContent({ summary: parsed.summary, test_cases_added: cases.length, test_cases: cases, model: ai.model })
+    }
+
+    // ── qa_review ──
+    case 'qa_review': {
+      requireScope('write')
+      if (!args.task_id) throw new Error('task_id is required')
+      const existing = await verifyTask(supabase, args.task_id, workspaceId, ', title, description, priority')
+
+      const [{ data: checklist }, { data: comments }] = await Promise.all([
+        supabase.from('task_checklist').select('text, completed').eq('task_id', args.task_id).order('position'),
+        supabase.from('task_comments').select('content, created_at').eq('task_id', args.task_id).order('created_at', { ascending: false }).limit(10),
+      ])
+
+      const checklistText = (checklist || []).map((c: any) => `[${c.completed ? 'x' : ' '}] ${c.text}`).join('\n') || '(sin checklist)'
+      const commentsText = (comments || []).map((c: any) => `- ${String(c.content).slice(0, 200)}`).join('\n') || '(sin comentarios)'
+
+      const system = `Eres el agente QA REVIEWER de FocusFlow. Revisas si una tarea está lista para aprobarse.
+Responde SOLO JSON: {"verdict":"approved|needs_work","score":0-100,"issues":["problema encontrado"],"summary":"veredicto en 2-3 frases"}
+Sé estricto: si hay checklist incompleto o criterios sin verificar, es needs_work.`
+      const user = `Tarea: ${existing.title}\nDescripción: ${existing.description || '(vacía)'}\n\nChecklist:\n${checklistText}\n\nÚltimos comentarios:\n${commentsText}${args.criteria ? `\n\nCriterios extra a verificar: ${sanitize(args.criteria, 1000)}` : ''}`
+
+      const ai = await runAgentAI('mcp_qa_review', system, user, 3072)
+      const parsed = extractAgentJSON(ai.content)
+      if (!parsed?.verdict) throw new Error('QA reviewer returned invalid result')
+
+      const approved = parsed.verdict === 'approved'
+      const issuesList = Array.isArray(parsed.issues) ? parsed.issues.slice(0, 10) : []
+      const commentBody = [
+        `${approved ? '✅' : '⚠️'} **QA Review — ${approved ? 'APROBADA' : 'NECESITA TRABAJO'}** (score: ${parsed.score ?? '—'}/100)`,
+        '',
+        parsed.summary || '',
+        issuesList.length ? `\n**Problemas:**\n${issuesList.map((i: any) => `- ${i}`).join('\n')}` : '',
+      ].join('\n')
+
+      await supabase.from('task_comments').insert({
+        task_id: args.task_id,
+        user_id: ctx.userId,
+        content: sanitize(commentBody, 5000),
+      })
+
+      // Move on pass
+      let moved = false
+      if (approved && args.move_on_pass) {
+        try {
+          await verifyColumn(supabase, args.move_on_pass, existing.project_id)
+          const now = new Date().toISOString()
+          const position = await getAppendPosition(supabase, args.move_on_pass)
+          await supabase.from('tasks').update({ column_id: args.move_on_pass, position, column_entered_at: now, updated_at: now }).eq('id', args.task_id)
+          moved = true
+        } catch { /* column invalid — skip move */ }
+      }
+
+      return textContent({ verdict: parsed.verdict, score: parsed.score, issues: issuesList, summary: parsed.summary, moved, model: ai.model })
+    }
+
+    // ── launch_audit ──
+    case 'launch_audit': {
+      requireScope('write')
+      if (!args.project_id || !args.audit_type || !args.target) {
+        throw new Error('project_id, audit_type, and target are required')
+      }
+      const AUDIT_AGENTS: Record<string, { agent: string; emoji: string; label: string; focus: string }> = {
+        security: { agent: 'security', emoji: '🔐', label: 'Auditoría de Seguridad', focus: 'OWASP Top 10, auth, RLS/permisos, secretos expuestos, inyección, CORS, rate limiting, datos sensibles' },
+        seo: { agent: 'seo', emoji: '🔎', label: 'Auditoría SEO', focus: 'meta tags, estructura de headings, Core Web Vitals, sitemap/robots, contenido, schema markup, enlaces internos, mobile' },
+        quality: { agent: 'qa', emoji: '⭐', label: 'Revisión de Calidad', focus: 'funcionalidad, UX, accesibilidad, rendimiento, manejo de errores, consistencia visual, i18n, responsive' },
+      }
+      const auditConfig = AUDIT_AGENTS[args.audit_type]
+      if (!auditConfig) throw new Error('audit_type must be "security", "seo", or "quality"')
+
+      await verifyProject(supabase, args.project_id, workspaceId)
+      const { data: columns } = await supabase
+        .from('kanban_columns').select('id, title, position').eq('project_id', args.project_id).order('position')
+      if (!columns?.length) throw new Error('Project has no columns')
+      const targetColumn = args.column_id ? columns.find((c: any) => c.id === args.column_id) : columns[0]
+      if (!targetColumn) throw new Error('Column not found in this project')
+
+      const system = `Eres el agente especialista ${auditConfig.agent.toUpperCase()} de FocusFlow. Diseñas auditorías ejecutables.
+Áreas a cubrir: ${auditConfig.focus}.
+Responde SOLO JSON: {"title":"título de la auditoría","description":"alcance y metodología en markdown","checks":[{"text":"verificación concreta y accionable"}]}
+Entre 8 y 15 checks, ordenados por criticidad. Idioma del target.`
+
+      const ai = await runAgentAI(`mcp_audit_${args.audit_type}`, system, `Target a auditar: ${sanitize(args.target, 2000)}`, 6144)
+      const parsed = extractAgentJSON(ai.content)
+      if (!parsed?.checks?.length) throw new Error('Audit agent returned no checks')
+
+      const position = await getAppendPosition(supabase, targetColumn.id)
+      const { data: task, error } = await supabase
+        .from('tasks')
+        .insert({
+          project_id: args.project_id,
+          column_id: targetColumn.id,
+          title: sanitize(`${auditConfig.emoji} ${parsed.title || `${auditConfig.label}: ${args.target}`}`, 500),
+          description: sanitize(parsed.description, 10000),
+          priority: args.audit_type === 'security' ? 'critical' : 'high',
+          assignees: [],
+          tags: ['audit', args.audit_type],
+          ai_agent: auditConfig.agent,
+          reporter_id: ctx.userId,
+          position,
+        })
+        .select()
+        .single()
+      if (error) throw new Error(`Failed to create audit task: ${error.message}`)
+
+      const checks = parsed.checks.slice(0, 15)
+      await supabase.from('task_checklist').insert(
+        checks.map((c: any, i: number) => ({ task_id: task.id, text: sanitize(String(c.text || c), 500), position: i }))
+      )
+
+      return textContent({
+        audit_type: args.audit_type,
+        agent: auditConfig.agent,
+        task,
+        checks_created: checks.length,
+        checks: checks.map((c: any) => c.text || c),
+        model: ai.model,
+      })
+    }
+
+    // ── agent_message ──
+    case 'agent_message': {
+      requireScope('write')
+      if (!args.task_id || !args.from_agent || !args.to_agent || !args.message) {
+        throw new Error('task_id, from_agent, to_agent, and message are required')
+      }
+      await verifyTask(supabase, args.task_id, workspaceId)
+
+      const from = sanitize(args.from_agent, 40)
+      const to = sanitize(args.to_agent, 40)
+      const { data: comment, error } = await supabase
+        .from('task_comments')
+        .insert({
+          task_id: args.task_id,
+          user_id: ctx.userId,
+          content: sanitize(`[A2A] ${from} → ${to}: ${args.message}`, 5000),
+        })
+        .select()
+        .single()
+      if (error) throw new Error(`Failed to send message: ${error.message}`)
+      return textContent({ sent: true, from, to, comment })
+    }
+
+    // ── list_agent_messages ──
+    case 'list_agent_messages': {
+      requireScope('read')
+      const limit = Math.min(args.limit || 30, 100)
+
+      let comments: any[] = []
+      if (args.task_id) {
+        await verifyTask(supabase, args.task_id, workspaceId)
+        const { data } = await supabase
+          .from('task_comments')
+          .select('id, task_id, content, created_at')
+          .eq('task_id', args.task_id)
+          .ilike('content', '[A2A]%')
+          .order('created_at', { ascending: false })
+          .limit(limit)
+        comments = data || []
+      } else {
+        // Workspace-wide agent inbox
+        const { data: projects } = await supabase
+          .from('projects').select('id').eq('workspace_id', workspaceId).eq('archived', false)
+        const pIds = (projects || []).map((p: any) => p.id)
+        if (!pIds.length) return textContent([])
+        const { data: tasks } = await supabase
+          .from('tasks').select('id').in('project_id', pIds).limit(500)
+        const tIds = (tasks || []).map((t: any) => t.id)
+        if (!tIds.length) return textContent([])
+        const { data } = await supabase
+          .from('task_comments')
+          .select('id, task_id, content, created_at')
+          .in('task_id', tIds)
+          .ilike('content', '[A2A]%')
+          .order('created_at', { ascending: false })
+          .limit(limit)
+        comments = data || []
+      }
+
+      // Parse into structured messages, optionally filter by recipient
+      const messages = comments
+        .map((c: any) => {
+          const match = String(c.content).match(/^\[A2A\]\s*([\w-]+)\s*→\s*([\w-]+):\s*([\s\S]*)$/)
+          return match
+            ? { id: c.id, task_id: c.task_id, from: match[1], to: match[2], message: match[3], created_at: c.created_at }
+            : null
+        })
+        .filter(Boolean)
+        .filter((m: any) => !args.agent || m.to === args.agent)
+
+      return textContent(messages)
+    }
+
+    // ── record_decision ──
+    case 'record_decision': {
+      requireScope('write')
+      if (!args.title || !args.decision) throw new Error('title and decision are required')
+
+      const decidedBy = sanitize(args.decided_by, 60) || 'orchestrator'
+      const body = [
+        `📌 **Decisión: ${sanitize(args.title, 200)}**`,
+        '',
+        sanitize(args.decision, 3000),
+        args.rationale ? `\n**Razón:** ${sanitize(args.rationale, 2000)}` : '',
+        `\n_Decidido por: ${decidedBy}_`,
+      ].join('\n')
+
+      // Optional task comment
+      let commentId: string | null = null
+      if (args.task_id) {
+        await verifyTask(supabase, args.task_id, workspaceId)
+        const { data: comment } = await supabase
+          .from('task_comments')
+          .insert({ task_id: args.task_id, user_id: ctx.userId, content: sanitize(body, 5000) })
+          .select('id')
+          .single()
+        commentId = comment?.id || null
+      }
+
+      // Validate project if provided
+      if (args.project_id) await verifyProject(supabase, args.project_id, workspaceId)
+
+      // Searchable workspace memory (fire-and-forget)
+      storeMemory({
+        supabase,
+        workspaceId,
+        contentText: `Decisión: ${args.title}. ${args.decision}${args.rationale ? ` Razón: ${args.rationale}` : ''}`,
+        agentType: 'orchestrator',
+        contentType: 'decision',
+        projectId: args.project_id || null,
+        metadata: { decided_by: decidedBy, task_id: args.task_id || null },
+        createdBy: ctx.userId,
+      }).catch(() => {})
+
+      return textContent({ recorded: true, title: args.title, decided_by: decidedBy, comment_id: commentId })
     }
 
     default:
