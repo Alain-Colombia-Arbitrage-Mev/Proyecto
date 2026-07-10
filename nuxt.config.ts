@@ -88,6 +88,14 @@ export default defineNuxtConfig({
     },
   },
   colorMode: { preference: 'system', fallback: 'light', classSuffix: '' },
+  nitro: {
+    replace: {
+      // papaparse embeds `typeof window` inside a worker Blob string; nitro's default
+      // replacement ('"undefined"') terminates that string literal and breaks the build.
+      // Replacing it with itself is a runtime no-op on Node.
+      'typeof window': 'typeof window',
+    },
+  },
   vite: {
     optimizeDeps: {
       exclude: ['@vueuse/core', '@vueuse/shared'],
