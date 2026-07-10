@@ -276,6 +276,13 @@
               >
                 <UIcon name="i-heroicons-clock" class="w-3 h-3" />
               </button>
+              <button
+                class="w-7 h-7 rounded-full flex items-center justify-center transition-all bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 hover:bg-amber-100 dark:hover:bg-amber-500/20 hover:text-amber-600 sm:opacity-0 sm:group-hover/card:opacity-100"
+                :title="language === 'en' ? 'Hyperfocus Mode (50/10 + music)' : 'Modo Hiperenfoque (50/10 + música)'"
+                @click.stop="pomodoro.startHyperfocus({ id: task.id, title: task.title }, workspaceId)"
+              >
+                <UIcon name="i-heroicons-bolt-solid" class="w-3 h-3" />
+              </button>
             </div>
             <!-- Labels row -->
             <div v-if="task.labels?.length" class="flex flex-wrap gap-1 mb-1.5">

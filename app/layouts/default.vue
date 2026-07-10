@@ -236,6 +236,13 @@
         <span class="text-[11px] font-medium text-gray-700 dark:text-gray-300 max-w-[120px] truncate">{{ pomodoro.activeTask.value.title }}</span>
         <span class="text-[12px] font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">{{ pomodoro.display.value }}</span>
         <button
+          class="w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-500/20 hover:bg-amber-200 dark:hover:bg-amber-500/30 text-amber-600 dark:text-amber-400 flex items-center justify-center transition-colors"
+          :title="lang.language.value === 'en' ? 'Hyperfocus Mode' : 'Modo Hiperenfoque'"
+          @click="pomodoro.hyperfocusOpen.value = true"
+        >
+          <UIcon name="i-heroicons-bolt-solid" class="w-3 h-3" />
+        </button>
+        <button
           class="w-6 h-6 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-gray-500 dark:text-gray-400 hover:text-red-500 flex items-center justify-center transition-colors"
           @click="pomodoro.togglePomodoro()"
           :title="t.pause"
@@ -244,6 +251,9 @@
         </button>
       </div>
     </Transition>
+
+    <!-- Hyperfocus fullscreen overlay -->
+    <HyperfocusOverlay />
 
     <!-- Time Tracker Widget -->
     <LazyTimeTracker v-if="store.workspace?.id" :workspace-id="store.workspace.id" />

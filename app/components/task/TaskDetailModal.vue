@@ -45,6 +45,14 @@
               @click="pomodoro.startForTask({ id: task.id, title: task.title }, workspaceId)"
               :title="lang.labels.value.startPomodoro"
             />
+            <UButton
+              variant="ghost"
+              size="xs"
+              icon="i-heroicons-bolt"
+              color="warning"
+              @click="pomodoro.startHyperfocus({ id: task.id, title: task.title }, workspaceId)"
+              :title="language === 'en' ? 'Hyperfocus Mode (50/10 + music)' : 'Modo Hiperenfoque (50/10 + música)'"
+            />
             <UButton variant="ghost" size="xs" icon="i-heroicons-sparkles" color="primary" @click="$emit('improveWithAI')" :title="lang.labels.value.improveWithAI" />
             <UButton variant="ghost" size="xs" icon="i-heroicons-cpu-chip" color="secondary" @click="showDelegateModal = true" :title="language === 'en' ? 'Delegate to AI Agent' : 'Delegar a Agente AI'" />
             <UButton variant="ghost" size="xs" icon="i-heroicons-trash" color="error" @click="handleDelete" :title="lang.labels.value.deleteTask" />

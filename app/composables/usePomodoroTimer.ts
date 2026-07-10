@@ -1,17 +1,28 @@
-const pomodoroSeconds = ref(25 * 60)
+export type PomodoroMode = 'classic' | 'deep'
+
+// classic = Pomodoro tradicional 25/5 · deep = Deep Work 50/10 (estilo sesiones hyperfocus)
+const MODE_DURATIONS: Record<PomodoroMode, { work: number; break: number }> = {
+  classic: { work: 25 * 60, break: 5 * 60 },
+  deep: { work: 50 * 60, break: 10 * 60 },
+}
+
+const pomodoroMode = ref<PomodoroMode>('classic')
+const pomodoroSeconds = ref(MODE_DURATIONS.classic.work)
 const pomodoroRunning = ref(false)
 const pomodoroPhase = ref<'work' | 'break'>('work')
 const pomodoroSessions = ref(0)
 const activeTask = ref<{ id: string; title: string } | null>(null)
+const hyperfocusOpen = ref(false)
 let pomodoroInterval: ReturnType<typeof setInterval> | null = null
 let _workspaceId: string | null = null
 let _pushNotif: ReturnType<typeof usePushNotifications> | null = null
 
-const WORK_DURATION = 25 * 60
-const BREAK_DURATION = 5 * 60
 const CIRCUMFERENCE = 213.63
 
-const pomodoroTotal = computed(() => pomodoroPhase.value === 'work' ? WORK_DURATION : BREAK_DURATION)
+const workDuration = computed(() => MODE_DURATIONS[pomodoroMode.value].work)
+const breakDuration = computed(() => MODE_DURATIONS[pomodoroMode.value].break)
+
+const pomodoroTotal = computed(() => pomodoroPhase.value === 'work' ? workDuration.value : breakDuration.value)
 
 const pomodoroRingOffset = computed(() => {
   const progress = pomodoroSeconds.value / pomodoroTotal.value
@@ -36,7 +47,7 @@ async function _registerSession() {
   try {
     await $fetch(`/api/workspaces/${_workspaceId}/tasks/${activeTask.value.id}/pomodoro`, {
       method: 'POST',
-      body: { duration_minutes: 25 },
+      body: { duration_minutes: Math.round(workDuration.value / 60) },
     })
   } catch (e) {
     console.error('[pomodoro] Failed to register session:', e)
@@ -59,17 +70,18 @@ function togglePomodoro() {
         if (pomodoroPhase.value === 'work') {
           pomodoroSessions.value++
           const taskLabel = activeTask.value ? ` ("${activeTask.value.title}")` : ''
-          _pushNotif?.sendLocal('Pomodoro completado!', { body: `Toma un descanso de 5 minutos.${taskLabel}` })
+          const breakMin = Math.round(breakDuration.value / 60)
+          _pushNotif?.sendLocal('Pomodoro completado!', { body: `Toma un descanso de ${breakMin} minutos.${taskLabel}` })
           _pushNotif?.playSound()
           // Register session for linked task (fire-and-forget)
           if (activeTask.value) _registerSession()
           pomodoroPhase.value = 'break'
-          pomodoroSeconds.value = BREAK_DURATION
+          pomodoroSeconds.value = breakDuration.value
         } else {
           _pushNotif?.sendLocal('Descanso terminado!', { body: 'Hora de enfocarse de nuevo.' })
           _pushNotif?.playSound()
           pomodoroPhase.value = 'work'
-          pomodoroSeconds.value = WORK_DURATION
+          pomodoroSeconds.value = workDuration.value
         }
       }
     }, 1000)
@@ -80,8 +92,18 @@ function resetPomodoro() {
   _clearInterval()
   pomodoroRunning.value = false
   pomodoroPhase.value = 'work'
-  pomodoroSeconds.value = WORK_DURATION
+  pomodoroSeconds.value = workDuration.value
   activeTask.value = null
+}
+
+function setMode(mode: PomodoroMode) {
+  if (pomodoroMode.value === mode) return
+  pomodoroMode.value = mode
+  // Only reset the clock when idle — never interrupt a running session
+  if (!pomodoroRunning.value) {
+    pomodoroPhase.value = 'work'
+    pomodoroSeconds.value = workDuration.value
+  }
 }
 
 function startForTask(task: { id: string; title: string }, workspaceId: string) {
@@ -93,10 +115,26 @@ function startForTask(task: { id: string; title: string }, workspaceId: string) 
   _workspaceId = workspaceId
   activeTask.value = { id: task.id, title: task.title }
   pomodoroPhase.value = 'work'
-  pomodoroSeconds.value = WORK_DURATION
+  pomodoroSeconds.value = workDuration.value
   pomodoroRunning.value = false
   // Auto-start
   togglePomodoro()
+}
+
+/**
+ * Enter Hyperfocus Mode: fullscreen overlay + Deep Work 50/10 cycle.
+ * Works with or without a linked task — sessions only get registered when a task is set.
+ */
+function startHyperfocus(task?: { id: string; title: string } | null, workspaceId?: string) {
+  setMode('deep')
+  if (task && workspaceId) {
+    startForTask(task, workspaceId)
+  } else if (!pomodoroRunning.value) {
+    pomodoroPhase.value = 'work'
+    pomodoroSeconds.value = workDuration.value
+    togglePomodoro()
+  }
+  hyperfocusOpen.value = true
 }
 
 export function usePomodoroTimer() {
@@ -111,11 +149,15 @@ export function usePomodoroTimer() {
     phase: pomodoroPhase,
     sessions: pomodoroSessions,
     activeTask,
+    mode: pomodoroMode,
+    hyperfocusOpen,
     display: pomodoroDisplay,
     ringOffset: pomodoroRingOffset,
     total: pomodoroTotal,
     togglePomodoro,
     resetPomodoro,
+    setMode,
     startForTask,
+    startHyperfocus,
   }
 }

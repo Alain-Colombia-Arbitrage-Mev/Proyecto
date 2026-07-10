@@ -57,6 +57,13 @@
                     :class="priorityClasses(task.priority)"
                   >{{ task.priority }}</span>
                   <button
+                    class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity shrink-0"
+                    :title="lang.language.value === 'en' ? 'Hyperfocus Mode (50/10 + music)' : 'Modo Hiperenfoque (50/10 + música)'"
+                    @click.stop="startHyperfocus(task)"
+                  >
+                    <UIcon name="i-heroicons-bolt-solid" class="w-4 h-4" />
+                  </button>
+                  <button
                     class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity shrink-0"
                     :title="lang.language.value === 'en' ? 'Start Pomodoro' : 'Iniciar Pomodoro'"
                     @click.stop="startPomodoro(task)"
@@ -101,6 +108,16 @@
           </div>
           <p class="text-[10px] text-gray-400 dark:text-gray-500 mt-4 tabular-nums">
             {{ pomodoro.sessions.value }} {{ lang.language.value === 'en' ? 'sessions today' : 'sesiones hoy' }}
+          </p>
+          <button
+            class="w-full mt-4 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-bold py-2.5 hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-lg shadow-amber-500/20"
+            @click="pomodoro.startHyperfocus(null)"
+          >
+            <UIcon name="i-heroicons-bolt-solid" class="w-4 h-4" />
+            {{ lang.language.value === 'en' ? 'Enter Hyperfocus' : 'Entrar en Hiperenfoque' }}
+          </button>
+          <p class="text-[10px] text-gray-400 dark:text-gray-500 mt-2">
+            {{ lang.language.value === 'en' ? 'Fullscreen · 50/10 deep work · focus music' : 'Pantalla completa · deep work 50/10 · música de enfoque' }}
           </p>
         </div>
       </div>
@@ -177,6 +194,11 @@ function openTask(task: MyDayTask) {
 function startPomodoro(task: MyDayTask) {
   if (!store.workspace?.id) return
   pomodoro.startForTask({ id: task.id, title: lang.localizedTitle(task) }, store.workspace.id)
+}
+
+function startHyperfocus(task: MyDayTask) {
+  if (!store.workspace?.id) return
+  pomodoro.startHyperfocus({ id: task.id, title: lang.localizedTitle(task) }, store.workspace.id)
 }
 
 async function load() {
