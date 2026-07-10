@@ -42,6 +42,32 @@ export function agentRegistryPrompt(): string {
     .join('\n')
 }
 
+/** Compact roster of workspace members + specialty profiles (from ai_config) for AI prompts */
+export async function buildMemberRoster(supabase: any, workspaceId: string): Promise<Array<{ id: string; name: string; role: string; specialty?: string; skills?: string[] }>> {
+  const [{ data: members }, { data: ws }] = await Promise.all([
+    supabase.from('workspace_members').select('user_id, role').eq('workspace_id', workspaceId),
+    supabase.from('workspaces').select('ai_config').eq('id', workspaceId).maybeSingle(),
+  ])
+  const profiles = ((ws?.ai_config as any)?.member_profiles) || {}
+  const roster = []
+  for (const m of (members || [])) {
+    let name = ''
+    try {
+      const { data: profile } = await supabase.auth.admin.getUserById(m.user_id)
+      name = profile?.user?.user_metadata?.full_name || profile?.user?.email || ''
+    } catch {}
+    const p = profiles[m.user_id] || {}
+    roster.push({ id: m.user_id, name, role: p.role_title || m.role, specialty: p.specialty, skills: p.skills })
+  }
+  return roster
+}
+
+export function rosterPrompt(roster: Array<{ id: string; name: string; role: string; specialty?: string; skills?: string[] }>): string {
+  return roster
+    .map(m => `- id:${m.id} | ${m.name || 'sin nombre'} | rol: ${m.role}${m.specialty ? ` | especialidad: ${m.specialty}` : ''}${m.skills?.length ? ` | skills: ${m.skills.join(', ')}` : ''}`)
+    .join('\n') || '(sin miembros con perfil)'
+}
+
 /** Strip <think>...</think> blocks that reasoning models produce */
 export function stripAgentThinkTags(text: string): string {
   return text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim()
@@ -78,12 +104,16 @@ export function extractAgentJSON(text: string): any | null {
 
 const PRIMARY_MODEL = 'deepseek/deepseek-v4-pro'
 const FALLBACK_MODEL = 'google/gemini-2.0-flash-001'
+/** Large-context model for document/plan ingestion (long inputs) */
+export const DOC_PLAN_MODEL = 'z-ai/glm-5.2'
 
 export async function callAgentAI(params: {
   system: string
   user: string
   maxTokens?: number
   temperature?: number
+  /** Override primary model (e.g. DOC_PLAN_MODEL for long documents) */
+  model?: string
 }): Promise<AgentAIResult> {
   const { openrouterApiKey } = useRuntimeConfig()
   if (!openrouterApiKey) throw new Error('OpenRouter API key not configured')
@@ -104,14 +134,15 @@ export async function callAgentAI(params: {
     'X-Title': 'FocusFlow',
   }
 
+  const primary = params.model || PRIMARY_MODEL
   let response: any
-  let usedModel = PRIMARY_MODEL
+  let usedModel = primary
   try {
     response = await $fetch<any>('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST', headers, body: { model: PRIMARY_MODEL, ...body },
+      method: 'POST', headers, body: { model: primary, ...body },
     })
   } catch (primaryError: any) {
-    console.error(`[agentAI] ${PRIMARY_MODEL} failed:`, primaryError.data?.error || primaryError.message)
+    console.error(`[agentAI] ${primary} failed:`, primaryError.data?.error || primaryError.message)
     usedModel = FALLBACK_MODEL
     response = await $fetch<any>('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST', headers, body: { model: FALLBACK_MODEL, ...body },

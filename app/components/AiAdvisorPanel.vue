@@ -56,8 +56,59 @@
             </div>
           </div>
 
+          <!-- Plan-from-document mode -->
+          <div v-if="planMode" class="p-3 border-t border-gray-100 dark:border-white/[0.06] space-y-2 shrink-0 bg-gray-50/60 dark:bg-white/[0.02]">
+            <div class="flex items-center justify-between gap-2">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                <UIcon name="i-heroicons-document-text" class="w-3.5 h-3.5" />
+                {{ es ? 'Plan desde documento' : 'Plan from document' }}
+                <span class="text-focusflow-500 font-semibold normal-case tracking-normal">· GLM-5.2</span>
+              </p>
+              <button class="text-[10px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 underline cursor-pointer" @click="planMode = false">
+                {{ es ? 'Volver al chat' : 'Back to chat' }}
+              </button>
+            </div>
+            <select
+              v-model="planProjectId"
+              class="w-full bg-white dark:bg-white/[0.06] border border-gray-200 dark:border-white/10 rounded-lg px-2.5 py-2 text-[12px] text-gray-900 dark:text-gray-100 focus:outline-none"
+            >
+              <option value="" disabled>{{ es ? 'Selecciona proyecto destino…' : 'Select target project…' }}</option>
+              <option v-for="p in store.projects" :key="p.id" :value="p.id">{{ p.name }}</option>
+            </select>
+            <textarea
+              v-model="planDoc"
+              rows="5"
+              :placeholder="es ? 'Pega aquí la documentación detallada o el plan… (o sube un archivo)' : 'Paste detailed documentation or the plan here… (or upload a file)'"
+              class="w-full bg-white dark:bg-white/[0.06] border border-gray-200 dark:border-white/10 rounded-lg px-2.5 py-2 text-[12px] text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-focusflow-400/50 resize-none"
+            />
+            <div class="flex items-center gap-2">
+              <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-white/[0.06] border border-gray-200 dark:border-white/10 text-[11px] font-medium text-gray-600 dark:text-gray-300 hover:border-focusflow-300 cursor-pointer transition-colors">
+                <UIcon name="i-heroicons-arrow-up-tray" class="w-3.5 h-3.5" />
+                {{ es ? 'Subir archivo' : 'Upload file' }}
+                <input type="file" accept=".md,.txt,.markdown,.csv,.json" class="hidden" @change="onPlanFile">
+              </label>
+              <span v-if="planDoc" class="text-[10px] text-gray-400 tabular-nums">{{ Math.round(planDoc.length / 1000) }}k chars</span>
+              <button
+                class="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-focusflow-500 hover:bg-focusflow-600 disabled:opacity-40 text-white text-[11px] font-bold transition-colors cursor-pointer"
+                :disabled="planLoading || !planProjectId || planDoc.trim().length < 30"
+                @click="generatePlan"
+              >
+                <UIcon :name="planLoading ? 'i-heroicons-arrow-path' : 'i-heroicons-sparkles'" class="w-3.5 h-3.5" :class="{ 'animate-spin': planLoading }" />
+                {{ planLoading ? (es ? 'Planificando…' : 'Planning…') : (es ? 'Generar tareas' : 'Generate tasks') }}
+              </button>
+            </div>
+          </div>
+
           <!-- Input -->
-          <form class="p-3 border-t border-gray-100 dark:border-white/[0.06] flex items-center gap-2 shrink-0" @submit.prevent="send">
+          <form v-else class="p-3 border-t border-gray-100 dark:border-white/[0.06] flex items-center gap-2 shrink-0" @submit.prevent="send">
+            <button
+              type="button"
+              class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-white/[0.06] hover:bg-focusflow-50 dark:hover:bg-focusflow-500/10 text-gray-500 dark:text-gray-400 hover:text-focusflow-600 flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+              :title="es ? 'Crear tareas desde un documento o plan (GLM-5.2)' : 'Create tasks from a document or plan (GLM-5.2)'"
+              @click="openPlanMode"
+            >
+              <UIcon name="i-heroicons-document-plus" class="w-4 h-4" />
+            </button>
             <input
               v-model="input"
               type="text"
@@ -88,6 +139,58 @@ const open = ref(false)
 const input = ref('')
 const loading = ref(false)
 const scrollEl = ref<HTMLElement | null>(null)
+
+// Plan-from-document mode (long-context model)
+const planMode = ref(false)
+const planProjectId = ref('')
+const planDoc = ref('')
+const planLoading = ref(false)
+
+const es = computed(() => lang.language.value !== 'en')
+
+function openPlanMode() {
+  planMode.value = true
+  if (!store.projectsLoaded) store.loadProjects()
+}
+
+function onPlanFile(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = () => {
+    planDoc.value = String(reader.result || '')
+  }
+  reader.readAsText(file)
+  ;(e.target as HTMLInputElement).value = ''
+}
+
+async function generatePlan() {
+  if (!store.workspace?.id || !planProjectId.value || planDoc.value.trim().length < 30 || planLoading.value) return
+  planLoading.value = true
+  try {
+    const res = await $fetch<{ summary: string; tasks_created: number; project: string; column: string; tasks: any[] }>(
+      `/api/workspaces/${store.workspace.id}/plan-from-doc`,
+      { method: 'POST', body: { project_id: planProjectId.value, document: planDoc.value } },
+    )
+    const taskList = (res.tasks || []).map((t: any) => `• ${t.title}${t.ai_agent ? ` → ${t.ai_agent}` : ''}`).join('\n')
+    messages.value.push({
+      role: 'assistant',
+      text: es.value
+        ? `📋 Plan generado: ${res.tasks_created} tareas creadas en "${res.project}" (columna ${res.column}).\n\n${res.summary}\n\n${taskList}`
+        : `📋 Plan generated: ${res.tasks_created} tasks created in "${res.project}" (column ${res.column}).\n\n${res.summary}\n\n${taskList}`,
+    })
+    planDoc.value = ''
+    planMode.value = false
+  } catch (e: any) {
+    messages.value.push({
+      role: 'assistant',
+      text: e.data?.message || (es.value ? 'No se pudo generar el plan. Intenta de nuevo.' : 'Could not generate the plan. Try again.'),
+    })
+  } finally {
+    planLoading.value = false
+    await scrollToBottom()
+  }
+}
 
 interface AdvisorMessage { role: 'user' | 'assistant'; text: string }
 const messages = ref<AdvisorMessage[]>([])
