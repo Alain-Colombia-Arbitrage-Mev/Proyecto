@@ -1,5 +1,6 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import { generateTaskDocs } from '~~/server/utils/taskDocGenerator'
+import { DOC_PLAN_MODEL } from '~~/server/utils/agentAI'
 
 const MAX_MESSAGE_LENGTH = 100_000
 const MAX_HISTORY_MESSAGES = 50
@@ -128,6 +129,11 @@ export default defineEventHandler(async (event) => {
       }
       systemPrompt = `Mejora esta tarea. JSON: {title,description,priority_suggestion:"low"|"medium"|"high"|"critical",estimated_hours:N,tags:[]}. IMPORTANTE: "description" es OBLIGATORIO — mínimo 3-4 oraciones con: objetivo claro, pasos de implementación, criterios de aceptación ✅. ES. Solo JSON.`
       userPrompt = `${String(context.taskTitle).slice(0, 2000)}|${String(context.taskDescription || '').slice(0, 3000)}|p:${context.priority || 'medium'}`
+      // Attached documentation as context → switch to the long-context model
+      if (context.documentContext && typeof context.documentContext === 'string') {
+        userPrompt += `\n\nDocumentación de referencia (úsala para enriquecer la tarea):\n${String(context.documentContext).slice(0, 120_000)}`
+        ;(event.context as any)._preferDocModel = true
+      }
       if (context.workspaceId) {
         resolvedWorkspaceId = String(context.workspaceId)
         await requirePermission(event, resolvedWorkspaceId, 'use_ai_basic')
@@ -576,8 +582,9 @@ ${JSON.stringify((tasksFull || []).map((t: any) => ({
     }
   }
 
-  // Call OpenRouter — try primary model, fallback to secondary on failure
-  const primaryModel = 'deepseek/deepseek-v4-pro'
+  // Call OpenRouter — try primary model, fallback to secondary on failure.
+  // Requests carrying long attached documents use the 1M-context model.
+  const primaryModel = (event.context as any)._preferDocModel ? DOC_PLAN_MODEL : 'deepseek/deepseek-v4-pro'
   const fallbackModel = 'google/gemini-2.0-flash-001'
   const maxTokens = action === 'document_architecture' ? 16384
     : (event.context as any)._docAgentMeta?.config?.maxTokens

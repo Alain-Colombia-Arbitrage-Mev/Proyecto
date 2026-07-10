@@ -81,16 +81,12 @@
               :placeholder="es ? 'Pega aquí la documentación detallada o el plan… (o sube un archivo)' : 'Paste detailed documentation or the plan here… (or upload a file)'"
               class="w-full bg-white dark:bg-white/[0.06] border border-gray-200 dark:border-white/10 rounded-lg px-2.5 py-2 text-[12px] text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-focusflow-400/50 resize-none"
             />
+            <DocAttach v-model="planFiles" />
             <div class="flex items-center gap-2">
-              <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-white/[0.06] border border-gray-200 dark:border-white/10 text-[11px] font-medium text-gray-600 dark:text-gray-300 hover:border-focusflow-300 cursor-pointer transition-colors">
-                <UIcon name="i-heroicons-arrow-up-tray" class="w-3.5 h-3.5" />
-                {{ es ? 'Subir archivo' : 'Upload file' }}
-                <input type="file" accept=".md,.txt,.markdown,.csv,.json" class="hidden" @change="onPlanFile">
-              </label>
-              <span v-if="planDoc" class="text-[10px] text-gray-400 tabular-nums">{{ Math.round(planDoc.length / 1000) }}k chars</span>
+              <span v-if="combinedPlanDoc" class="text-[10px] text-gray-400 tabular-nums">{{ es ? 'Total' : 'Total' }}: {{ Math.round(combinedPlanDoc.length / 1000) }}k chars</span>
               <button
                 class="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-focusflow-500 hover:bg-focusflow-600 disabled:opacity-40 text-white text-[11px] font-bold transition-colors cursor-pointer"
-                :disabled="planLoading || !planProjectId || planDoc.trim().length < 30"
+                :disabled="planLoading || !planProjectId || combinedPlanDoc.trim().length < 30"
                 @click="generatePlan"
               >
                 <UIcon :name="planLoading ? 'i-heroicons-arrow-path' : 'i-heroicons-sparkles'" class="w-3.5 h-3.5" :class="{ 'animate-spin': planLoading }" />
@@ -144,33 +140,33 @@ const scrollEl = ref<HTMLElement | null>(null)
 const planMode = ref(false)
 const planProjectId = ref('')
 const planDoc = ref('')
+const planFiles = ref<{ name: string; content: string }[]>([])
 const planLoading = ref(false)
 
 const es = computed(() => lang.language.value !== 'en')
+
+// Pasted text + attached files combined into one document with file headers
+const combinedPlanDoc = computed(() => {
+  const parts: string[] = []
+  if (planDoc.value.trim()) parts.push(planDoc.value.trim())
+  for (const f of planFiles.value) {
+    parts.push(`\n--- Archivo: ${f.name} ---\n${f.content}`)
+  }
+  return parts.join('\n')
+})
 
 function openPlanMode() {
   planMode.value = true
   if (!store.projectsLoaded) store.loadProjects()
 }
 
-function onPlanFile(e: Event) {
-  const file = (e.target as HTMLInputElement).files?.[0]
-  if (!file) return
-  const reader = new FileReader()
-  reader.onload = () => {
-    planDoc.value = String(reader.result || '')
-  }
-  reader.readAsText(file)
-  ;(e.target as HTMLInputElement).value = ''
-}
-
 async function generatePlan() {
-  if (!store.workspace?.id || !planProjectId.value || planDoc.value.trim().length < 30 || planLoading.value) return
+  if (!store.workspace?.id || !planProjectId.value || combinedPlanDoc.value.trim().length < 30 || planLoading.value) return
   planLoading.value = true
   try {
     const res = await $fetch<{ summary: string; tasks_created: number; project: string; column: string; tasks: any[] }>(
       `/api/workspaces/${store.workspace.id}/plan-from-doc`,
-      { method: 'POST', body: { project_id: planProjectId.value, document: planDoc.value } },
+      { method: 'POST', body: { project_id: planProjectId.value, document: combinedPlanDoc.value } },
     )
     const taskList = (res.tasks || []).map((t: any) => `• ${t.title}${t.ai_agent ? ` → ${t.ai_agent}` : ''}`).join('\n')
     messages.value.push({
@@ -180,6 +176,7 @@ async function generatePlan() {
         : `📋 Plan generated: ${res.tasks_created} tasks created in "${res.project}" (column ${res.column}).\n\n${res.summary}\n\n${taskList}`,
     })
     planDoc.value = ''
+    planFiles.value = []
     planMode.value = false
   } catch (e: any) {
     messages.value.push({

@@ -356,7 +356,19 @@
       </div>
 
       <!-- Chat input (chat tab only) -->
-      <div v-if="aiTab === 'chat'" class="px-3 py-2 border-t border-gray-200/80 dark:border-white/10">
+      <div v-if="aiTab === 'chat'" class="px-3 py-2 border-t border-gray-200/80 dark:border-white/10 space-y-2">
+        <DocAttach v-model="attachedDocs" :label="language === 'en' ? 'Docs / plan' : 'Docs / plan'" />
+        <button
+          v-if="attachedDocs.length"
+          class="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-focusflow-500 to-teal-500 hover:opacity-90 disabled:opacity-40 text-white text-[11px] font-bold transition-all cursor-pointer"
+          :disabled="planDocLoading"
+          @click="generateTasksFromDocs"
+        >
+          <UIcon :name="planDocLoading ? 'i-heroicons-arrow-path' : 'i-heroicons-document-plus'" class="w-3.5 h-3.5" :class="{ 'animate-spin': planDocLoading }" />
+          {{ planDocLoading
+            ? (language === 'en' ? 'Planning with GLM-5.2…' : 'Planificando con GLM-5.2…')
+            : (language === 'en' ? `Generate tasks from ${attachedDocs.length} document(s)` : `Generar tareas desde ${attachedDocs.length} documento(s)`) }}
+        </button>
         <form class="flex gap-2" @submit.prevent="handleChat">
           <input
             v-model="chatInput"
@@ -501,6 +513,43 @@ function sectionTag(heading: string): string {
   if (h.includes('visión') || h.includes('vision') || h.includes('general') || h.includes('alcance')) return 'General'
   if (h.includes('recomend') || h.includes('mejora')) return props.language === 'en' ? 'Improvements' : 'Mejoras'
   return 'Doc'
+}
+
+// --- Plan from attached documents (GLM-5.2 long context) ---
+const attachedDocs = ref<{ name: string; content: string }[]>([])
+const planDocLoading = ref(false)
+
+async function generateTasksFromDocs() {
+  if (!attachedDocs.value.length || planDocLoading.value) return
+  planDocLoading.value = true
+  const document = attachedDocs.value
+    .map(f => `--- Archivo: ${f.name} ---\n${f.content}`)
+    .join('\n\n')
+  try {
+    const res = await $fetch<{ summary: string; tasks_created: number; column: string; tasks: any[] }>(
+      `/api/workspaces/${props.workspaceId}/plan-from-doc`,
+      { method: 'POST', body: { project_id: props.projectId, document } },
+    )
+    const taskList = (res.tasks || []).map((t: any) => `• ${t.title}${t.ai_agent ? ` → ${t.ai_agent}` : ''}`).join('\n')
+    aiMessages.value.push({
+      role: 'assistant',
+      type: 'text',
+      text: props.language === 'en'
+        ? `📋 Plan generated: ${res.tasks_created} tasks created (column ${res.column}).\n\n${res.summary}\n\n${taskList}`
+        : `📋 Plan generado: ${res.tasks_created} tareas creadas (columna ${res.column}).\n\n${res.summary}\n\n${taskList}`,
+    })
+    attachedDocs.value = []
+    emit('loadTasks')
+  } catch (e: any) {
+    aiMessages.value.push({
+      role: 'assistant',
+      type: 'text',
+      text: e.data?.message || (props.language === 'en' ? 'Could not generate the plan.' : 'No se pudo generar el plan.'),
+    })
+  } finally {
+    planDocLoading.value = false
+    scrollChat()
+  }
 }
 
 // --- AI Core ---

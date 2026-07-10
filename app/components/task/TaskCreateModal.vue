@@ -29,8 +29,11 @@
               />
             </div>
             <p class="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
-              {{ language === 'en' ? 'Write a rough idea and tap ✨ — the AI assistant completes the task for you' : 'Escribe una idea y toca ✨ — el asistente AI completa la tarea por ti' }}
+              {{ language === 'en' ? 'Write a rough idea and tap ✨ — the AI assistant completes the task for you (attached docs are used as context)' : 'Escribe una idea y toca ✨ — el asistente AI completa la tarea por ti (los documentos adjuntos se usan como contexto)' }}
             </p>
+            <div class="mt-2">
+              <DocAttach v-model="aiDocs" :label="language === 'en' ? 'Context docs for AI' : 'Docs de contexto para AI'" />
+            </div>
           </UFormField>
 
           <UFormField :label="t.description">
@@ -178,6 +181,7 @@ const cardColors = ['#3B82F6', '#8B5CF6', '#F59E0B', '#10B981', '#F97316', '#EF4
 const creating = ref(false)
 const error = ref('')
 const aiAssisting = ref(false)
+const aiDocs = ref<{ name: string; content: string }[]>([])
 const draftRestored = ref(false)
 const justCreated = ref(false)
 
@@ -339,6 +343,9 @@ async function aiAssist() {
           taskDescription: form.description || '',
           priority: form.priority,
           workspaceId: props.workspaceId,
+          documentContext: aiDocs.value.length
+            ? aiDocs.value.map(f => `--- Archivo: ${f.name} ---\n${f.content}`).join('\n\n')
+            : undefined,
         },
       },
     })

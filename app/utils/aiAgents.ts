@@ -24,6 +24,10 @@ export const AI_AGENTS: AIAgentInfo[] = [
   { type: 'security', emoji: '🔐', name: 'Especialista Seguridad', nameEn: 'Security Specialist', specialty: 'Auditoría de seguridad, OWASP, permisos', specialtyEn: 'Security audit, OWASP, permissions', color: '#DC2626' },
   { type: 'seo', emoji: '🔎', name: 'Especialista SEO', nameEn: 'SEO Specialist', specialty: 'SEO técnico, keywords, Core Web Vitals', specialtyEn: 'Technical SEO, keywords, Core Web Vitals', color: '#10B981' },
   { type: 'planner', emoji: '🗺️', name: 'Auto Planner', nameEn: 'Auto Planner', specialty: 'Descompone objetivos en tareas y sprints', specialtyEn: 'Decomposes goals into tasks and sprints', color: '#0EA5E9' },
+  { type: 'business_planner', emoji: '💼', name: 'Business Planner', nameEn: 'Business Planner', specialty: 'Modelos de negocio, pricing, mercado y unit economics', specialtyEn: 'Business models, pricing, market and unit economics', color: '#B45309' },
+  { type: 'growth_planner', emoji: '📈', name: 'Growth Planner', nameEn: 'Growth Planner', specialty: 'Growth loops, funnels AARRR, retención y experimentos', specialtyEn: 'Growth loops, AARRR funnels, retention and experiments', color: '#16A34A' },
+  { type: 'viral_content', emoji: '🚀', name: 'Viral Content', nameEn: 'Viral Content', specialty: 'Contenido viral: hooks, tendencias, TikTok/Reels/X', specialtyEn: 'Viral content: hooks, trends, TikTok/Reels/X', color: '#DB2777' },
+  { type: 'pricing', emoji: '💰', name: 'Pricing Strategist', nameEn: 'Pricing Strategist', specialty: 'Precios, tiers, benchmarks, monetización', specialtyEn: 'Pricing, tiers, benchmarks, monetization', color: '#CA8A04' },
   { type: 'reviewer', emoji: '⭐', name: 'Quality Reviewer', nameEn: 'Quality Reviewer', specialty: 'Mejora de tareas y revisión de entregables', specialtyEn: 'Task improvement and deliverable review', color: '#A855F7' },
   { type: 'orchestrator', emoji: '🎯', name: 'Orchestrator', nameEn: 'Orchestrator', specialty: 'Coordina agentes y asigna trabajo', specialtyEn: 'Coordinates agents and assigns work', color: '#0891B2' },
 ]
