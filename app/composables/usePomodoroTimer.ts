@@ -13,6 +13,8 @@ const pomodoroPhase = ref<'work' | 'break'>('work')
 const pomodoroSessions = ref(0)
 const activeTask = ref<{ id: string; title: string } | null>(null)
 const hyperfocusOpen = ref(false)
+// Auto-continue: chain work → break → work without stopping (deep work flow)
+const autoContinue = ref(false)
 let pomodoroInterval: ReturnType<typeof setInterval> | null = null
 let _workspaceId: string | null = null
 let _pushNotif: ReturnType<typeof usePushNotifications> | null = null
@@ -65,8 +67,6 @@ function togglePomodoro() {
       if (pomodoroSeconds.value > 0) {
         pomodoroSeconds.value--
       } else {
-        _clearInterval()
-        pomodoroRunning.value = false
         if (pomodoroPhase.value === 'work') {
           pomodoroSessions.value++
           const taskLabel = activeTask.value ? ` ("${activeTask.value.title}")` : ''
@@ -83,6 +83,11 @@ function togglePomodoro() {
           pomodoroPhase.value = 'work'
           pomodoroSeconds.value = workDuration.value
         }
+        // In auto-continue mode the next phase starts immediately
+        if (!autoContinue.value) {
+          _clearInterval()
+          pomodoroRunning.value = false
+        }
       }
     }, 1000)
   }
@@ -94,6 +99,7 @@ function resetPomodoro() {
   pomodoroPhase.value = 'work'
   pomodoroSeconds.value = workDuration.value
   activeTask.value = null
+  autoContinue.value = false
 }
 
 function setMode(mode: PomodoroMode) {
@@ -117,6 +123,7 @@ function startForTask(task: { id: string; title: string }, workspaceId: string) 
   pomodoroPhase.value = 'work'
   pomodoroSeconds.value = workDuration.value
   pomodoroRunning.value = false
+  autoContinue.value = false
   // Auto-start
   togglePomodoro()
 }
@@ -134,6 +141,7 @@ function startHyperfocus(task?: { id: string; title: string } | null, workspaceI
     pomodoroSeconds.value = workDuration.value
     togglePomodoro()
   }
+  autoContinue.value = true
   hyperfocusOpen.value = true
 }
 
@@ -151,6 +159,7 @@ export function usePomodoroTimer() {
     activeTask,
     mode: pomodoroMode,
     hyperfocusOpen,
+    autoContinue,
     display: pomodoroDisplay,
     ringOffset: pomodoroRingOffset,
     total: pomodoroTotal,

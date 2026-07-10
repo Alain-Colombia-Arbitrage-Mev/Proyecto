@@ -14,6 +14,7 @@ export interface LofiStation {
   tracks: LofiTrack[]
   type?: 'stream' | 'youtube'  // default: 'stream'
   youtubeId?: string            // YouTube video ID for type='youtube'
+  focus?: boolean               // hyperfocus/deep-work station (shown in Hyperfocus Mode)
 }
 
 // Stream sources: YouTube embeds are most reliable for 24/7 streams.
@@ -23,6 +24,7 @@ const stations: LofiStation[] = [
   // === HYPERFOCUS / DEEP WORK (Pomodoro) ===
   {
     id: 'hyperfocus-house',
+    focus: true,
     name: 'Hyperfocus House',
     emoji: '🧠',
     url: '',
@@ -36,6 +38,7 @@ const stations: LofiStation[] = [
   },
   {
     id: 'tunnel-vision',
+    focus: true,
     name: 'Tunnel Vision',
     emoji: '🎯',
     url: '',
@@ -49,6 +52,7 @@ const stations: LofiStation[] = [
   },
   {
     id: 'pomodoro-50-10',
+    focus: true,
     name: 'Pomodoro 50/10',
     emoji: '🍅',
     url: '',
@@ -62,6 +66,7 @@ const stations: LofiStation[] = [
   },
   {
     id: 'brown-noise-focus',
+    focus: true,
     name: 'Brown Noise Focus',
     emoji: '🌊',
     url: '',
@@ -75,6 +80,7 @@ const stations: LofiStation[] = [
   },
   {
     id: 'deep-focus-lofi',
+    focus: true,
     name: 'Deep Focus 3h',
     emoji: '⏱️',
     url: '',
@@ -84,6 +90,90 @@ const stations: LofiStation[] = [
     youtubeId: 'qMJ8CZdUu2M',
     tracks: [
       { title: 'Deep Focus Session · Lo-Fi Pomodoro', artist: 'Work With Ron', duration: '3h' },
+    ],
+  },
+  {
+    id: 'techno-tunnel',
+    focus: true,
+    name: 'Techno Tunnel 4h',
+    emoji: '🚇',
+    url: '',
+    color: '#9333EA',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: 'oLcZLb5ytbs',
+    tracks: [
+      { title: 'Techno Tunnel Vision · Pomodoro 50/10', artist: 'Study with Philly', duration: '4h' },
+    ],
+  },
+  {
+    id: 'deep-house-sunset',
+    focus: true,
+    name: 'Sunset House 3h',
+    emoji: '🌅',
+    url: '',
+    color: '#F97316',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: 'yv3baY14XRM',
+    tracks: [
+      { title: 'Deep House Focus · Sunset Study 50/10', artist: 'Study with Philly', duration: '3h' },
+    ],
+  },
+  {
+    id: 'focus-frequencies',
+    focus: true,
+    name: 'Frecuencias Focus',
+    emoji: '🎛️',
+    url: '',
+    color: '#059669',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: 'yaADgMXzKik',
+    tracks: [
+      { title: 'Focus Frequencies & Nature · Pomodoro 50/10', artist: 'Study with Philly', duration: '3h' },
+    ],
+  },
+  {
+    id: 'late-night-deep',
+    focus: true,
+    name: 'Late Night 4h',
+    emoji: '🌙',
+    url: '',
+    color: '#4F46E5',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: 'oocpjL0phy0',
+    tracks: [
+      { title: 'Late Night Deep Focus Ambient · 50/10', artist: 'tani study', duration: '4h' },
+    ],
+  },
+  {
+    id: 'marathon-10h',
+    focus: true,
+    name: 'Maratón 10h',
+    emoji: '🔥',
+    url: '',
+    color: '#B91C1C',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: 'xPpqKyaEoEM',
+    tracks: [
+      { title: '10 Hours Challenge · Fireplace Focus 50/10', artist: 'tani study', duration: '10h' },
+    ],
+  },
+  {
+    id: 'hyper-efficient',
+    focus: true,
+    name: 'Hyper Efficient 3h',
+    emoji: '🩺',
+    url: '',
+    color: '#0D9488',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: '74cOUSKXMz0',
+    tracks: [
+      { title: 'Hyper Efficient Doctor · Pomodoro 50/10', artist: 'iCanStudy', duration: '3h' },
     ],
   },
   // === TOP PICKS ===
