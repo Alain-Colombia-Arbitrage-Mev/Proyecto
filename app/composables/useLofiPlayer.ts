@@ -20,6 +20,72 @@ export interface LofiStation {
 // Self-hosted audio from Supabase storage can be added as primary URLs.
 // Format: set type='youtube' + youtubeId for YouTube, or url for direct stream.
 const stations: LofiStation[] = [
+  // === HYPERFOCUS / DEEP WORK (Pomodoro) ===
+  {
+    id: 'hyperfocus-house',
+    name: 'Hyperfocus House',
+    emoji: '🧠',
+    url: '',
+    color: '#DC2626',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: '4VQW7PLJkQc',
+    tracks: [
+      { title: 'Hyperfocus House · Pomodoro 50/10', artist: 'Work With Paul', duration: '2h' },
+    ],
+  },
+  {
+    id: 'tunnel-vision',
+    name: 'Tunnel Vision',
+    emoji: '🎯',
+    url: '',
+    color: '#7C2D12',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: 'rV8W_YHoueY',
+    tracks: [
+      { title: 'House Tunnel Vision · Pomodoro 50/10', artist: 'Work With Paul', duration: '2h' },
+    ],
+  },
+  {
+    id: 'pomodoro-50-10',
+    name: 'Pomodoro 50/10',
+    emoji: '🍅',
+    url: '',
+    color: '#EF4444',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: 'Th3ldd8Hwdo',
+    tracks: [
+      { title: 'Deep Work Session · Timer 50-10-50', artist: 'Work With Ron', duration: '2h' },
+    ],
+  },
+  {
+    id: 'brown-noise-focus',
+    name: 'Brown Noise Focus',
+    emoji: '🌊',
+    url: '',
+    color: '#92400E',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: 'iUyQQY3od2g',
+    tracks: [
+      { title: 'Activate Hyperfocus · Pomodoro 40/10 + Brown Noise', artist: 'Calme Hush', duration: '5h' },
+    ],
+  },
+  {
+    id: 'deep-focus-lofi',
+    name: 'Deep Focus 3h',
+    emoji: '⏱️',
+    url: '',
+    color: '#0891B2',
+    fallbackUrls: [],
+    type: 'youtube',
+    youtubeId: 'qMJ8CZdUu2M',
+    tracks: [
+      { title: 'Deep Focus Session · Lo-Fi Pomodoro', artist: 'Work With Ron', duration: '3h' },
+    ],
+  },
   // === TOP PICKS ===
   {
     id: 'hiphop',

@@ -1,7 +1,8 @@
 export type UserRole = 'superadmin' | 'owner' | 'admin' | 'member' | 'viewer'
 export type ProjectStatus = 'planning' | 'active' | 'review' | 'completed' | 'paused'
 export type Priority = 'critical' | 'high' | 'medium' | 'low'
-export type KanbanTemplate = 'simple' | 'kanban' | 'dev' | 'devops' | 'support' | 'scrum' | 'scrumban' | 'marketing' | 'ai_agents' | 'backend_senior_dev' | 'frontend_design' | 'custom'
+// UI offers: deep_work | kanban | scrum | dev | audio | creative. Legacy values remain for existing projects.
+export type KanbanTemplate = 'deep_work' | 'kanban' | 'scrum' | 'dev' | 'audio' | 'creative' | 'simple' | 'devops' | 'support' | 'scrumban' | 'marketing' | 'ai_agents' | 'backend_senior_dev' | 'frontend_design' | 'app_development' | 'frontend_dev' | 'backend_dev' | 'custom'
 
 export interface Workspace {
   id: string

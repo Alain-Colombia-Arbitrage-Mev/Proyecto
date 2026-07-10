@@ -707,7 +707,9 @@
               <UInput v-model="newName" :placeholder="lang.language.value === 'en' ? 'Project name' : 'Nombre del proyecto'" required class="w-full" size="lg" autofocus />
             </UFormField>
             <UFormField :label="lang.language.value === 'en' ? 'Kanban Template' : 'Plantilla Kanban'">
-              <USelectMenu v-model="newTemplate" :items="templateOptions" value-key="value" class="w-full" />
+              <div class="max-h-[300px] overflow-y-auto pr-1">
+                <ProjectTemplatePicker v-model="newTemplate" />
+              </div>
             </UFormField>
             <p v-if="createError" class="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-lg px-3 py-2">{{ createError }}</p>
             <div class="flex justify-end gap-3">
@@ -768,7 +770,7 @@ onMounted(() => {
 const creating = ref(false)
 const createError = ref('')
 const newName = ref('')
-const newTemplate = ref('simple')
+const newTemplate = ref('kanban')
 
 // Assessment
 const showQuiz = ref(false)
@@ -888,20 +890,6 @@ const rankedProjects = computed(() => {
     progress: taskCount.value > 0 ? Math.round((completedTasks.value / taskCount.value) * 100) : 0,
   }))
 })
-
-const templateOptions = [
-  { label: 'Simple (3 col)', value: 'simple' },
-  { label: 'Kanban Clásico (5 col)', value: 'kanban' },
-  { label: 'Dev IT (6 col)', value: 'dev' },
-  { label: 'DevOps (8 col)', value: 'devops' },
-  { label: 'Soporte (6 col)', value: 'support' },
-  { label: 'Scrum (6 col)', value: 'scrum' },
-  { label: 'Scrumban (8 col)', value: 'scrumban' },
-  { label: 'Marketing (7 col)', value: 'marketing' },
-  { label: 'Agentes AI (7 col)', value: 'ai_agents' },
-  { label: 'Backend Senior Dev (9 col)', value: 'backend_senior_dev' },
-  { label: 'Frontend & Design (8 col)', value: 'frontend_design' },
-]
 
 const userName = computed(() => {
   const email = auth.userEmail || ''

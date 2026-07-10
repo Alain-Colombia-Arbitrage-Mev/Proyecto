@@ -6,26 +6,34 @@ export interface TemplateColumn {
 
 /**
  * Kanban column templates shared by project creation and default-workspace bootstrap.
- * UI only offers: kanban, scrum, dev, audio, creative.
+ * UI only offers: deep_work, kanban, scrum, dev, audio, creative.
  * Legacy keys remain so existing projects keep working.
+ * WIP limits are deliberately tight — the product's core is anti-procrastination:
+ * fewer things in progress = more focus.
  */
 export const KANBAN_TEMPLATES: Record<string, TemplateColumn[]> = {
+  deep_work: [
+    { title: 'Bandeja', color: '#6B7280' },
+    { title: 'Hoy', color: '#3B82F6', wip_limit: 3 },
+    { title: 'Enfoque Ahora', color: '#F59E0B', wip_limit: 1 },
+    { title: 'Hecho', color: '#10B981' },
+  ],
   simple: [
     { title: 'Pendiente', color: '#3B82F6' },
-    { title: 'En Progreso', color: '#F59E0B', wip_limit: 5 },
+    { title: 'En Progreso', color: '#F59E0B', wip_limit: 3 },
     { title: 'Hecho', color: '#10B981' },
   ],
   kanban: [
     { title: 'Backlog', color: '#6B7280' },
     { title: 'To Do', color: '#3B82F6' },
-    { title: 'En Progreso', color: '#F59E0B', wip_limit: 5 },
+    { title: 'En Progreso', color: '#F59E0B', wip_limit: 3 },
     { title: 'Revisión', color: '#8B5CF6', wip_limit: 3 },
     { title: 'Hecho', color: '#10B981' },
   ],
   dev: [
     { title: 'Backlog', color: '#6B7280' },
     { title: 'Análisis', color: '#8B5CF6' },
-    { title: 'Dev', color: '#3B82F6', wip_limit: 5 },
+    { title: 'Dev', color: '#3B82F6', wip_limit: 3 },
     { title: 'Code Review', color: '#F59E0B', wip_limit: 3 },
     { title: 'QA', color: '#F97316', wip_limit: 3 },
     { title: 'Producción', color: '#10B981' },

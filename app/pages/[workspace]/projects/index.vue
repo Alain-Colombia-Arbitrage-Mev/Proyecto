@@ -262,30 +262,8 @@
               <USelectMenu v-model="newProject.priority" :items="priorityOptions" value-key="value" class="w-full" />
             </UFormField>
             <UFormField :label="t.kanbanTemplate">
-              <div class="space-y-1.5 max-h-[180px] overflow-y-auto pr-1">
-                <button
-                  v-for="tpl in templateConfigs"
-                  :key="tpl.value"
-                  type="button"
-                  class="w-full text-left px-3 py-2 rounded-lg border transition-all cursor-pointer"
-                  :class="newProject.template === tpl.value
-                    ? 'border-focusflow-400 bg-focusflow-50/60 dark:bg-focusflow-950/30 shadow-sm'
-                    : 'border-gray-200/80 dark:border-white/10 hover:border-focusflow-200 hover:bg-gray-50 dark:hover:bg-white/5'"
-                  @click="newProject.template = tpl.value"
-                >
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="text-xs font-bold text-gray-900 dark:text-gray-100">{{ tpl.label }}</span>
-                    <span class="text-[9px] font-semibold text-gray-500 dark:text-gray-400">{{ tpl.cols }} {{ t.columns }}</span>
-                  </div>
-                  <div class="flex gap-1 flex-wrap">
-                    <span
-                      v-for="col in tpl.columns"
-                      :key="col.title"
-                      class="text-[9px] font-semibold px-1 py-0.5 rounded"
-                      :style="{ backgroundColor: col.color + '18', color: col.color }"
-                    >{{ col.title }}</span>
-                  </div>
-                </button>
+              <div class="max-h-[300px] overflow-y-auto pr-1">
+                <ProjectTemplatePicker v-model="newProject.template" />
               </div>
             </UFormField>
 
@@ -643,63 +621,6 @@ const priorityOptions = computed(() => [
   { label: t.value.priorityHigh, value: 'high' },
   { label: t.value.priorityCritical, value: 'critical' },
 ])
-// 5 team-oriented templates — column previews must match server KANBAN_TEMPLATES
-const templateConfigs = [
-  {
-    label: 'Kanban', value: 'kanban', cols: 5,
-    columns: [
-      { title: 'Backlog', color: '#6B7280' },
-      { title: 'To Do', color: '#3B82F6' },
-      { title: 'En Progreso', color: '#F59E0B' },
-      { title: 'Revisión', color: '#8B5CF6' },
-      { title: 'Hecho', color: '#10B981' },
-    ],
-  },
-  {
-    label: 'Scrum', value: 'scrum', cols: 6,
-    columns: [
-      { title: 'Product Backlog', color: '#6B7280' },
-      { title: 'Sprint Backlog', color: '#6366F1' },
-      { title: 'En Progreso', color: '#3B82F6' },
-      { title: 'En Review', color: '#F59E0B' },
-      { title: 'QA', color: '#8B5CF6' },
-      { title: 'Done', color: '#10B981' },
-    ],
-  },
-  {
-    label: 'Desarrollo', value: 'dev', cols: 6,
-    columns: [
-      { title: 'Backlog', color: '#6B7280' },
-      { title: 'Análisis', color: '#8B5CF6' },
-      { title: 'Dev', color: '#3B82F6' },
-      { title: 'Code Review', color: '#F59E0B' },
-      { title: 'QA', color: '#F97316' },
-      { title: 'Producción', color: '#10B981' },
-    ],
-  },
-  {
-    label: 'Audio', value: 'audio', cols: 6,
-    columns: [
-      { title: 'Idea', color: '#EC4899' },
-      { title: 'Grabación', color: '#8B5CF6' },
-      { title: 'Edición', color: '#3B82F6' },
-      { title: 'Mezcla', color: '#F59E0B' },
-      { title: 'Master', color: '#F97316' },
-      { title: 'Publicado', color: '#10B981' },
-    ],
-  },
-  {
-    label: 'Creativo', value: 'creative', cols: 6,
-    columns: [
-      { title: 'Brief', color: '#6B7280' },
-      { title: 'Concepto', color: '#EC4899' },
-      { title: 'Diseño', color: '#3B82F6' },
-      { title: 'Revisión', color: '#F59E0B' },
-      { title: 'Aprobado', color: '#8B5CF6' },
-      { title: 'Entregado', color: '#10B981' },
-    ],
-  },
-]
 
 async function handleCreateProject() {
   createError.value = ''

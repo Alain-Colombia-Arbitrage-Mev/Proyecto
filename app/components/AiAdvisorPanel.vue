@@ -24,7 +24,7 @@
             </div>
             <div class="flex-1 min-w-0">
               <p class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ t.aiAdvisor }}</p>
-              <p class="text-[10px] text-gray-500 dark:text-gray-400 truncate">{{ teamTypeLabel }}</p>
+              <p class="text-[10px] text-gray-500 dark:text-gray-400 truncate">DeepSeek V4 Pro · {{ teamTypeLabel }}</p>
             </div>
             <button
               class="w-7 h-7 rounded-md flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer"

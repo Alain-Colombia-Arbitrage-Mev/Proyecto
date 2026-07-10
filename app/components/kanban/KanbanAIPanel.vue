@@ -20,7 +20,7 @@
         </div>
         <div class="flex-1">
           <p class="text-sm font-bold text-gray-900 dark:text-gray-100">FocusFlow AI</p>
-          <p class="text-[10px] text-gray-500 dark:text-gray-400">MiniMax M2.5 · {{ language === 'en' ? 'Smart assistant' : 'Asistente inteligente' }}</p>
+          <p class="text-[10px] text-gray-500 dark:text-gray-400">DeepSeek V4 Pro · {{ language === 'en' ? 'Smart assistant' : 'Asistente inteligente' }}</p>
         </div>
         <button
           class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
