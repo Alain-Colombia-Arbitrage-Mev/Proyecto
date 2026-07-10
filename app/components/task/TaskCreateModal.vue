@@ -15,7 +15,22 @@
 
         <form class="space-y-4" @submit.prevent="handleCreate">
           <UFormField :label="t.title">
-            <UInput v-model="form.title" :placeholder="t.whatToDo" required class="w-full" size="lg" autofocus />
+            <div class="flex gap-2">
+              <UInput v-model="form.title" :placeholder="t.whatToDo" required class="flex-1" size="lg" autofocus />
+              <UButton
+                icon="i-heroicons-sparkles"
+                color="primary"
+                variant="soft"
+                size="lg"
+                :loading="aiAssisting"
+                :disabled="!form.title.trim()"
+                :title="language === 'en' ? 'AI Assistant: completes description, priority, estimation and tags from your idea' : 'Asistente AI: completa descripción, prioridad, estimación y tags desde tu idea'"
+                @click="aiAssist"
+              />
+            </div>
+            <p class="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
+              {{ language === 'en' ? 'Write a rough idea and tap ✨ — the AI assistant completes the task for you' : 'Escribe una idea y toca ✨ — el asistente AI completa la tarea por ti' }}
+            </p>
           </UFormField>
 
           <UFormField :label="t.description">
@@ -162,6 +177,7 @@ const cardColors = ['#3B82F6', '#8B5CF6', '#F59E0B', '#10B981', '#F97316', '#EF4
 
 const creating = ref(false)
 const error = ref('')
+const aiAssisting = ref(false)
 const draftRestored = ref(false)
 const justCreated = ref(false)
 
@@ -307,6 +323,49 @@ watch(
   },
 )
 
+
+// AI assistant: turn a rough idea into a complete task (improve_task action)
+async function aiAssist() {
+  if (!form.title.trim() || aiAssisting.value) return
+  error.value = ''
+  aiAssisting.value = true
+  try {
+    const res = await $fetch<{ type: string; data: any }>('/api/ai/assist', {
+      method: 'POST',
+      body: {
+        action: 'improve_task',
+        context: {
+          taskTitle: form.title,
+          taskDescription: form.description || '',
+          priority: form.priority,
+          workspaceId: props.workspaceId,
+        },
+      },
+    })
+    const d = res?.data
+    if (!d || typeof d !== 'object') throw new Error('empty')
+    if (d.title) form.title = String(d.title)
+    if (d.description) form.description = String(d.description)
+    if (['low', 'medium', 'high', 'critical'].includes(d.priority_suggestion)) form.priority = d.priority_suggestion
+    if (typeof d.estimated_hours === 'number' && d.estimated_hours > 0) form.estimated_hours = String(d.estimated_hours)
+    if (Array.isArray(d.tags) && d.tags.length) form.tagsStr = d.tags.slice(0, 8).join(', ')
+    // Suggest an AI agent from tags/title keywords when none is selected
+    if (!form.ai_agent) {
+      const text = `${form.title} ${form.tagsStr}`.toLowerCase()
+      const match = AI_AGENTS.find(a =>
+        text.includes(a.type) || (a.type === 'backend' && /\bapi\b|base de datos|database|endpoint/.test(text))
+        || (a.type === 'frontend' && /\bui\b|componente|component|diseño de interfaz/.test(text))
+        || (a.type === 'qa' && /\btest|prueba|qa\b/.test(text))
+        || (a.type === 'seo' && /\bseo\b/.test(text))
+        || (a.type === 'security' && /seguridad|security/.test(text)))
+      if (match) form.ai_agent = match.type
+    }
+  } catch (e: any) {
+    error.value = e.data?.message || (language.value === 'en' ? 'AI assistant unavailable' : 'Asistente AI no disponible')
+  } finally {
+    aiAssisting.value = false
+  }
+}
 
 function toggleAssignee(userId: string) {
   const idx = form.assignees.indexOf(userId)
