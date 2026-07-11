@@ -4,6 +4,8 @@
     @dragleave.prevent="dragActive = false"
     @drop.prevent="onDrop"
   >
+    <!-- Client-only: all explorer data loads client-side; skipping SSR avoids hydration mismatches -->
+    <ClientOnly>
     <!-- Drag & drop overlay -->
     <Teleport to="body">
       <div
@@ -495,6 +497,13 @@
         </div>
       </Transition>
     </Teleport>
+
+    <template #fallback>
+      <div class="flex justify-center py-16">
+        <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 animate-spin text-gray-400" />
+      </div>
+    </template>
+    </ClientOnly>
   </div>
 </template>
 
