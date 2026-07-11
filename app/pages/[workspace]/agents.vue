@@ -43,6 +43,101 @@
     </div>
 
     <template v-else>
+    <!-- Specialist Agent Team -->
+    <div v-if="canUseAI" class="mb-10">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-sm">
+          <UIcon name="i-heroicons-user-group" class="w-4 h-4 text-white" />
+        </div>
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ en ? 'Specialist Team' : 'Equipo de Especialistas' }}</h2>
+        <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-100 dark:ring-emerald-500/20">{{ AI_AGENTS.length }} agents</span>
+      </div>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mb-5 ml-11">
+        {{ en ? 'Pick a specialist, give it a brief, and it creates ready-to-work tasks on the board delegated to itself.' : 'Elige un especialista, dale un brief, y crea tareas listas en el tablero delegadas a sí mismo.' }}
+      </p>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2.5 mb-4">
+        <button
+          v-for="agent in AI_AGENTS"
+          :key="agent.type"
+          class="group relative flex flex-col items-center gap-1.5 rounded-xl border p-3 transition-all cursor-pointer text-center"
+          :class="activeSpecialist === agent.type
+            ? 'border-transparent shadow-md scale-[1.02]'
+            : 'bg-white/80 dark:bg-[#1b1b1b]/80 border-gray-100/80 dark:border-white/10 hover:border-gray-200 dark:hover:border-white/20 hover:-translate-y-0.5'"
+          :style="activeSpecialist === agent.type ? { backgroundColor: agent.color + '14', boxShadow: `inset 0 0 0 1.5px ${agent.color}` } : {}"
+          @click="toggleSpecialist(agent.type)"
+        >
+          <span class="text-xl">{{ agent.emoji }}</span>
+          <span class="text-[11px] font-bold text-gray-900 dark:text-white leading-tight">{{ en ? agent.nameEn : agent.name }}</span>
+          <span class="text-[9px] text-gray-400 dark:text-gray-500 leading-tight line-clamp-2">{{ en ? agent.specialtyEn : agent.specialty }}</span>
+        </button>
+      </div>
+
+      <!-- Specialist brief panel -->
+      <Transition name="submenu">
+        <div
+          v-if="activeSpecialistInfo"
+          class="rounded-2xl border p-4 space-y-3"
+          :style="{ borderColor: activeSpecialistInfo.color + '44', backgroundColor: activeSpecialistInfo.color + '0a' }"
+        >
+          <div class="flex items-center gap-2.5">
+            <span class="text-2xl">{{ activeSpecialistInfo.emoji }}</span>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-bold text-gray-900 dark:text-white">{{ en ? activeSpecialistInfo.nameEn : activeSpecialistInfo.name }}</p>
+              <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ en ? activeSpecialistInfo.specialtyEn : activeSpecialistInfo.specialty }}</p>
+            </div>
+          </div>
+          <textarea
+            v-model="specialistBrief"
+            rows="3"
+            :placeholder="en ? `What do you need from ${activeSpecialistInfo.nameEn}? e.g. 'Define launch pricing for our SaaS with 3 tiers'` : `¿Qué necesitas de ${activeSpecialistInfo.name}? Ej: 'Define el pricing de lanzamiento de nuestro SaaS con 3 planes'`"
+            class="w-full bg-white dark:bg-white/[0.06] border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2.5 text-[13px] text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-focusflow-400/50 resize-none"
+          />
+          <div class="flex items-center justify-between gap-2">
+            <label class="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400 cursor-pointer">
+              <input v-model="specialistCreateTasks" type="checkbox" class="accent-focusflow-500">
+              {{ en ? 'Create tasks on the board' : 'Crear tareas en el tablero' }}
+            </label>
+            <button
+              class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-xs font-bold transition-all cursor-pointer disabled:opacity-40 shadow-sm"
+              :style="{ background: `linear-gradient(135deg, ${activeSpecialistInfo.color}, ${activeSpecialistInfo.color}CC)` }"
+              :disabled="specialistRunning || specialistBrief.trim().length < 10"
+              @click="runSpecialist"
+            >
+              <UIcon :name="specialistRunning ? 'i-heroicons-arrow-path' : 'i-heroicons-play'" class="w-3.5 h-3.5" :class="{ 'animate-spin': specialistRunning }" />
+              {{ specialistRunning ? (en ? 'Working…' : 'Trabajando…') : (en ? 'Run agent' : 'Ejecutar agente') }}
+            </button>
+          </div>
+
+          <!-- Result -->
+          <div v-if="specialistResult" class="bg-white/80 dark:bg-white/[0.04] rounded-xl p-4 space-y-3 ring-1 ring-gray-100 dark:ring-white/10">
+            <div class="flex items-start gap-2">
+              <UIcon name="i-heroicons-check-badge" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+              <p class="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">{{ specialistResult.summary }}</p>
+            </div>
+            <div v-if="specialistResult.recommendations?.length" class="space-y-1">
+              <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{{ en ? 'Recommendations' : 'Recomendaciones' }}</p>
+              <div v-for="(r, ri) in specialistResult.recommendations" :key="ri" class="flex items-start gap-2 text-[11px] text-gray-600 dark:text-gray-400">
+                <UIcon name="i-heroicons-light-bulb" class="w-3 h-3 mt-0.5 shrink-0" :style="{ color: activeSpecialistInfo.color }" />
+                <span>{{ r }}</span>
+              </div>
+            </div>
+            <div v-if="specialistResult.tasks?.length" class="space-y-1 pt-2 border-t border-gray-100 dark:border-white/10">
+              <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                {{ specialistResult.tasks_created }} {{ en ? 'tasks created' : 'tareas creadas' }}
+              </p>
+              <div v-for="task in specialistResult.tasks" :key="task.id" class="flex items-center gap-2 text-[11px] py-0.5">
+                <span class="px-1.5 py-0.5 rounded text-[9px] font-bold" :class="task.priority === 'critical' || task.priority === 'high' ? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400' : 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400'">{{ task.priority }}</span>
+                <span class="text-gray-700 dark:text-gray-300 truncate">{{ task.title }}</span>
+                <span v-if="task.estimated_hours" class="text-[10px] text-gray-400 tabular-nums shrink-0">{{ task.estimated_hours }}h</span>
+              </div>
+            </div>
+          </div>
+          <p v-if="specialistError" class="text-[11px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 rounded-lg px-3 py-2">{{ specialistError }}</p>
+        </div>
+      </Transition>
+    </div>
+
     <!-- Task Management Agents -->
     <div v-if="canUseAI" class="mb-10">
       <div class="flex items-center gap-3 mb-5">
@@ -434,9 +529,57 @@ const agentRunning = ref<string | null>(null)
 const agentResults = ref<Record<string, any>>({})
 const agentErrors = ref<Record<string, string>>({})
 
+// ── Specialist agent team ──
+const en = computed(() => lang.language.value === 'en')
+const activeSpecialist = ref('')
+const specialistBrief = ref('')
+const specialistCreateTasks = ref(true)
+const specialistRunning = ref(false)
+const specialistResult = ref<any>(null)
+const specialistError = ref('')
+
+const activeSpecialistInfo = computed(() => AI_AGENTS.find(a => a.type === activeSpecialist.value) || null)
+
+function toggleSpecialist(type: string) {
+  if (activeSpecialist.value === type) {
+    activeSpecialist.value = ''
+  } else {
+    activeSpecialist.value = type
+    specialistResult.value = null
+    specialistError.value = ''
+  }
+}
+
+async function runSpecialist() {
+  if (!selectedProjectId.value || !activeSpecialist.value || specialistBrief.value.trim().length < 10 || specialistRunning.value) return
+  specialistRunning.value = true
+  specialistError.value = ''
+  specialistResult.value = null
+  try {
+    specialistResult.value = await $fetch(`/api/workspaces/${store.workspace!.id}/agents/run`, {
+      method: 'POST',
+      body: {
+        project_id: selectedProjectId.value,
+        agent_type: activeSpecialist.value,
+        brief: specialistBrief.value,
+        create_tasks: specialistCreateTasks.value,
+      },
+    })
+    specialistBrief.value = ''
+  } catch (e: any) {
+    specialistError.value = e.data?.message || e.message || (en.value ? 'Error running agent' : 'Error al ejecutar el agente')
+  } finally {
+    specialistRunning.value = false
+  }
+}
+
 const projectOptions = computed(() =>
   (store.projects || []).map(p => ({ label: p.name, value: p.id }))
 )
+
+onMounted(() => {
+  if (!store.projectsLoaded) store.loadProjects()
+})
 
 async function runAgent(action: string) {
   if (!selectedProjectId.value || agentRunning.value) return

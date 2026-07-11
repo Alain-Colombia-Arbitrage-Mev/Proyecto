@@ -66,6 +66,19 @@
         </Teleport>
       </div>
 
+      <!-- Hyperfocus quick action -->
+      <div class="shrink-0 pt-3" :class="collapsed ? 'px-2' : 'px-3'">
+        <button
+          class="w-full flex items-center gap-2.5 rounded-lg bg-gradient-to-r from-amber-500/90 to-orange-500/90 hover:from-amber-500 hover:to-orange-500 text-white text-[13px] font-bold transition-all cursor-pointer shadow-lg shadow-amber-500/10"
+          :class="collapsed ? 'px-0 py-2 justify-center' : 'px-2.5 py-2'"
+          :title="lang.language.value === 'en' ? 'Hyperfocus Mode (50/10 + music)' : 'Modo Hiperenfoque (50/10 + música)'"
+          @click="pomodoro.startHyperfocus(null)"
+        >
+          <UIcon name="i-heroicons-bolt-solid" class="w-[18px] h-[18px] shrink-0" />
+          <span v-if="!collapsed">{{ lang.language.value === 'en' ? 'Hyperfocus' : 'Hiperenfoque' }}</span>
+        </button>
+      </div>
+
       <!-- Main nav -->
       <nav class="py-3 space-y-0.5 flex-1 min-h-0 overflow-y-auto" :class="collapsed ? 'px-2' : 'px-3'">
         <template v-for="item in mainNav" :key="item.to">
@@ -457,15 +470,15 @@ interface NavItem {
 
 // Focused navigation: 5 primary items, everything else under a collapsible "More"
 const allNav = computed<NavItem[]>(() => [
-  { label: t.value.dashboard, icon: 'i-heroicons-squares-2x2', to: `/${workspaceSlug.value}/dashboard`, show: true },
   { label: t.value.myDay, icon: 'i-heroicons-sun', to: `/${workspaceSlug.value}/my-day`, show: true },
   { label: t.value.projects, icon: 'i-heroicons-folder-open', to: `/${workspaceSlug.value}/projects`, show: true },
+  { label: t.value.aiAgents, icon: 'i-heroicons-cpu-chip', to: `/${workspaceSlug.value}/agents`, show: canUseAI.value && moduleEnabled('ai_agents') },
+  { label: t.value.dashboard, icon: 'i-heroicons-squares-2x2', to: `/${workspaceSlug.value}/dashboard`, show: true },
   { label: t.value.agenda, icon: 'i-heroicons-calendar-days', to: `/${workspaceSlug.value}/agenda`, show: canViewAgenda.value && moduleEnabled('agenda') },
   { label: t.value.team, icon: 'i-heroicons-user-group', to: `/${workspaceSlug.value}/team`, show: canManageMembers.value },
   {
     label: t.value.more, icon: 'i-heroicons-ellipsis-horizontal-circle', to: `/${workspaceSlug.value}/settings`, show: true, id: 'more',
     children: [
-      { label: t.value.aiAgents, icon: 'i-heroicons-cpu-chip', to: `/${workspaceSlug.value}/agents`, show: canUseAI.value && moduleEnabled('ai_agents') },
       { label: t.value.workflows, icon: 'i-heroicons-bolt', to: `/${workspaceSlug.value}/workflows`, show: canUseWorkflows.value && moduleEnabled('workflows') },
       { label: lang.language.value === 'en' ? 'Orchestrator' : 'Orquestador', icon: 'i-heroicons-sparkles', to: `/${workspaceSlug.value}/orchestrator`, show: canUseAI.value && moduleEnabled('orchestrator') },
       { label: t.value.goals, icon: 'i-heroicons-flag', to: `/${workspaceSlug.value}/goals`, show: canViewGoals.value && moduleEnabled('goals') },
