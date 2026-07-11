@@ -48,9 +48,18 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  // All distinct folders in the workspace (for the move-to-folder picker)
+  const { data: allFolderRows } = await supabase
+    .from('workspace_files')
+    .select('folder')
+    .eq('workspace_id', workspaceId)
+    .limit(1000)
+  const allFolders = Array.from(new Set(['/', ...(allFolderRows || []).map((f: any) => f.folder)])).sort()
+
   return {
     files: data || [],
     subfolders: Array.from(subfolders).sort(),
+    all_folders: allFolders,
     currentFolder: folder,
     total: count || 0,
     page,

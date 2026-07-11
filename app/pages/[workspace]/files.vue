@@ -1,5 +1,23 @@
 <template>
-  <div>
+  <div
+    @dragover.prevent="onDragOver"
+    @dragleave.prevent="dragActive = false"
+    @drop.prevent="onDrop"
+  >
+    <!-- Drag & drop overlay -->
+    <Teleport to="body">
+      <div
+        v-if="dragActive"
+        class="fixed inset-0 z-[140] bg-focusflow-500/10 backdrop-blur-[2px] border-4 border-dashed border-focusflow-400 rounded-none flex items-center justify-center pointer-events-none"
+      >
+        <div class="bg-white dark:bg-[#16161d] rounded-2xl px-8 py-6 shadow-2xl text-center">
+          <UIcon name="i-heroicons-arrow-up-tray" class="w-8 h-8 text-focusflow-500 mx-auto mb-2" />
+          <p class="text-sm font-bold text-gray-900 dark:text-white">{{ es ? 'Suelta para subir' : 'Drop to upload' }}</p>
+          <p class="text-[11px] text-gray-400">{{ currentFolder }}</p>
+        </div>
+      </div>
+    </Teleport>
+
     <!-- Header -->
     <div class="flex items-center justify-between mb-6 animate-fade-up">
       <div>
@@ -40,6 +58,53 @@
         <UIcon :name="tab.icon" class="w-3.5 h-3.5" />
         {{ tab.label }}
         <span v-if="tab.value === 'drive' && drive.connected.value" class="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+      </button>
+    </div>
+
+    <!-- Toolbar: search + sort + view -->
+    <div v-if="source === 'workspace'" class="flex items-center gap-2 mb-3 animate-fade-up flex-wrap">
+      <div class="relative flex-1 min-w-[180px] max-w-xs">
+        <UIcon name="i-heroicons-magnifying-glass" class="w-4 h-4 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+        <input
+          v-model="searchQuery"
+          type="text"
+          :placeholder="es ? 'Buscar archivos…' : 'Search files…'"
+          class="w-full bg-white dark:bg-white/[0.06] border border-gray-200 dark:border-white/10 rounded-lg pl-8 pr-3 py-1.5 text-xs text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-focusflow-400/40"
+        >
+      </div>
+      <select
+        v-model="sortBy"
+        class="bg-white dark:bg-white/[0.06] border border-gray-200 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-gray-700 dark:text-gray-300 cursor-pointer focus:outline-none"
+      >
+        <option value="date_desc">{{ es ? 'Más recientes' : 'Newest' }}</option>
+        <option value="date_asc">{{ es ? 'Más antiguos' : 'Oldest' }}</option>
+        <option value="name">{{ es ? 'Nombre A-Z' : 'Name A-Z' }}</option>
+        <option value="size_desc">{{ es ? 'Más pesados' : 'Largest' }}</option>
+      </select>
+      <div class="flex items-center rounded-lg bg-gray-100 dark:bg-white/[0.06] p-0.5">
+        <button
+          v-for="v in [{ v: 'list', icon: 'i-heroicons-list-bullet' }, { v: 'grid', icon: 'i-heroicons-squares-2x2' }]"
+          :key="v.v"
+          class="w-7 h-6 rounded-md flex items-center justify-center transition-colors cursor-pointer"
+          :class="fileView === v.v ? 'bg-white dark:bg-white/15 text-focusflow-600 dark:text-focusflow-300 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+          @click="fileView = v.v as any"
+        >
+          <UIcon :name="v.icon" class="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Bulk actions bar -->
+    <div v-if="source === 'workspace' && selectedIds.size > 0" class="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-focusflow-50 dark:bg-focusflow-950/40 ring-1 ring-focusflow-200 dark:ring-focusflow-500/30 animate-fade-up">
+      <span class="text-xs font-bold text-focusflow-700 dark:text-focusflow-300">{{ selectedIds.size }} {{ es ? 'seleccionados' : 'selected' }}</span>
+      <button class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white dark:bg-white/10 text-gray-700 dark:text-gray-200 hover:bg-amber-50 dark:hover:bg-amber-500/10 cursor-pointer transition-colors" @click="openMoveModal(null)">
+        <UIcon name="i-heroicons-arrow-right-start-on-rectangle" class="w-3.5 h-3.5" />{{ es ? 'Mover' : 'Move' }}
+      </button>
+      <button class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white dark:bg-white/10 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 cursor-pointer transition-colors" @click="bulkDelete">
+        <UIcon name="i-heroicons-trash" class="w-3.5 h-3.5" />{{ es ? 'Eliminar' : 'Delete' }}
+      </button>
+      <button class="ml-auto text-[11px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 underline cursor-pointer" @click="selectedIds = new Set()">
+        {{ es ? 'Deseleccionar' : 'Clear' }}
       </button>
     </div>
 
@@ -118,13 +183,63 @@
 
       <!-- Files -->
       <div v-if="files.length > 0">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 px-1">{{ t.filesTitle }}</p>
-        <div class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 shadow-card overflow-hidden divide-y divide-gray-50 dark:divide-white/5">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 px-1">
+          {{ t.filesTitle }}
+          <span v-if="searchQuery" class="normal-case font-medium tracking-normal">· {{ visibleFiles.length }} / {{ files.length }}</span>
+        </p>
+
+        <!-- Grid view with thumbnails -->
+        <div v-if="fileView === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
           <div
-            v-for="file in files"
+            v-for="file in visibleFiles"
+            :key="file.id"
+            class="relative bg-white dark:bg-[#1b1b1b] rounded-xl border overflow-hidden group cursor-pointer transition-all shadow-card hover:shadow-card-hover"
+            :class="selectedIds.has(file.id) ? 'border-focusflow-400 ring-1 ring-focusflow-400/40' : 'border-gray-200/80 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30'"
+            @click="openPreview(file)"
+          >
+            <!-- Thumb -->
+            <div class="h-24 flex items-center justify-center bg-gray-50 dark:bg-black/20 overflow-hidden">
+              <img
+                v-if="file.mime_type.startsWith('image/') && thumbUrls[file.id]"
+                :src="thumbUrls[file.id]"
+                class="w-full h-full object-cover"
+                loading="lazy"
+              >
+              <UIcon v-else :name="fileIcon(file.mime_type)" class="w-8 h-8" :class="fileIconColor(file.mime_type)" />
+            </div>
+            <div class="px-2.5 py-2">
+              <p class="text-[11px] font-medium text-gray-900 dark:text-white truncate">{{ file.file_name }}</p>
+              <p class="text-[9px] text-gray-400">{{ formatFileSize(file.file_size) }}</p>
+            </div>
+            <!-- Select checkbox -->
+            <button
+              class="absolute top-1.5 left-1.5 w-5 h-5 rounded-md flex items-center justify-center transition-all cursor-pointer"
+              :class="selectedIds.has(file.id) ? 'bg-focusflow-500 text-white opacity-100' : 'bg-white/80 dark:bg-black/50 text-gray-400 opacity-0 group-hover:opacity-100'"
+              @click.stop="toggleSelect(file.id)"
+            >
+              <UIcon name="i-heroicons-check" class="w-3 h-3" />
+            </button>
+          </div>
+        </div>
+
+        <!-- List view -->
+        <div v-else class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 shadow-card overflow-hidden divide-y divide-gray-50 dark:divide-white/5">
+          <div
+            v-for="file in visibleFiles"
             :key="file.id"
             class="flex items-center gap-4 px-4 py-3 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors group"
+            :class="{ 'bg-focusflow-50/40 dark:bg-focusflow-950/20': selectedIds.has(file.id) }"
           >
+            <!-- Select checkbox -->
+            <button
+              class="w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-all cursor-pointer"
+              :class="selectedIds.has(file.id)
+                ? 'bg-focusflow-500 border-focusflow-500 text-white'
+                : 'border-gray-300 dark:border-white/20 text-transparent opacity-0 group-hover:opacity-100 hover:border-focusflow-400'"
+              @click.stop="toggleSelect(file.id)"
+            >
+              <UIcon name="i-heroicons-check" class="w-3 h-3" />
+            </button>
             <!-- Icon -->
             <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" :class="fileIconBg(file.mime_type)">
               <UIcon :name="fileIcon(file.mime_type)" class="w-5 h-5" :class="fileIconColor(file.mime_type)" />
@@ -145,7 +260,7 @@
               <button
                 class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-all cursor-pointer"
                 :title="es ? 'Mover a carpeta' : 'Move to folder'"
-                @click="moveFile(file)"
+                @click="openMoveModal(file)"
               >
                 <UIcon name="i-heroicons-arrow-right-start-on-rectangle" class="w-4 h-4" />
               </button>
@@ -260,6 +375,42 @@
     <!-- Hidden file inputs -->
     <input ref="fileInput" type="file" class="hidden" @change="handleFileUpload" multiple />
     <input ref="driveFileInput" type="file" class="hidden" @change="handleDriveUpload" multiple />
+
+    <!-- ══ Move-to-folder modal ══ -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="moveModalOpen" class="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" @click.self="moveModalOpen = false">
+          <div class="w-full max-w-sm bg-white dark:bg-[#16161d] rounded-2xl shadow-2xl p-5">
+            <p class="text-sm font-bold text-gray-900 dark:text-white mb-1">
+              {{ es ? 'Mover a carpeta' : 'Move to folder' }}
+            </p>
+            <p class="text-[11px] text-gray-400 mb-4">
+              {{ moveTarget ? moveTarget.file_name : `${selectedIds.size} ${es ? 'archivos' : 'files'}` }}
+            </p>
+            <div class="max-h-64 overflow-y-auto space-y-1 mb-4">
+              <button
+                v-for="f in allFolders"
+                :key="f"
+                class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs transition-colors cursor-pointer"
+                :class="moveDestination === f
+                  ? 'bg-focusflow-50 dark:bg-focusflow-950/40 text-focusflow-700 dark:text-focusflow-300 ring-1 ring-focusflow-300 dark:ring-focusflow-500/40 font-semibold'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'"
+                @click="moveDestination = f"
+              >
+                <UIcon :name="f === '/' ? 'i-heroicons-home' : 'i-heroicons-folder'" class="w-4 h-4 text-amber-500 shrink-0" />
+                <span class="truncate">{{ f === '/' ? (es ? 'Raíz' : 'Root') : f }}</span>
+              </button>
+            </div>
+            <div class="flex justify-end gap-2">
+              <UButton variant="ghost" size="sm" @click="moveModalOpen = false">{{ t.cancel }}</UButton>
+              <UButton color="primary" size="sm" class="font-semibold" :loading="moving" :disabled="!moveDestination" @click="confirmMove">
+                {{ es ? 'Mover' : 'Move' }}
+              </UButton>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- ══ File preview modal ══ -->
     <Teleport to="body">
@@ -473,6 +624,8 @@ async function loadFiles() {
     })
     files.value = data.files || []
     subfolders.value = data.subfolders || []
+    allFolders.value = data.all_folders?.length ? data.all_folders : ['/']
+    selectedIds.value = new Set()
   } finally {
     loading.value = false
   }
@@ -575,22 +728,119 @@ async function createFolder() {
   }
 }
 
-async function moveFile(file: WorkspaceFile) {
-  const target = prompt(
-    es.value
-      ? `Mover "${file.file_name}" a la carpeta (ej: /docs o / para raíz):`
-      : `Move "${file.file_name}" to folder (e.g. /docs or / for root):`,
-    currentFolder.value,
-  )?.trim()
-  if (!target || target === (file as any).folder) return
+// ── Search / sort / view ──
+const searchQuery = ref('')
+const sortBy = ref<'date_desc' | 'date_asc' | 'name' | 'size_desc'>('date_desc')
+const fileView = ref<'list' | 'grid'>('list')
+const allFolders = ref<string[]>(['/'])
+const thumbUrls = ref<Record<string, string>>({})
+
+const visibleFiles = computed(() => {
+  let list = [...files.value]
+  const q = searchQuery.value.trim().toLowerCase()
+  if (q) list = list.filter(f => f.file_name.toLowerCase().includes(q))
+  switch (sortBy.value) {
+    case 'date_asc': list.sort((a, b) => a.created_at.localeCompare(b.created_at)); break
+    case 'name': list.sort((a, b) => a.file_name.localeCompare(b.file_name)); break
+    case 'size_desc': list.sort((a, b) => (b.file_size || 0) - (a.file_size || 0)); break
+    default: list.sort((a, b) => b.created_at.localeCompare(a.created_at))
+  }
+  return list
+})
+
+// Lazy image thumbnails for grid view (signed URLs, capped)
+watch([fileView, files], async () => {
+  if (fileView.value !== 'grid') return
+  const images = files.value.filter(f => f.mime_type.startsWith('image/') && !thumbUrls.value[f.id]).slice(0, 24)
+  for (const img of images) {
+    try {
+      const data = await $fetch<any>(`/api/workspaces/${workspaceId.value}/files/${img.id}`)
+      if (data.download_url) thumbUrls.value[img.id] = data.download_url
+    } catch { /* thumb unavailable — icon fallback */ }
+  }
+})
+
+// ── Multi-select + bulk actions ──
+const selectedIds = ref<Set<string>>(new Set())
+
+function toggleSelect(id: string) {
+  const next = new Set(selectedIds.value)
+  if (next.has(id)) next.delete(id)
+  else next.add(id)
+  selectedIds.value = next
+}
+
+async function bulkDelete() {
+  const count = selectedIds.value.size
+  if (!count) return
+  if (!confirm(es.value ? `¿Eliminar ${count} archivo(s)? No se puede deshacer.` : `Delete ${count} file(s)? This cannot be undone.`)) return
+  for (const id of selectedIds.value) {
+    await $fetch(`/api/workspaces/${workspaceId.value}/files/${id}`, { method: 'DELETE' }).catch(() => {})
+  }
+  selectedIds.value = new Set()
+  await loadFiles()
+}
+
+// ── Move modal (single file or bulk) ──
+const moveModalOpen = ref(false)
+const moveTarget = ref<WorkspaceFile | null>(null)
+const moveDestination = ref('')
+const moving = ref(false)
+
+function openMoveModal(file: WorkspaceFile | null) {
+  moveTarget.value = file
+  moveDestination.value = ''
+  moveModalOpen.value = true
+}
+
+async function confirmMove() {
+  if (!moveDestination.value) return
+  moving.value = true
   try {
-    await $fetch(`/api/workspaces/${workspaceId.value}/files/${file.id}`, {
-      method: 'PATCH',
-      body: { folder: target },
-    })
+    const ids = moveTarget.value ? [moveTarget.value.id] : Array.from(selectedIds.value)
+    for (const id of ids) {
+      await $fetch(`/api/workspaces/${workspaceId.value}/files/${id}`, {
+        method: 'PATCH',
+        body: { folder: moveDestination.value },
+      })
+    }
+    moveModalOpen.value = false
+    moveTarget.value = null
+    selectedIds.value = new Set()
     await loadFiles()
   } catch (e: any) {
     alert(e.data?.message || (es.value ? 'Error al mover' : 'Error moving file'))
+  } finally {
+    moving.value = false
+  }
+}
+
+// ── Drag & drop upload ──
+const dragActive = ref(false)
+
+function onDragOver(e: DragEvent) {
+  if (source.value !== 'workspace') return
+  if (e.dataTransfer?.types?.includes('Files')) dragActive.value = true
+}
+
+async function onDrop(e: DragEvent) {
+  dragActive.value = false
+  if (source.value !== 'workspace') return
+  const dropped = Array.from(e.dataTransfer?.files || [])
+  if (!dropped.length || !workspaceId.value) return
+  uploading.value = true
+  try {
+    for (const file of dropped) {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', currentFolder.value)
+      await $fetch(`/api/workspaces/${workspaceId.value}/files`, { method: 'POST', body: formData })
+    }
+    await loadFiles()
+  } catch (e2: any) {
+    alert(e2.data?.message || t.value.errorUploading)
+  } finally {
+    uploading.value = false
   }
 }
 
