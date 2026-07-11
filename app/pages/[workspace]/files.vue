@@ -147,91 +147,124 @@
       <UButton icon="i-heroicons-arrow-up-tray" color="primary" size="lg" class="font-semibold" @click="triggerUpload">{{ t.uploadFile }}</UButton>
     </div>
 
-    <!-- File grid -->
+    <!-- File explorer (unified: view toggle applies to folders AND files) -->
     <div v-else-if="source === 'workspace'" class="animate-fade-up delay-100">
-      <!-- Subfolders -->
-      <div v-if="subfolders.length > 0" class="mb-4">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 px-1">{{ t.folders }}</p>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-          <div
-            v-for="folder in subfolders"
-            :key="folder"
-            class="relative flex items-center gap-3 bg-white dark:bg-[#1b1b1b] rounded-xl p-3.5 border border-gray-200/80 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30 transition-all cursor-pointer group shadow-card hover:shadow-card-hover"
-            @click="navigateTo(currentFolder === '/' ? `/${folder}` : `${currentFolder}/${folder}`)"
-          >
-            <div class="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
-              <UIcon name="i-heroicons-folder" class="w-5 h-5 text-amber-500" />
+      <!-- ═ GRID VIEW ═ -->
+      <template v-if="fileView === 'grid'">
+        <div v-if="subfolders.length > 0" class="mb-4">
+          <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 px-1">{{ t.folders }}</p>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+            <div
+              v-for="folder in subfolders"
+              :key="folder.name"
+              class="relative flex items-center gap-3 bg-white dark:bg-[#1b1b1b] rounded-xl p-3.5 border transition-all cursor-pointer group shadow-card hover:shadow-card-hover"
+              :class="dropFolder === folder.name
+                ? 'border-focusflow-400 ring-2 ring-focusflow-400/40 scale-[1.02]'
+                : 'border-gray-200/80 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30'"
+              @click="navigateTo(currentFolder === '/' ? `/${folder.name}` : `${currentFolder}/${folder.name}`)"
+              @dragover.prevent="onFolderDragOver(folder.name, $event)"
+              @dragleave="dropFolder === folder.name && (dropFolder = null)"
+              @drop.prevent.stop="onDropToFolder(folder.name, $event)"
+            >
+              <div class="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
+                <UIcon name="i-heroicons-folder" class="w-5 h-5 text-amber-500" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-focusflow-700 dark:group-hover:text-focusflow-400 transition-colors">{{ folder.name }}</p>
+                <p class="text-[10px] text-gray-400">{{ folder.count }} {{ es ? 'elementos' : 'items' }}</p>
+              </div>
+              <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                <button class="w-6 h-6 rounded-md flex items-center justify-center text-gray-400 hover:text-focusflow-600 hover:bg-focusflow-50 dark:hover:bg-focusflow-500/10 cursor-pointer" :title="es ? 'Renombrar carpeta' : 'Rename folder'" @click.stop="renameFolder(folder.name)">
+                  <UIcon name="i-heroicons-pencil" class="w-3.5 h-3.5" />
+                </button>
+                <button class="w-6 h-6 rounded-md flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 cursor-pointer" :title="es ? 'Eliminar carpeta y su contenido' : 'Delete folder and its contents'" @click.stop="deleteFolder(folder.name)">
+                  <UIcon name="i-heroicons-trash" class="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
-            <span class="text-sm font-medium text-gray-900 dark:text-white truncate flex-1 group-hover:text-focusflow-700 dark:group-hover:text-focusflow-400 transition-colors">{{ folder }}</span>
-            <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+          </div>
+        </div>
+
+        <div v-if="files.length > 0">
+          <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 px-1">
+            {{ t.filesTitle }}
+            <span v-if="searchQuery" class="normal-case font-medium tracking-normal">· {{ visibleFiles.length }} / {{ files.length }}</span>
+          </p>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+            <div
+              v-for="file in visibleFiles"
+              :key="file.id"
+              class="relative bg-white dark:bg-[#1b1b1b] rounded-xl border overflow-hidden group cursor-pointer transition-all shadow-card hover:shadow-card-hover"
+              :class="selectedIds.has(file.id) ? 'border-focusflow-400 ring-1 ring-focusflow-400/40' : 'border-gray-200/80 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30'"
+              draggable="true"
+              @dragstart="onFileDragStart(file, $event)"
+              @click="openPreview(file)"
+            >
+              <div class="h-24 flex items-center justify-center bg-gray-50 dark:bg-black/20 overflow-hidden">
+                <img
+                  v-if="file.mime_type.startsWith('image/') && thumbUrls[file.id]"
+                  :src="thumbUrls[file.id]"
+                  class="w-full h-full object-cover"
+                  loading="lazy"
+                >
+                <UIcon v-else :name="fileIcon(file.mime_type)" class="w-8 h-8" :class="fileIconColor(file.mime_type)" />
+              </div>
+              <div class="px-2.5 py-2">
+                <p class="text-[11px] font-medium text-gray-900 dark:text-white truncate">{{ file.file_name }}</p>
+                <p class="text-[9px] text-gray-400">{{ formatFileSize(file.file_size) }}</p>
+              </div>
               <button
-                class="w-6 h-6 rounded-md flex items-center justify-center text-gray-400 hover:text-focusflow-600 hover:bg-focusflow-50 dark:hover:bg-focusflow-500/10 cursor-pointer"
-                :title="es ? 'Renombrar carpeta' : 'Rename folder'"
-                @click.stop="renameFolder(folder)"
+                class="absolute top-1.5 left-1.5 w-5 h-5 rounded-md flex items-center justify-center transition-all cursor-pointer"
+                :class="selectedIds.has(file.id) ? 'bg-focusflow-500 text-white opacity-100' : 'bg-white/80 dark:bg-black/50 text-gray-400 opacity-0 group-hover:opacity-100'"
+                @click.stop="toggleSelect(file.id)"
               >
-                <UIcon name="i-heroicons-pencil" class="w-3.5 h-3.5" />
-              </button>
-              <button
-                class="w-6 h-6 rounded-md flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 cursor-pointer"
-                :title="es ? 'Eliminar carpeta y su contenido' : 'Delete folder and its contents'"
-                @click.stop="deleteFolder(folder)"
-              >
-                <UIcon name="i-heroicons-trash" class="w-3.5 h-3.5" />
+                <UIcon name="i-heroicons-check" class="w-3 h-3" />
               </button>
             </div>
           </div>
         </div>
-      </div>
+      </template>
 
-      <!-- Files -->
-      <div v-if="files.length > 0">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 px-1">
-          {{ t.filesTitle }}
-          <span v-if="searchQuery" class="normal-case font-medium tracking-normal">· {{ visibleFiles.length }} / {{ files.length }}</span>
-        </p>
-
-        <!-- Grid view with thumbnails -->
-        <div v-if="fileView === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-          <div
-            v-for="file in visibleFiles"
-            :key="file.id"
-            class="relative bg-white dark:bg-[#1b1b1b] rounded-xl border overflow-hidden group cursor-pointer transition-all shadow-card hover:shadow-card-hover"
-            :class="selectedIds.has(file.id) ? 'border-focusflow-400 ring-1 ring-focusflow-400/40' : 'border-gray-200/80 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30'"
-            @click="openPreview(file)"
-          >
-            <!-- Thumb -->
-            <div class="h-24 flex items-center justify-center bg-gray-50 dark:bg-black/20 overflow-hidden">
-              <img
-                v-if="file.mime_type.startsWith('image/') && thumbUrls[file.id]"
-                :src="thumbUrls[file.id]"
-                class="w-full h-full object-cover"
-                loading="lazy"
-              >
-              <UIcon v-else :name="fileIcon(file.mime_type)" class="w-8 h-8" :class="fileIconColor(file.mime_type)" />
-            </div>
-            <div class="px-2.5 py-2">
-              <p class="text-[11px] font-medium text-gray-900 dark:text-white truncate">{{ file.file_name }}</p>
-              <p class="text-[9px] text-gray-400">{{ formatFileSize(file.file_size) }}</p>
-            </div>
-            <!-- Select checkbox -->
-            <button
-              class="absolute top-1.5 left-1.5 w-5 h-5 rounded-md flex items-center justify-center transition-all cursor-pointer"
-              :class="selectedIds.has(file.id) ? 'bg-focusflow-500 text-white opacity-100' : 'bg-white/80 dark:bg-black/50 text-gray-400 opacity-0 group-hover:opacity-100'"
-              @click.stop="toggleSelect(file.id)"
-            >
-              <UIcon name="i-heroicons-check" class="w-3 h-3" />
+      <!-- ═ LIST VIEW: unified rows, folders first ═ -->
+      <div v-else class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 shadow-card overflow-hidden divide-y divide-gray-50 dark:divide-white/5">
+        <!-- Folder rows (drop targets) -->
+        <div
+          v-for="folder in subfolders"
+          :key="'dir-' + folder.name"
+          class="flex items-center gap-4 px-4 py-3 transition-colors group cursor-pointer"
+          :class="dropFolder === folder.name ? 'bg-focusflow-50 dark:bg-focusflow-950/40 ring-1 ring-inset ring-focusflow-400/40' : 'hover:bg-gray-50/50 dark:hover:bg-white/5'"
+          @click="navigateTo(currentFolder === '/' ? `/${folder.name}` : `${currentFolder}/${folder.name}`)"
+          @dragover.prevent="onFolderDragOver(folder.name, $event)"
+          @dragleave="dropFolder === folder.name && (dropFolder = null)"
+          @drop.prevent.stop="onDropToFolder(folder.name, $event)"
+        >
+          <span class="w-5 shrink-0" />
+          <div class="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
+            <UIcon name="i-heroicons-folder" class="w-5 h-5 text-amber-500" />
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-focusflow-700 dark:group-hover:text-focusflow-400 transition-colors">{{ folder.name }}</p>
+            <p class="text-[10px] text-gray-400">{{ folder.count }} {{ es ? 'elementos' : 'items' }} · {{ es ? 'arrastra archivos aquí para moverlos' : 'drag files here to move them' }}</p>
+          </div>
+          <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-focusflow-600 hover:bg-focusflow-50 dark:hover:bg-focusflow-500/10 cursor-pointer" :title="es ? 'Renombrar carpeta' : 'Rename folder'" @click.stop="renameFolder(folder.name)">
+              <UIcon name="i-heroicons-pencil" class="w-4 h-4" />
+            </button>
+            <button class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 cursor-pointer" :title="es ? 'Eliminar carpeta y su contenido' : 'Delete folder and its contents'" @click.stop="deleteFolder(folder.name)">
+              <UIcon name="i-heroicons-trash" class="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        <!-- List view -->
-        <div v-else class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 shadow-card overflow-hidden divide-y divide-gray-50 dark:divide-white/5">
-          <div
-            v-for="file in visibleFiles"
-            :key="file.id"
-            class="flex items-center gap-4 px-4 py-3 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors group"
-            :class="{ 'bg-focusflow-50/40 dark:bg-focusflow-950/20': selectedIds.has(file.id) }"
-          >
+        <!-- File rows (draggable) -->
+        <div
+          v-for="file in visibleFiles"
+          :key="file.id"
+          class="flex items-center gap-4 px-4 py-3 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors group"
+          :class="{ 'bg-focusflow-50/40 dark:bg-focusflow-950/20': selectedIds.has(file.id) }"
+          draggable="true"
+          @dragstart="onFileDragStart(file, $event)"
+        >
             <!-- Select checkbox -->
             <button
               class="w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-all cursor-pointer"
@@ -260,6 +293,13 @@
             <!-- Actions -->
             <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
+                class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-focusflow-600 dark:hover:text-focusflow-400 hover:bg-focusflow-50 dark:hover:bg-focusflow-500/10 transition-all cursor-pointer"
+                :title="es ? 'Renombrar' : 'Rename'"
+                @click="renameFile(file)"
+              >
+                <UIcon name="i-heroicons-pencil" class="w-4 h-4" />
+              </button>
+              <button
                 class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-all cursor-pointer"
                 :title="es ? 'Mover a carpeta' : 'Move to folder'"
                 @click="openMoveModal(file)"
@@ -283,7 +323,6 @@
             </div>
           </div>
         </div>
-      </div>
     </div>
 
     <!-- ══ Google Drive ══ -->
@@ -520,7 +559,7 @@ const route = useRoute()
 const store = useWorkspaceStore()
 
 const files = ref<WorkspaceFile[]>([])
-const subfolders = ref<string[]>([])
+const subfolders = ref<{ name: string; count: number }[]>([])
 const currentFolder = ref('/')
 const loading = ref(true)
 const uploading = ref(false)
@@ -822,6 +861,57 @@ async function confirmMove() {
   } finally {
     moving.value = false
   }
+}
+
+// ── Rename file ──
+async function renameFile(file: WorkspaceFile) {
+  const newName = prompt(es.value ? `Nuevo nombre para "${file.file_name}":` : `New name for "${file.file_name}":`, file.file_name)?.trim()
+  if (!newName || newName === file.file_name) return
+  try {
+    await $fetch(`/api/workspaces/${workspaceId.value}/files/${file.id}`, {
+      method: 'PATCH',
+      body: { file_name: newName },
+    })
+    await loadFiles()
+  } catch (e: any) {
+    alert(e.data?.message || (es.value ? 'Error al renombrar' : 'Rename error'))
+  }
+}
+
+// ── Drag file(s) onto a folder to move ──
+const dropFolder = ref<string | null>(null)
+const INTERNAL_DRAG = 'application/x-focusflow-file'
+
+function onFileDragStart(file: WorkspaceFile, e: DragEvent) {
+  if (!e.dataTransfer) return
+  // Dragging a selected file moves the whole selection
+  const ids = selectedIds.value.has(file.id) ? Array.from(selectedIds.value) : [file.id]
+  e.dataTransfer.setData(INTERNAL_DRAG, JSON.stringify(ids))
+  e.dataTransfer.effectAllowed = 'move'
+}
+
+function onFolderDragOver(folderName: string, e: DragEvent) {
+  if (e.dataTransfer?.types?.includes(INTERNAL_DRAG)) {
+    e.dataTransfer.dropEffect = 'move'
+    dropFolder.value = folderName
+  }
+}
+
+async function onDropToFolder(folderName: string, e: DragEvent) {
+  dropFolder.value = null
+  const raw = e.dataTransfer?.getData(INTERNAL_DRAG)
+  if (!raw) return
+  let ids: string[] = []
+  try { ids = JSON.parse(raw) } catch { return }
+  const target = currentFolder.value === '/' ? `/${folderName}` : `${currentFolder.value}/${folderName}`
+  for (const id of ids) {
+    await $fetch(`/api/workspaces/${workspaceId.value}/files/${id}`, {
+      method: 'PATCH',
+      body: { folder: target },
+    }).catch(() => {})
+  }
+  selectedIds.value = new Set()
+  await loadFiles()
 }
 
 // ── Drag & drop upload ──

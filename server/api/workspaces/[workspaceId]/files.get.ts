@@ -31,22 +31,28 @@ export default defineEventHandler(async (event) => {
   const { data, error, count } = await q
   if (error) throw createError({ statusCode: 500, message: 'Error fetching files' })
 
-  // Get distinct subfolders efficiently — only select unique folder values, not all rows
+  // Get subfolders with item counts — folder values + mime to exclude markers
   const { data: folderRows } = await supabase
     .from('workspace_files')
-    .select('folder')
+    .select('folder, mime_type')
     .eq('workspace_id', workspaceId)
     .like('folder', folder === '/' ? '/%' : `${escapeLikePattern(folder)}/%`)
 
-  const subfolders = new Set<string>()
+  const subfolderCounts = new Map<string, number>()
   const prefix = folder === '/' ? '/' : `${folder}/`
   for (const f of folderRows || []) {
     if (f.folder !== folder && f.folder.startsWith(prefix)) {
       const relative = f.folder.slice(prefix.length)
       const nextPart = relative.split('/')[0]
-      if (nextPart) subfolders.add(nextPart)
+      if (nextPart) {
+        const isFile = f.mime_type !== 'inode/directory'
+        subfolderCounts.set(nextPart, (subfolderCounts.get(nextPart) || 0) + (isFile ? 1 : 0))
+      }
     }
   }
+  const subfolders = Array.from(subfolderCounts.entries())
+    .map(([name, fileCount]) => ({ name, count: fileCount }))
+    .sort((a, b) => a.name.localeCompare(b.name))
 
   // All distinct folders in the workspace (for the move-to-folder picker)
   const { data: allFolderRows } = await supabase
@@ -58,7 +64,7 @@ export default defineEventHandler(async (event) => {
 
   return {
     files: data || [],
-    subfolders: Array.from(subfolders).sort(),
+    subfolders,
     all_folders: allFolders,
     currentFolder: folder,
     total: count || 0,
