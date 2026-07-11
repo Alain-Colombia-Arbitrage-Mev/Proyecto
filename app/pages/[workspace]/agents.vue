@@ -93,6 +93,7 @@
             :placeholder="en ? `What do you need from ${activeSpecialistInfo.nameEn}? e.g. 'Define launch pricing for our SaaS with 3 tiers'` : `¿Qué necesitas de ${activeSpecialistInfo.name}? Ej: 'Define el pricing de lanzamiento de nuestro SaaS con 3 planes'`"
             class="w-full bg-white dark:bg-white/[0.06] border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2.5 text-[13px] text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-focusflow-400/50 resize-none"
           />
+          <DocAttach v-model="specialistDocs" :label="en ? 'Context docs' : 'Docs de contexto'" />
           <div class="flex items-center justify-between gap-2">
             <label class="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400 cursor-pointer">
               <input v-model="specialistCreateTasks" type="checkbox" class="accent-focusflow-500">
@@ -136,152 +137,6 @@
           <p v-if="specialistError" class="text-[11px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 rounded-lg px-3 py-2">{{ specialistError }}</p>
         </div>
       </Transition>
-    </div>
-
-    <!-- Task Management Agents -->
-    <div v-if="canUseAI" class="mb-10">
-      <div class="flex items-center gap-3 mb-5">
-        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-sm">
-          <UIcon name="i-heroicons-queue-list" class="w-4 h-4 text-white" />
-        </div>
-        <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ t.taskManagement }}</h2>
-        <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 text-indigo-600 dark:text-indigo-400 ring-1 ring-indigo-100 dark:ring-indigo-500/20">Agents</span>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div
-          v-for="agent in taskAgents"
-          :key="agent.action"
-          class="group relative bg-white/80 dark:bg-[#1b1b1b]/80 backdrop-blur-sm border border-gray-100/80 dark:border-white/10 rounded-2xl p-5 hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-black/30 hover:border-gray-200/80 dark:hover:border-white/15 hover:-translate-y-0.5 transition-all duration-300"
-        >
-          <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-gray-50/50 dark:from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <div class="relative">
-            <div class="flex items-center gap-3 mb-3">
-              <div
-                class="w-11 h-11 rounded-xl flex items-center justify-center shadow-sm ring-1 ring-black/5"
-                :style="{ background: `linear-gradient(135deg, ${agent.color}18, ${agent.color}30)` }"
-              >
-                <UIcon :name="agent.icon" class="w-5 h-5" :style="{ color: agent.color }" />
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-bold text-gray-900 dark:text-white">{{ agent.name }}</p>
-              </div>
-            </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-3.5 leading-relaxed">{{ agent.description }}</p>
-            <div class="flex gap-1.5 flex-wrap mb-3.5">
-              <span
-                v-for="tag in agent.tags"
-                :key="tag"
-                class="text-[10px] font-semibold px-2.5 py-0.5 rounded-full ring-1"
-                :style="{ backgroundColor: agent.color + '08', color: agent.color, boxShadow: `inset 0 0 0 1px ${agent.color}20` }"
-              >
-                {{ tag }}
-              </span>
-            </div>
-
-            <!-- Optional user input for task_generator -->
-            <div v-if="agent.action === 'agent_task_generator'" class="mb-3.5">
-              <input
-                v-model="taskAgentInput"
-                type="text"
-                :placeholder="lang.language.value === 'en' ? 'e.g. payment module, OAuth auth...' : 'Ej: módulo de pagos, auth con OAuth...'"
-                class="w-full text-sm border border-gray-200/80 dark:border-white/10 rounded-xl px-3.5 py-2.5 bg-gray-50/50 dark:bg-white/5 focus:bg-white dark:focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 transition-all placeholder:text-gray-300 dark:placeholder:text-gray-600"
-              />
-            </div>
-
-            <button
-              class="w-full text-center py-3 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
-              :style="{
-                background: agentRunning === agent.action ? agent.color + '10' : `linear-gradient(135deg, ${agent.color}, ${agent.color}DD)`,
-                color: agentRunning === agent.action ? agent.color : '#FFFFFF',
-              }"
-              :disabled="!!agentRunning"
-              @click="runAgent(agent.action)"
-            >
-              <span v-if="agentRunning === agent.action" class="flex items-center justify-center gap-1.5">
-                <UIcon name="i-heroicons-arrow-path" class="w-3.5 h-3.5 animate-spin" />
-                {{ t.running }}
-              </span>
-              <span v-else>{{ agent.action === 'agent_task_improver' ? t.improveTasks : agent.action === 'agent_workload_analyzer' ? t.analyzeLoad : t.execute }}</span>
-            </button>
-
-            <!-- Result -->
-            <div v-if="agentResults[agent.action]" class="mt-4 bg-gradient-to-br from-gray-50 to-slate-50 dark:from-white/5 dark:to-white/3 rounded-xl p-4 space-y-2.5 ring-1 ring-gray-100 dark:ring-white/10">
-              <div class="flex items-start gap-2">
-                <UIcon name="i-heroicons-check-badge" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
-                <p class="text-xs font-bold text-gray-900 dark:text-white">
-                  {{ agentResults[agent.action].sprint_name || agentResults[agent.action].feature_summary || agentResults[agent.action].summary || (lang.language.value === 'en' ? 'Result' : 'Resultado') }}
-                </p>
-              </div>
-
-              <div class="flex items-center gap-2 flex-wrap">
-                <span v-if="agentResults[agent.action].tasksCreated > 0" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-100 dark:ring-emerald-500/30">
-                  {{ agentResults[agent.action].tasksCreated }} {{ t.tasksCreated }}
-                </span>
-                <span v-if="agentResults[agent.action]._tasksImproved > 0" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-400 ring-1 ring-teal-100 dark:ring-teal-500/30">
-                  {{ agentResults[agent.action]._tasksImproved }} {{ t.tasksImproved }}
-                </span>
-                <span v-if="agentResults[agent.action].health_score" class="text-[10px] font-semibold px-2.5 py-1 rounded-full ring-1"
-                  :class="agentResults[agent.action].health_score > 60 ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 ring-emerald-100 dark:ring-emerald-500/30' : agentResults[agent.action].health_score > 30 ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 ring-amber-100 dark:ring-amber-500/30' : 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 ring-red-100 dark:ring-red-500/30'">
-                  {{ t.health }} {{ agentResults[agent.action].health_score }}/100
-                </span>
-                <span v-if="agentResults[agent.action].velocity_estimate" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 ring-1 ring-indigo-100 dark:ring-indigo-500/20">
-                  {{ agentResults[agent.action].velocity_estimate }}{{ t.estimatedHours }}
-                </span>
-              </div>
-
-              <!-- Bottlenecks -->
-              <div v-if="agentResults[agent.action].bottlenecks?.length" class="space-y-1.5 mt-3 pt-3 border-t border-gray-200/80 dark:border-white/10">
-                <p class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
-                  <UIcon name="i-heroicons-exclamation-triangle" class="w-3.5 h-3.5 text-amber-400" />
-                  {{ t.bottlenecks }}
-                </p>
-                <div v-for="(b, bi) in agentResults[agent.action].bottlenecks.slice(0, 3)" :key="bi" class="flex items-start gap-2 text-[10px] text-gray-600 dark:text-gray-400 bg-white/70 dark:bg-white/5 rounded-lg p-2">
-                  <span
-                    class="w-1.5 h-1.5 rounded-full mt-1 shrink-0"
-                    :class="b.severity === 'high' ? 'bg-red-500' : b.severity === 'medium' ? 'bg-amber-400' : 'bg-gray-300 dark:bg-gray-600'"
-                  ></span>
-                  <span><span class="font-semibold" :class="b.severity === 'high' ? 'text-red-600 dark:text-red-400' : b.severity === 'medium' ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500 dark:text-gray-400'">{{ b.area }}:</span> {{ b.description }}</span>
-                </div>
-              </div>
-
-              <!-- Recommendations -->
-              <div v-if="agentResults[agent.action].recommendations?.length" class="space-y-1.5 mt-3 pt-3 border-t border-gray-200/80 dark:border-white/10">
-                <p class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
-                  <UIcon name="i-heroicons-light-bulb" class="w-3.5 h-3.5 text-indigo-400" />
-                  {{ t.recommendations }}
-                </p>
-                <div v-for="(r, ri) in (agentResults[agent.action].recommendations || []).slice(0, 3)" :key="ri" class="flex items-start gap-2 text-[10px] text-gray-600 dark:text-gray-400 bg-white/70 dark:bg-white/5 rounded-lg p-2">
-                  <UIcon name="i-heroicons-arrow-right-circle" class="w-3 h-3 text-indigo-300 dark:text-indigo-400 mt-0.5 shrink-0" />
-                  <span>{{ typeof r === 'string' ? r : r.description }}</span>
-                </div>
-              </div>
-
-              <!-- Created tasks -->
-              <div v-if="agentResults[agent.action].createdTasks?.length" class="mt-3 pt-3 border-t border-gray-200/80 dark:border-white/10">
-                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                  <UIcon name="i-heroicons-clipboard-document-check" class="w-3.5 h-3.5 text-emerald-400" />
-                  {{ t.tasksCreated }}
-                </p>
-                <div v-for="(task, ti) in agentResults[agent.action].createdTasks.slice(0, 4)" :key="ti" class="flex items-center gap-1.5 text-[10px] py-1">
-                  <span
-                    class="px-1.5 py-0.5 rounded text-[9px] font-bold ring-1"
-                    :class="task.priority === 'high' || task.priority === 'critical' ? 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 ring-red-100 dark:ring-red-500/30' : 'bg-gray-50 dark:bg-white/10 text-gray-600 dark:text-gray-400 ring-gray-100 dark:ring-white/20'"
-                  >{{ task.priority }}</span>
-                  <span class="text-gray-700 dark:text-gray-300 truncate">{{ task.title }}</span>
-                </div>
-                <p v-if="agentResults[agent.action].createdTasks.length > 4" class="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
-                  +{{ agentResults[agent.action].createdTasks.length - 4 }} {{ t.more }}
-                </p>
-              </div>
-            </div>
-
-            <div v-if="agentErrors[agent.action]" class="mt-3 bg-red-50 dark:bg-red-500/10 rounded-xl p-3 ring-1 ring-red-100 dark:ring-red-500/30 flex items-start gap-2">
-              <UIcon name="i-heroicons-x-circle" class="w-3.5 h-3.5 text-red-400 dark:text-red-400 mt-0.5 shrink-0" />
-              <p class="text-[10px] text-red-600 dark:text-red-400">{{ agentErrors[agent.action] }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- Section Divider -->
@@ -433,45 +288,6 @@ const { canUseAI, canUseDocAgents } = usePermissions()
 const lang = useLanguage()
 const t = lang.labels
 
-const taskAgentInput = ref('')
-
-const taskAgents = computed(() => {
-  const en = lang.language.value === 'en'
-  return [
-    {
-      action: 'agent_sprint_planner',
-      name: 'Sprint Planner',
-      description: en ? 'Analyzes tasks, prioritizes and generates an organized sprint plan with new tasks.' : 'Analiza tareas, prioriza y genera un plan de sprint con tareas nuevas organizadas.',
-      icon: 'i-heroicons-calendar-days',
-      color: '#6366F1',
-      tags: en ? ['sprint', 'planning'] : ['sprint', 'planificación'],
-    },
-    {
-      action: 'agent_task_generator',
-      name: 'Task Generator (Context7)',
-      description: en ? 'Generates detailed technical tasks using real framework documentation via Context7.' : 'Genera tareas técnicas detalladas usando documentación real de frameworks vía Context7.',
-      icon: 'i-heroicons-queue-list',
-      color: '#0EA5E9',
-      tags: en ? ['tasks', 'context7'] : ['tareas', 'context7'],
-    },
-    {
-      action: 'agent_workload_analyzer',
-      name: 'Workload Analyzer',
-      description: en ? 'Detects bottlenecks, stalled tasks and workload imbalances between members.' : 'Detecta cuellos de botella, tareas estancadas y desbalances de carga entre miembros.',
-      icon: 'i-heroicons-chart-bar',
-      color: '#F97316',
-      tags: en ? ['analysis', 'workload'] : ['análisis', 'carga'],
-    },
-    {
-      action: 'agent_task_improver',
-      name: 'Bulk Task Improver',
-      description: en ? 'Improves titles, descriptions, estimates and adds acceptance criteria to tasks.' : 'Mejora títulos, descripciones, estimaciones y agrega criterios de aceptación a las tareas.',
-      icon: 'i-heroicons-arrow-trending-up',
-      color: '#14B8A6',
-      tags: en ? ['improvement', 'quality'] : ['mejora', 'calidad'],
-    },
-  ]
-})
 
 const agents = computed(() => {
   const en = lang.language.value === 'en'
@@ -533,6 +349,7 @@ const agentErrors = ref<Record<string, string>>({})
 const en = computed(() => lang.language.value === 'en')
 const activeSpecialist = ref('')
 const specialistBrief = ref('')
+const specialistDocs = ref<{ name: string; content: string }[]>([])
 const specialistCreateTasks = ref(true)
 const specialistRunning = ref(false)
 const specialistResult = ref<any>(null)
@@ -563,9 +380,13 @@ async function runSpecialist() {
         agent_type: activeSpecialist.value,
         brief: specialistBrief.value,
         create_tasks: specialistCreateTasks.value,
+        document: specialistDocs.value.length
+          ? specialistDocs.value.map(f => `--- Archivo: ${f.name} ---\n${f.content}`).join('\n\n')
+          : undefined,
       },
     })
     specialistBrief.value = ''
+    specialistDocs.value = []
   } catch (e: any) {
     specialistError.value = e.data?.message || e.message || (en.value ? 'Error running agent' : 'Error al ejecutar el agente')
   } finally {
@@ -589,10 +410,6 @@ async function runAgent(action: string) {
 
   try {
     const context: Record<string, any> = { projectId: selectedProjectId.value }
-    // Pass user input for task_generator agent
-    if (action === 'agent_task_generator' && taskAgentInput.value.trim()) {
-      context.userInput = taskAgentInput.value.trim()
-    }
 
     const res = await $fetch<{ type: string; data: any }>('/api/ai/assist', {
       method: 'POST',

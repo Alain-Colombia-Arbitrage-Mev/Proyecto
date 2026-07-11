@@ -17,6 +17,7 @@ export const AI_AGENTS: AIAgentInfo[] = [
   { type: 'frontend', emoji: '🎨', name: 'Frontend Dev', nameEn: 'Frontend Dev', specialty: 'UI, componentes, estado, responsive', specialtyEn: 'UI, components, state, responsive', color: '#8B5CF6' },
   { type: 'qa', emoji: '🧪', name: 'QA Engineer', nameEn: 'QA Engineer', specialty: 'Planes de prueba, revisión de calidad', specialtyEn: 'Test plans, quality review', color: '#F97316' },
   { type: 'devops', emoji: '🚀', name: 'DevOps', nameEn: 'DevOps', specialty: 'CI/CD, deploy, infraestructura', specialtyEn: 'CI/CD, deploy, infrastructure', color: '#14B8A6' },
+  { type: 'cloud', emoji: '☁️', name: 'Cloud/AWS Expert', nameEn: 'Cloud/AWS Expert', specialty: 'AWS, serverless, costos, IaC, escalabilidad', specialtyEn: 'AWS, serverless, costs, IaC, scalability', color: '#F59E0B' },
   { type: 'designer', emoji: '✏️', name: 'Designer', nameEn: 'Designer', specialty: 'Diseño UI/UX, wireframes, prototipos', specialtyEn: 'UI/UX design, wireframes, prototypes', color: '#EC4899' },
   { type: 'copywriter', emoji: '✍️', name: 'Copywriter', nameEn: 'Copywriter', specialty: 'Textos de marketing, headlines, CTAs', specialtyEn: 'Marketing copy, headlines, CTAs', color: '#F59E0B' },
   { type: 'content_creator', emoji: '📹', name: 'Content Creator', nameEn: 'Content Creator', specialty: 'Artículos, posts, guiones, contenido', specialtyEn: 'Articles, posts, scripts, content', color: '#EF4444' },

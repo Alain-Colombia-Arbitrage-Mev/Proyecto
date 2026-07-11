@@ -21,6 +21,7 @@ export const AGENT_REGISTRY: AgentProfile[] = [
   { type: 'frontend', name: 'Frontend Dev', specialty: 'UI, componentes, estado, responsive, accesibilidad' },
   { type: 'qa', name: 'QA Engineer', specialty: 'planes de prueba, casos de test, revisión de calidad, regresiones, criterios de aceptación' },
   { type: 'devops', name: 'DevOps', specialty: 'CI/CD, deploy, infraestructura, monitoreo, Docker' },
+  { type: 'cloud', name: 'Cloud/AWS Expert', specialty: 'arquitectura cloud AWS (EC2, Lambda, S3, RDS, CloudFront), serverless, costos y FinOps, escalabilidad, IaC (Terraform/CDK), seguridad cloud, disaster recovery' },
   { type: 'designer', name: 'Designer', specialty: 'diseño UI/UX, wireframes, prototipos, sistemas de diseño' },
   { type: 'copywriter', name: 'Copywriter', specialty: 'textos de marketing, mensajes, headlines, CTAs' },
   { type: 'content_creator', name: 'Content Creator', specialty: 'artículos, posts para redes, video-guiones, contenido de marca' },

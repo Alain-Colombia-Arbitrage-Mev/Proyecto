@@ -1,5 +1,5 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
-import { AGENT_REGISTRY, VALID_AGENT_TYPES, callAgentAI, extractAgentJSON } from '~~/server/utils/agentAI'
+import { AGENT_REGISTRY, VALID_AGENT_TYPES, DOC_PLAN_MODEL, callAgentAI, extractAgentJSON } from '~~/server/utils/agentAI'
 import { recordTokenUsage, isTokenLimitExceeded } from '~~/server/utils/tokens'
 
 /**
@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
   const projectId = String(body.project_id || '')
   const agentType = String(body.agent_type || '')
   const brief = String(body.brief || '').trim()
+  const document = String(body.document || '').trim()
   const createTasks = body.create_tasks !== false
   const maxTasks = Math.min(Number(body.max_tasks) || 5, 10)
 
@@ -50,7 +51,17 @@ Responde SOLO JSON:
 {"summary":"tu análisis en 2-4 frases","recommendations":["recomendación concreta", "..."],"tasks":[{"title":"...","description":"markdown con contexto y criterios de aceptación","priority":"low|medium|high|critical","estimated_hours":N,"tags":["..."]}]}
 Máximo ${maxTasks} tareas y 5 recomendaciones. Idioma del brief.`
 
-  const ai = await callAgentAI({ system, user: `Brief: ${brief.slice(0, 8000)}`, maxTokens: 6144, temperature: 0.5 })
+  // Attached documentation → long-context model
+  const userPrompt = document
+    ? `Brief: ${brief.slice(0, 8000)}\n\nDocumentación adjunta:\n${document.slice(0, 120_000)}`
+    : `Brief: ${brief.slice(0, 8000)}`
+  const ai = await callAgentAI({
+    system,
+    user: userPrompt,
+    model: document ? DOC_PLAN_MODEL : undefined,
+    maxTokens: 6144,
+    temperature: 0.5,
+  })
 
   if (ai.usage) {
     recordTokenUsage({ supabase, userId: user.id, workspaceId, action: `agent_run_${agentType}`, model: ai.model, usage: ai.usage }).catch(() => {})

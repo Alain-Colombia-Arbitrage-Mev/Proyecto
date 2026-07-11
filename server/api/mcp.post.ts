@@ -172,7 +172,7 @@ const TOOLS = [
         assignees: { type: 'array', items: { type: 'string' }, description: 'User UUIDs (get from list_members)' },
         due_date: { type: 'string', description: 'ISO date: 2025-12-31' },
         tags: { type: 'array', items: { type: 'string' }, description: 'Tag strings' },
-        ai_agent: { type: 'string', description: 'Delegate to AI agent: backend, frontend, qa, devops, designer, copywriter, content_creator, viral_content, data, security, seo, planner, business_planner, growth_planner, pricing, reviewer, orchestrator (see list_agents)' },
+        ai_agent: { type: 'string', description: 'Delegate to AI agent: backend, frontend, qa, devops, cloud, designer, copywriter, content_creator, viral_content, data, security, seo, planner, business_planner, growth_planner, pricing, reviewer, orchestrator (see list_agents)' },
         parent_task_id: { type: 'string', description: 'Parent task UUID to create as subtask' },
       },
       required: ['project_id', 'column_id', 'title'],
@@ -296,7 +296,7 @@ const TOOLS = [
       type: 'object',
       properties: {
         task_id: { type: 'string', description: 'Task UUID to delegate' },
-        agent_type: { type: 'string', description: 'Agent: backend, frontend, qa, devops, designer, copywriter, content_creator, viral_content, data, security, seo, planner, business_planner, growth_planner, pricing, reviewer, orchestrator (see list_agents for specialties)' },
+        agent_type: { type: 'string', description: 'Agent: backend, frontend, qa, devops, cloud, designer, copywriter, content_creator, viral_content, data, security, seo, planner, business_planner, growth_planner, pricing, reviewer, orchestrator (see list_agents for specialties)' },
         decompose: { type: 'boolean', description: 'If true, create subtasks for the agent to work on (default false)' },
         subtasks: {
           type: 'array',
