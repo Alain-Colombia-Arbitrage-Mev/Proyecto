@@ -86,17 +86,33 @@
       <div v-if="subfolders.length > 0" class="mb-4">
         <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 px-1">{{ t.folders }}</p>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-          <button
+          <div
             v-for="folder in subfolders"
             :key="folder"
-            class="flex items-center gap-3 bg-white dark:bg-[#1b1b1b] rounded-xl p-3.5 border border-gray-200/80 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30 transition-all cursor-pointer group shadow-card hover:shadow-card-hover"
+            class="relative flex items-center gap-3 bg-white dark:bg-[#1b1b1b] rounded-xl p-3.5 border border-gray-200/80 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30 transition-all cursor-pointer group shadow-card hover:shadow-card-hover"
             @click="navigateTo(currentFolder === '/' ? `/${folder}` : `${currentFolder}/${folder}`)"
           >
             <div class="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
               <UIcon name="i-heroicons-folder" class="w-5 h-5 text-amber-500" />
             </div>
-            <span class="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-focusflow-700 dark:group-hover:text-focusflow-400 transition-colors">{{ folder }}</span>
-          </button>
+            <span class="text-sm font-medium text-gray-900 dark:text-white truncate flex-1 group-hover:text-focusflow-700 dark:group-hover:text-focusflow-400 transition-colors">{{ folder }}</span>
+            <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+              <button
+                class="w-6 h-6 rounded-md flex items-center justify-center text-gray-400 hover:text-focusflow-600 hover:bg-focusflow-50 dark:hover:bg-focusflow-500/10 cursor-pointer"
+                :title="es ? 'Renombrar carpeta' : 'Rename folder'"
+                @click.stop="renameFolder(folder)"
+              >
+                <UIcon name="i-heroicons-pencil" class="w-3.5 h-3.5" />
+              </button>
+              <button
+                class="w-6 h-6 rounded-md flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 cursor-pointer"
+                :title="es ? 'Eliminar carpeta y su contenido' : 'Delete folder and its contents'"
+                @click.stop="deleteFolder(folder)"
+              >
+                <UIcon name="i-heroicons-trash" class="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -114,9 +130,9 @@
               <UIcon :name="fileIcon(file.mime_type)" class="w-5 h-5" :class="fileIconColor(file.mime_type)" />
             </div>
 
-            <!-- Info -->
-            <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ file.file_name }}</p>
+            <!-- Info (click = open preview) -->
+            <div class="min-w-0 flex-1 cursor-pointer" @click="openPreview(file)">
+              <p class="text-sm font-medium text-gray-900 dark:text-white truncate hover:text-focusflow-700 dark:hover:text-focusflow-400 transition-colors">{{ file.file_name }}</p>
               <div class="flex items-center gap-3 mt-0.5">
                 <span class="text-[10px] text-gray-400 dark:text-gray-500 font-medium">{{ formatFileSize(file.file_size) }}</span>
                 <span class="text-[10px] text-gray-400 dark:text-gray-500 font-medium">{{ formatDate(file.created_at) }}</span>
@@ -244,6 +260,90 @@
     <!-- Hidden file inputs -->
     <input ref="fileInput" type="file" class="hidden" @change="handleFileUpload" multiple />
     <input ref="driveFileInput" type="file" class="hidden" @change="handleDriveUpload" multiple />
+
+    <!-- ══ File preview modal ══ -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div
+          v-if="previewFile"
+          class="fixed inset-0 z-[150] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          @click.self="closePreview"
+        >
+          <div class="relative w-full max-w-4xl max-h-[90vh] bg-white dark:bg-[#16161d] rounded-2xl overflow-hidden flex flex-col shadow-2xl">
+            <!-- Header -->
+            <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-100 dark:border-white/[0.08] shrink-0">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" :class="fileIconBg(previewFile.mime_type)">
+                <UIcon :name="fileIcon(previewFile.mime_type)" class="w-4 h-4" :class="fileIconColor(previewFile.mime_type)" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold text-gray-900 dark:text-white truncate">{{ previewFile.file_name }}</p>
+                <p class="text-[10px] text-gray-400">{{ formatFileSize(previewFile.file_size) }} · {{ previewFile.mime_type }}</p>
+              </div>
+              <button
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-focusflow-600 hover:bg-focusflow-50 dark:hover:bg-focusflow-500/10 transition-colors cursor-pointer"
+                :title="t.download"
+                @click="downloadFile(previewFile)"
+              >
+                <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
+              </button>
+              <button
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                @click="closePreview"
+              >
+                <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+              </button>
+            </div>
+
+            <!-- Body -->
+            <div class="flex-1 min-h-0 overflow-auto flex items-center justify-center bg-gray-50 dark:bg-black/30">
+              <div v-if="previewLoading" class="py-24">
+                <UIcon name="i-heroicons-arrow-path" class="w-6 h-6 animate-spin text-gray-400" />
+              </div>
+
+              <!-- Image -->
+              <img
+                v-else-if="previewKind === 'image' && previewUrl"
+                :src="previewUrl"
+                :alt="previewFile.file_name"
+                class="max-w-full max-h-[75vh] object-contain"
+              >
+
+              <!-- Video -->
+              <video
+                v-else-if="previewKind === 'video' && previewUrl"
+                :src="previewUrl"
+                controls
+                autoplay
+                class="max-w-full max-h-[75vh]"
+              />
+
+              <!-- Audio -->
+              <audio v-else-if="previewKind === 'audio' && previewUrl" :src="previewUrl" controls class="my-16 w-4/5" />
+
+              <!-- Text / code / markdown -->
+              <pre
+                v-else-if="previewKind === 'text'"
+                class="w-full h-full text-[12px] leading-relaxed text-gray-800 dark:text-gray-200 p-5 whitespace-pre-wrap font-mono self-start"
+              >{{ previewText }}</pre>
+
+              <!-- PDF -->
+              <iframe
+                v-else-if="previewKind === 'pdf' && previewUrl"
+                :src="previewUrl"
+                class="w-full h-[75vh] border-0"
+              />
+
+              <!-- No inline preview -->
+              <div v-else class="py-20 text-center">
+                <UIcon name="i-heroicons-document" class="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ es ? 'Vista previa no disponible para este tipo de archivo' : 'No inline preview for this file type' }}</p>
+                <UButton icon="i-heroicons-arrow-down-tray" color="primary" size="sm" class="font-semibold" @click="downloadFile(previewFile)">{{ t.download }}</UButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -387,6 +487,80 @@ function triggerUpload() {
   fileInput.value?.click()
 }
 
+// ── File preview ──
+const previewFile = ref<WorkspaceFile | null>(null)
+const previewUrl = ref('')
+const previewText = ref('')
+const previewLoading = ref(false)
+
+const previewKind = computed(() => {
+  const mime = previewFile.value?.mime_type || ''
+  if (mime.startsWith('image/')) return 'image'
+  if (mime.startsWith('video/')) return 'video'
+  if (mime.startsWith('audio/')) return 'audio'
+  if (mime === 'application/pdf') return 'pdf'
+  if (mime.startsWith('text/') || mime === 'application/json') return 'text'
+  return 'other'
+})
+
+async function openPreview(file: WorkspaceFile) {
+  previewFile.value = file
+  previewUrl.value = ''
+  previewText.value = ''
+  previewLoading.value = true
+  try {
+    const data = await $fetch<any>(`/api/workspaces/${workspaceId.value}/files/${file.id}`)
+    previewUrl.value = data.download_url || ''
+    if (previewKind.value === 'text' && previewUrl.value) {
+      const res = await fetch(previewUrl.value)
+      previewText.value = (await res.text()).slice(0, 200_000)
+    }
+  } catch {
+    previewUrl.value = ''
+  } finally {
+    previewLoading.value = false
+  }
+}
+
+function closePreview() {
+  previewFile.value = null
+  previewUrl.value = ''
+  previewText.value = ''
+}
+
+// ── Folder rename / delete ──
+async function renameFolder(folderName: string) {
+  const path = currentFolder.value === '/' ? `/${folderName}` : `${currentFolder.value}/${folderName}`
+  const newName = prompt(es.value ? `Nuevo nombre para "${folderName}":` : `New name for "${folderName}":`, folderName)?.trim()
+  if (!newName || newName === folderName) return
+  try {
+    await $fetch(`/api/workspaces/${workspaceId.value}/files/folder`, {
+      method: 'PATCH',
+      body: { path, new_name: newName },
+    })
+    await loadFiles()
+  } catch (e: any) {
+    alert(e.data?.message || (es.value ? 'Error al renombrar' : 'Rename error'))
+  }
+}
+
+async function deleteFolder(folderName: string) {
+  const path = currentFolder.value === '/' ? `/${folderName}` : `${currentFolder.value}/${folderName}`
+  const msg = es.value
+    ? `¿Eliminar la carpeta "${folderName}" y TODO su contenido? Esta acción no se puede deshacer.`
+    : `Delete folder "${folderName}" and ALL its contents? This cannot be undone.`
+  if (!confirm(msg)) return
+  try {
+    await $fetch(`/api/workspaces/${workspaceId.value}/files/folder`, {
+      method: 'DELETE',
+      body: { path },
+    })
+    await loadFiles()
+  } catch (e: any) {
+    alert(e.data?.message || (es.value ? 'Error al eliminar la carpeta' : 'Folder delete error'))
+  }
+}
+
 async function createFolder() {
   const name = prompt(es.value ? 'Nombre de la carpeta:' : 'Folder name:')?.trim()
   if (!name || !workspaceId.value) return
@@ -508,3 +682,14 @@ function fileIconColor(mime: string) {
   return 'text-gray-500 dark:text-gray-400'
 }
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

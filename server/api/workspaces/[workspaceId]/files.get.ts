@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
     .from('workspace_files')
     .select('folder')
     .eq('workspace_id', workspaceId)
-    .like('folder', folder === '/' ? '/%' : `${folder}/%`)
+    .like('folder', folder === '/' ? '/%' : `${escapeLikePattern(folder)}/%`)
 
   const subfolders = new Set<string>()
   const prefix = folder === '/' ? '/' : `${folder}/`
