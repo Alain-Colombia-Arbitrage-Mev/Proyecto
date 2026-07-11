@@ -463,6 +463,7 @@ export type WorkflowNodeType =
   | 'delay'
   | 'transform'
   | 'output'
+  | 'mcp_tool'
 
 export interface WorkflowNode {
   id: string

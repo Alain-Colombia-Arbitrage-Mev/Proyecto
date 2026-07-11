@@ -644,6 +644,50 @@
                           </div>
                         </template>
 
+                        <!-- MCP Tool config (Higgsfield & custom MCP servers) -->
+                        <template v-if="node.type === 'mcp_tool'">
+                          <div class="bg-gradient-to-r from-fuchsia-50 to-purple-50 dark:from-fuchsia-500/10 dark:to-purple-500/10 rounded-lg px-3 py-2 flex items-center gap-2 mb-2">
+                            <UIcon name="i-heroicons-wrench-screwdriver" class="w-4 h-4 text-fuchsia-600 dark:text-fuchsia-400" />
+                            <span class="text-xs font-bold text-fuchsia-700 dark:text-fuchsia-300">Higgsfield MCP &middot; Seedance 2.0, Veo 3.1, Kling 3.0</span>
+                          </div>
+                          <div>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">MCP Server URL</label>
+                            <UInput v-model="node.config.server_url" size="sm" class="mt-1" placeholder="https://mcp.higgsfield.ai/mcp" @blur="saveWorkflow" />
+                          </div>
+                          <div>
+                            <div class="flex items-center justify-between">
+                              <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">Tool</label>
+                              <button
+                                type="button"
+                                class="text-[10px] font-semibold text-fuchsia-600 dark:text-fuchsia-400 hover:underline cursor-pointer flex items-center gap-1"
+                                :disabled="mcpToolsLoading"
+                                @click="loadMcpTools(node)"
+                              >
+                                <UIcon :name="mcpToolsLoading ? 'i-heroicons-arrow-path' : 'i-heroicons-arrow-down-tray'" class="w-3 h-3" :class="{ 'animate-spin': mcpToolsLoading }" />
+                                {{ mcpToolsLoading ? '...' : 'Cargar tools' }}
+                              </button>
+                            </div>
+                            <select
+                              v-if="mcpToolOptions.length"
+                              v-model="node.config.tool"
+                              class="w-full text-xs border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 cursor-pointer"
+                              @change="saveWorkflow"
+                            >
+                              <option v-for="mt in mcpToolOptions" :key="mt.name" :value="mt.name">{{ mt.name }}</option>
+                            </select>
+                            <UInput v-else v-model="node.config.tool" size="sm" class="mt-1" placeholder="generate_video" @blur="saveWorkflow" />
+                            <p v-if="mcpToolsError" class="text-[10px] text-red-500 mt-1">{{ mcpToolsError }}</p>
+                          </div>
+                          <div>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.prompt }}</label>
+                            <textarea v-model="node.config.prompt" rows="2" class="w-full text-xs border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 resize-none" placeholder="A cinematic drone shot over a futuristic city at sunset" @blur="saveWorkflow" />
+                          </div>
+                          <div>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">Args JSON (opcional)</label>
+                            <textarea v-model="node.config.args_json" rows="2" class="w-full text-xs font-mono border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 resize-none" placeholder='{"duration": 10, "resolution": "1080p"}' @blur="saveWorkflow" />
+                          </div>
+                        </template>
+
                         <!-- Condition config -->
                         <template v-if="node.type === 'condition'">
                           <div>
@@ -918,6 +962,7 @@ const chatSuggestions = computed(() => [
 const apiKeyFields = reactive([
   { field: 'openrouter', label: 'OpenRouter', visible: false },
   { field: 'runway', label: 'Runway AI', visible: false },
+  { field: 'higgsfield_mcp', label: 'Higgsfield MCP', visible: false },
   { field: 'instagram', label: 'Instagram', visible: false },
   { field: 'twitter', label: 'Twitter / X', visible: false },
   { field: 'linkedin', label: 'LinkedIn', visible: false },
@@ -931,10 +976,34 @@ const apiKeys = reactive<Record<string, string>>({
   twitter: '',
   linkedin: '',
   tiktok: '',
+  higgsfield_mcp: '',
   n8n_url: '',
   n8n_api_key: '',
 })
 const lastRunResult = ref<{ status: string; error?: string; results?: Record<string, unknown> } | null>(null)
+
+// ── MCP tool discovery (mcp_tool node) ──
+const mcpToolOptions = ref<{ name: string; description?: string }[]>([])
+const mcpToolsLoading = ref(false)
+const mcpToolsError = ref('')
+
+async function loadMcpTools(node: WorkflowNode) {
+  if (!store.workspace?.id || mcpToolsLoading.value) return
+  mcpToolsLoading.value = true
+  mcpToolsError.value = ''
+  try {
+    const res = await $fetch<{ tools: { name: string; description?: string }[] }>(
+      `/api/workspaces/${store.workspace.id}/workflows/mcp-tools`,
+      { method: 'POST', body: { server_url: node.config.server_url, auth_token: node.config.auth_token } },
+    )
+    mcpToolOptions.value = res.tools || []
+    if (!node.config.tool && mcpToolOptions.value.length) node.config.tool = mcpToolOptions.value[0]!.name
+  } catch (e: any) {
+    mcpToolsError.value = e.data?.message || 'Error al conectar con el servidor MCP'
+  } finally {
+    mcpToolsLoading.value = false
+  }
+}
 
 const createForm = reactive({
   name: '',
@@ -1002,6 +1071,7 @@ const nodeTypesMap = computed<Record<WorkflowNodeType, { label: string; icon: st
   delay: { label: t.value.delayNode, icon: 'i-heroicons-clock', bg: 'bg-gradient-to-br from-slate-400 to-slate-500', badge: 'bg-slate-50 dark:bg-slate-500/10 text-slate-600', desc: t.value.delayNodeDesc },
   transform: { label: t.value.transformNode, icon: 'i-heroicons-arrows-pointing-in', bg: 'bg-gradient-to-br from-emerald-500 to-green-600', badge: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600', desc: t.value.transformNodeDesc },
   output: { label: t.value.outputNode, icon: 'i-heroicons-arrow-down-tray', bg: 'bg-gradient-to-br from-blue-500 to-sky-600', badge: 'bg-blue-50 dark:bg-blue-500/10 text-blue-600', desc: t.value.outputNodeDesc },
+  mcp_tool: { label: 'MCP Tool', icon: 'i-heroicons-wrench-screwdriver', bg: 'bg-gradient-to-br from-fuchsia-500 to-purple-600', badge: 'bg-fuchsia-50 dark:bg-fuchsia-500/10 text-fuchsia-600', desc: 'Higgsfield MCP: Seedance 2.0, Veo 3.1, Kling 3.0, GPT Image 2' },
 }))
 
 function nodeTypeConfig(type: WorkflowNodeType) {
@@ -1020,7 +1090,7 @@ const nodeCategories = computed(() => {
     { key: 'ai', label: t.value.catAI, nodes: byType(['trigger', 'ai_prompt', 'ai_agent']) },
     { key: 'social', label: t.value.catSocial, nodes: byType(['social_post']) },
     { key: 'media', label: t.value.catMedia, nodes: byType(['video_generate', 'image_generate']) },
-    { key: 'integrations', label: t.value.catIntegrations, nodes: byType(['send_email', 'webhook', 'http_request']) },
+    { key: 'integrations', label: t.value.catIntegrations, nodes: byType(['send_email', 'webhook', 'http_request', 'mcp_tool']) },
     { key: 'logic', label: t.value.catLogic, nodes: byType(['condition', 'delay', 'transform', 'output']) },
   ]
 })
@@ -1314,6 +1384,7 @@ function getDefaultConfig(type: WorkflowNodeType): Record<string, unknown> {
     delay: { seconds: 5 },
     condition: { expression: '' },
     transform: { template: '' },
+    mcp_tool: { server_url: 'https://mcp.higgsfield.ai/mcp', tool: '', prompt: '', args_json: '', auth_token: '' },
   }
   return { ...(defaults[type] || {}) }
 }

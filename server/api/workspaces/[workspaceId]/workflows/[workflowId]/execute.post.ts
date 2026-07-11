@@ -210,6 +210,32 @@ export default defineEventHandler(async (event) => {
             results[node.id] = { status: 'queued', prompt: node.config.prompt || '' }
             break
           }
+          case 'mcp_tool': {
+            // Call a tool on an external MCP server (e.g. Higgsfield: Seedance 2.0, Veo 3.1, Kling 3.0)
+            const serverUrl = validateMcpServerUrl(String(node.config.server_url || HIGGSFIELD_MCP_URL))
+            const toolName = String(node.config.tool || '')
+            if (!toolName) throw new Error('mcp_tool node has no tool configured')
+
+            // Stored Higgsfield token only goes to the exact Higgsfield host (never substring-matched)
+            const isHiggsfield = isHiggsfieldServer(serverUrl)
+            const wsKeys = ((ws?.ai_config as any)?.workflow_api_keys) || {}
+            const token = String(node.config.auth_token || '')
+              || (isHiggsfield ? String(wsKeys.higgsfield_mcp || '') : '')
+            if (isHiggsfield && !token) {
+              results[node.id] = { status: 'simulated', message: 'Higgsfield MCP token not configured (API Keys → Higgsfield MCP) - simulated run' }
+              break
+            }
+
+            let args: Record<string, any> = {}
+            try { args = node.config.args_json ? JSON.parse(String(node.config.args_json)) : {} } catch {
+              throw new Error('mcp_tool args_json is not valid JSON')
+            }
+            if (node.config.prompt && !args.prompt) args.prompt = String(node.config.prompt)
+
+            const output = await mcpCallTool(serverUrl, token || undefined, toolName, args)
+            results[node.id] = { status: 'completed', server: serverUrl, tool: toolName, output }
+            break
+          }
           case 'send_email': {
             try {
               await sendEmail({

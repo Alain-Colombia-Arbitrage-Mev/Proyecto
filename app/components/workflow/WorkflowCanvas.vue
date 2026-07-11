@@ -137,12 +137,13 @@ const NODE_STYLES: Record<string, { icon: string; color: string; label: string }
   delay: { icon: 'i-heroicons-clock', color: '#78716C', label: 'Delay' },
   transform: { icon: 'i-heroicons-code-bracket', color: '#10B981', label: 'Transform' },
   output: { icon: 'i-heroicons-flag', color: '#22C55E', label: 'Output' },
+  mcp_tool: { icon: 'i-heroicons-wrench-screwdriver', color: '#D946EF', label: 'MCP Tool' },
 }
 
 const palette = computed(() => [
   { label: 'AI', types: pal(['trigger', 'ai_prompt', 'ai_agent']) },
   { label: 'Media', types: pal(['video_generate', 'image_generate', 'social_post']) },
-  { label: es.value ? 'Integraciones' : 'Integrations', types: pal(['send_email', 'webhook', 'http_request']) },
+  { label: es.value ? 'Integraciones' : 'Integrations', types: pal(['send_email', 'webhook', 'http_request', 'mcp_tool']) },
   { label: es.value ? 'Lógica' : 'Logic', types: pal(['condition', 'delay', 'transform', 'output']) },
 ])
 
@@ -157,6 +158,7 @@ function nodeHint(n: WfNode): string {
   if (n.type === 'social_post') return String(c.platform || '')
   if (n.type === 'send_email') return String(c.to || '')
   if (n.type === 'webhook' || n.type === 'http_request') return String(c.url || '')
+  if (n.type === 'mcp_tool') return `${String(c.server_url || '').includes('higgsfield') ? 'Higgsfield' : 'MCP'} · ${c.tool || '?'}`
   if (n.type === 'delay') return `${c.seconds || 0}s`
   return String(c.prompt || c.template || c.expression || '')
 }
