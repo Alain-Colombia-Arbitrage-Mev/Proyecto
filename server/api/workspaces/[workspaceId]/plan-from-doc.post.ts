@@ -41,14 +41,22 @@ export default defineEventHandler(async (event) => {
 
   const roster = await buildMemberRoster(supabase, workspaceId)
 
+  // Existing board context: on repeated document uploads the planner must
+  // create the MISSING work, never return an empty plan nor exact duplicates.
+  const { data: existingTasks } = await supabase
+    .from('tasks').select('title').eq('project_id', projectId).is('parent_task_id', null).limit(60)
+  const existingTitles = (existingTasks || []).map((t: any) => `- ${t.title}`).join('\n') || '(tablero vacío)'
+
   const system = `Eres el agente PLANNER de FocusFlow. Recibes documentación o un plan detallado y lo conviertes en tareas concretas, accionables y bien asignadas.
+Tareas que YA existen en el tablero (no las repitas literalmente — genera el trabajo que FALTA, o desglósalo más fino, o cubre nuevos aspectos del documento):
+${existingTitles}
 Agentes AI disponibles (campo ai_agent):
 ${agentRegistryPrompt()}
 Miembros humanos (campo assignee_id, usa el id exacto):
 ${rosterPrompt(roster)}
 Responde SOLO JSON:
 {"summary":"resumen del plan en 2-3 frases","tasks":[{"title":"...","description":"markdown con contexto y criterios de aceptación","priority":"low|medium|high|critical","estimated_hours":N,"ai_agent":"tipo o null","assignee_id":"uuid o null","tags":["..."]}]}
-Máximo ${maxTasks} tareas, ordenadas por dependencia lógica. Asigna cada tarea al agente y/o miembro cuya especialidad encaje mejor. Usa el idioma del documento.`
+Máximo ${maxTasks} tareas, ordenadas por dependencia lógica. Asigna cada tarea al agente y/o miembro cuya especialidad encaje mejor. Usa el idioma del documento. NUNCA devuelvas "tasks" vacío: si el documento ya está cubierto, genera tareas de siguiente nivel (QA, lanzamiento, mejoras, métricas).`
 
   // GLM-5.2 handles long inputs — cap defensively at ~180k chars
   const docText = document.slice(0, 180_000)

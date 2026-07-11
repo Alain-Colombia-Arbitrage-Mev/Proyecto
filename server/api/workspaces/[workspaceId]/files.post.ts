@@ -53,17 +53,27 @@ export default defineEventHandler(async (event) => {
   const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 200)
   const storagePath = `${workspaceId}${folder === '/' ? '' : folder}/${timestamp}_${safeName}`
 
-  // Upload to Supabase storage
-  const { error: uploadError } = await supabase.storage
-    .from('workspace-files')
-    .upload(storagePath, fileField.data, {
-      contentType: mimeType,
-      upsert: false,
-    })
+  // Upload: Cloudflare R2 when configured, Supabase storage otherwise
+  const useR2 = isR2Configured()
+  if (useR2) {
+    try {
+      await r2Put(storagePath, fileField.data, mimeType)
+    } catch (e: any) {
+      console.error('[files.post] R2 upload error:', e.message)
+      throw createError({ statusCode: 500, message: 'Error uploading file to R2' })
+    }
+  } else {
+    const { error: uploadError } = await supabase.storage
+      .from('workspace-files')
+      .upload(storagePath, fileField.data, {
+        contentType: mimeType,
+        upsert: false,
+      })
 
-  if (uploadError) {
-    console.error('[files.post] Upload error:', uploadError.message)
-    throw createError({ statusCode: 500, message: 'Error uploading file' })
+    if (uploadError) {
+      console.error('[files.post] Upload error:', uploadError.message)
+      throw createError({ statusCode: 500, message: 'Error uploading file' })
+    }
   }
 
   // Record in workspace_files table
@@ -79,13 +89,15 @@ export default defineEventHandler(async (event) => {
       mime_type: mimeType,
       folder,
       source: 'upload',
+      metadata: { storage: useR2 ? 'r2' : 'supabase' },
     })
     .select()
     .single()
 
   if (dbError) {
     // Cleanup orphan storage file
-    await supabase.storage.from('workspace-files').remove([storagePath])
+    if (useR2) await r2Delete(storagePath).catch(() => {})
+    else await supabase.storage.from('workspace-files').remove([storagePath])
     console.error('[files.post] DB error:', dbError.message)
     throw createError({ statusCode: 500, message: 'Error recording file' })
   }

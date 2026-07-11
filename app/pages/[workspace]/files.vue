@@ -8,6 +8,14 @@
       </div>
       <div class="flex items-center gap-2">
         <UButton
+          v-if="source === 'workspace'"
+          size="sm" variant="ghost" icon="i-heroicons-folder-plus"
+          class="font-medium"
+          @click="createFolder"
+        >
+          {{ es ? 'Nueva carpeta' : 'New folder' }}
+        </UButton>
+        <UButton
           size="sm" variant="soft" icon="i-heroicons-arrow-up-tray"
           :loading="source === 'drive' ? driveUploading : uploading"
           class="font-medium"
@@ -118,6 +126,13 @@
 
             <!-- Actions -->
             <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-all cursor-pointer"
+                :title="es ? 'Mover a carpeta' : 'Move to folder'"
+                @click="moveFile(file)"
+              >
+                <UIcon name="i-heroicons-arrow-right-start-on-rectangle" class="w-4 h-4" />
+              </button>
               <button
                 class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-focusflow-700 dark:hover:text-focusflow-400 hover:bg-focusflow-50 dark:hover:bg-focusflow-500/10 transition-all cursor-pointer"
                 @click="downloadFile(file)"
@@ -370,6 +385,39 @@ function navigateTo(folder: string) {
 
 function triggerUpload() {
   fileInput.value?.click()
+}
+
+async function createFolder() {
+  const name = prompt(es.value ? 'Nombre de la carpeta:' : 'Folder name:')?.trim()
+  if (!name || !workspaceId.value) return
+  try {
+    await $fetch(`/api/workspaces/${workspaceId.value}/files/folder`, {
+      method: 'POST',
+      body: { parent: currentFolder.value, name },
+    })
+    await loadFiles()
+  } catch (e: any) {
+    alert(e.data?.message || (es.value ? 'Error al crear carpeta' : 'Error creating folder'))
+  }
+}
+
+async function moveFile(file: WorkspaceFile) {
+  const target = prompt(
+    es.value
+      ? `Mover "${file.file_name}" a la carpeta (ej: /docs o / para raíz):`
+      : `Move "${file.file_name}" to folder (e.g. /docs or / for root):`,
+    currentFolder.value,
+  )?.trim()
+  if (!target || target === (file as any).folder) return
+  try {
+    await $fetch(`/api/workspaces/${workspaceId.value}/files/${file.id}`, {
+      method: 'PATCH',
+      body: { folder: target },
+    })
+    await loadFiles()
+  } catch (e: any) {
+    alert(e.data?.message || (es.value ? 'Error al mover' : 'Error moving file'))
+  }
 }
 
 async function handleFileUpload(event: Event) {

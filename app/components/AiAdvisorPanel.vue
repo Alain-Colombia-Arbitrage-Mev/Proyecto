@@ -178,6 +178,8 @@ async function generatePlan() {
     planDoc.value = ''
     planFiles.value = []
     planMode.value = false
+    // Refresh the kanban board if the user is viewing this project
+    window.dispatchEvent(new CustomEvent('focusflow:reload-tasks', { detail: { projectId: planProjectId.value } }))
   } catch (e: any) {
     messages.value.push({
       role: 'assistant',

@@ -718,11 +718,20 @@ onMounted(() => {
   if (localStorage.getItem('focusflow_focus_mode') === '1') {
     focusMode.value = true
   }
+  // Refresh board when AI agents (advisor plan-from-doc, etc.) create tasks in this project
+  window.addEventListener('focusflow:reload-tasks', onExternalTasksCreated as EventListener)
 })
+
+function onExternalTasksCreated(e: CustomEvent) {
+  if (!e.detail?.projectId || e.detail.projectId === (route.params.id as string)) {
+    loadProjectData().catch(() => {})
+  }
+}
 
 // Leaving the board always restores the normal layout
 onUnmounted(() => {
   focusMode.value = false
+  window.removeEventListener('focusflow:reload-tasks', onExternalTasksCreated as EventListener)
 })
 
 

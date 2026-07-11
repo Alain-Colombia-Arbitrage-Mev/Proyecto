@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   // Get file ensuring workspace isolation
   const { data: file, error: fetchError } = await supabase
     .from('workspace_files')
-    .select('id, file_path, file_name')
+    .select('id, file_path, file_name, mime_type, metadata')
     .eq('id', fileId)
     .eq('workspace_id', workspaceId)
     .maybeSingle()
@@ -22,14 +22,23 @@ export default defineEventHandler(async (event) => {
 
   if (!file) throw createError({ statusCode: 404, message: 'File not found' })
 
-  // Delete from storage first
-  const { error: storageError } = await supabase.storage
-    .from('workspace-files')
-    .remove([file.file_path])
+  // Delete from storage first (folder markers have no storage object)
+  const isFolderMarker = file.mime_type === 'inode/directory'
+  if (!isFolderMarker) {
+    if ((file.metadata as any)?.storage === 'r2') {
+      await r2Delete(file.file_path).catch((e: any) => {
+        console.error('[files.delete] R2 delete error:', e.message, { filePath: file.file_path, fileId })
+      })
+    } else {
+      const { error: storageError } = await supabase.storage
+        .from('workspace-files')
+        .remove([file.file_path])
 
-  if (storageError) {
-    console.error('[files.delete] Storage delete error:', storageError.message, { filePath: file.file_path, fileId, workspaceId })
-    // Continue — DB record should still be removed to avoid orphan references
+      if (storageError) {
+        console.error('[files.delete] Storage delete error:', storageError.message, { filePath: file.file_path, fileId, workspaceId })
+        // Continue — DB record should still be removed to avoid orphan references
+      }
+    }
   }
 
   // Delete record — scope by workspace_id for defense-in-depth

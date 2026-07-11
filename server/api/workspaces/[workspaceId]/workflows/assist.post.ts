@@ -99,9 +99,9 @@ ONLY output valid JSON. No markdown wrapping.`
       method: 'POST',
       headers: { Authorization: `Bearer ${openrouterApiKey}`, 'Content-Type': 'application/json' },
       body: {
-        model: 'openai/gpt-4o-mini',
+        model: 'deepseek/deepseek-v4-pro',
         messages,
-        max_tokens: 2000,
+        max_tokens: 4000,
         temperature: 0.7,
       },
     })

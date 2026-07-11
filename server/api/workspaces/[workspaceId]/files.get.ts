@@ -20,6 +20,7 @@ export default defineEventHandler(async (event) => {
     .select('*', { count: 'exact' })
     .eq('workspace_id', workspaceId)
     .eq('folder', folder)
+    .neq('mime_type', 'inode/directory') // folder markers are not files
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
 
