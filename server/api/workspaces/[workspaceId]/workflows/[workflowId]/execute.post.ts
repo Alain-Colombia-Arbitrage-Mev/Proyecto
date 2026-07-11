@@ -212,7 +212,7 @@ export default defineEventHandler(async (event) => {
           }
           case 'mcp_tool': {
             // Call a tool on an external MCP server (e.g. Higgsfield: Seedance 2.0, Veo 3.1, Kling 3.0)
-            const serverUrl = validateMcpServerUrl(String(node.config.server_url || HIGGSFIELD_MCP_URL))
+            const serverUrl = await validateMcpServerUrl(String(node.config.server_url || HIGGSFIELD_MCP_URL))
             const toolName = String(node.config.tool || '')
             if (!toolName) throw new Error('mcp_tool node has no tool configured')
 

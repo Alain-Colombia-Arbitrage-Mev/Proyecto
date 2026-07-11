@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   let serverUrl: string
   try {
-    serverUrl = validateMcpServerUrl(String(body.server_url || HIGGSFIELD_MCP_URL))
+    serverUrl = await validateMcpServerUrl(String(body.server_url || HIGGSFIELD_MCP_URL))
   } catch (e: any) {
     throw createError({ statusCode: 400, message: e.message })
   }

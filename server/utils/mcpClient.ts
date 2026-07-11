@@ -70,15 +70,37 @@ export function isHiggsfieldServer(serverUrl: string): boolean {
   try { return new URL(serverUrl).hostname === HIGGSFIELD_HOST } catch { return false }
 }
 
+/** Loopback, RFC1918, link-local (incl. cloud metadata), CGNAT, ULA — all blocked */
+function isBlockedAddress(addr: string): boolean {
+  const a = addr.toLowerCase()
+  if (a.includes(':')) {
+    // IPv6 (and IPv4-mapped)
+    if (a.startsWith('::ffff:')) return isBlockedAddress(a.slice(7))
+    return a === '::1' || a === '::' || a.startsWith('fc') || a.startsWith('fd') || a.startsWith('fe80')
+  }
+  const parts = a.split('.').map(Number)
+  if (parts.length !== 4 || parts.some(n => !Number.isInteger(n) || n < 0 || n > 255)) return true
+  const [p0, p1] = parts as [number, number, number, number]
+  if (p0 === 0 || p0 === 127 || p0 === 10) return true
+  if (p0 === 172 && p1! >= 16 && p1! <= 31) return true
+  if (p0 === 192 && p1 === 168) return true
+  if (p0 === 169 && p1 === 254) return true // link-local / cloud metadata (169.254.169.254)
+  if (p0 === 100 && p1! >= 64 && p1! <= 127) return true // CGNAT
+  return false
+}
+
 /**
- * Validate an external MCP server URL: https only, no IP literals,
- * no loopback/private/link-local/internal hostnames (SSRF guard).
+ * Validate an external MCP server URL (SSRF guard): https on port 443 only,
+ * no IP literals or internal hostnames, and the hostname must not RESOLVE
+ * to any private/loopback/link-local address.
  * Returns the normalized URL string or throws.
  */
-export function validateMcpServerUrl(raw: string): string {
+export async function validateMcpServerUrl(raw: string): Promise<string> {
   let url: URL
   try { url = new URL(String(raw).slice(0, 500)) } catch { throw new Error('Invalid MCP server URL') }
   if (url.protocol !== 'https:') throw new Error('MCP server URL must be https')
+  if (url.port && url.port !== '443') throw new Error('MCP server port must be 443')
+  if (url.username || url.password) throw new Error('MCP server URL cannot contain credentials')
 
   const host = url.hostname.toLowerCase()
   const isIpV4 = /^\d{1,3}(\.\d{1,3}){3}$/.test(host)
@@ -89,9 +111,21 @@ export function validateMcpServerUrl(raw: string): string {
     || host.endsWith('.localhost')
     || host.endsWith('.local')
     || host.endsWith('.internal')
-    || host.endsWith('.railway.internal')
     || !host.includes('.')
   ) throw new Error('MCP server host not allowed')
+
+  // Resolve and reject hostnames pointing at internal ranges
+  try {
+    const { lookup } = await import('node:dns/promises')
+    const addresses = await lookup(host, { all: true })
+    if (!addresses.length) throw new Error('unresolvable')
+    for (const rec of addresses) {
+      if (isBlockedAddress(rec.address)) throw new Error('blocked-range')
+    }
+  } catch (e: any) {
+    if (e.message === 'blocked-range') throw new Error('MCP server host resolves to a private address')
+    throw new Error('MCP server host could not be resolved')
+  }
 
   return url.toString()
 }
