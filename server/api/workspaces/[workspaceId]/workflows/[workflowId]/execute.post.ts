@@ -19,11 +19,16 @@ export default defineEventHandler(async (event) => {
 
   if (wErr || !workflow) throw createError({ statusCode: 404, message: 'Workflow not found' })
 
-  const nodes = (workflow.nodes || []) as Array<{
+  const rawNodes = (workflow.nodes || []) as Array<{
     id: string; type: string; label: string; config: Record<string, unknown>; next?: string[]
   }>
+  const edges = (workflow.edges || []) as Array<{ source: string; target: string }>
 
-  if (nodes.length === 0) throw createError({ statusCode: 400, message: 'Workflow has no nodes' })
+  if (rawNodes.length === 0) throw createError({ statusCode: 400, message: 'Workflow has no nodes' })
+
+  // Graph workflows (canvas) run in topological order of their edges;
+  // legacy list workflows keep array order.
+  const nodes = edges.length ? topologicalOrder(rawNodes, edges) : rawNodes
 
   // Create run record
   const { data: run, error: rErr } = await supabase
@@ -136,16 +141,68 @@ export default defineEventHandler(async (event) => {
             break
           }
           case 'video_generate': {
+            const provider = (node.config.provider as string)
+              || (String(node.config.model || '').startsWith('bytedance/') ? 'fal' : 'runway')
+            const prompt = String(node.config.prompt || '')
+            const duration = Number(node.config.duration) || 5
+
+            // Seedance 2.0 (and other fal video models) via fal.ai queue
+            if (provider === 'fal') {
+              if (!isFalConfigured()) {
+                results[node.id] = { status: 'simulated', provider: 'fal', message: 'FAL_KEY not configured - simulated run' }
+                break
+              }
+              const falModel = String(node.config.model || 'bytedance/seedance-2.0/text-to-video')
+              const output = await falRun(falModel, {
+                prompt,
+                duration: Math.min(duration, 15),
+                resolution: String(node.config.resolution || '720p'),
+              }, { timeoutMs: 300_000 })
+              results[node.id] = {
+                status: 'completed',
+                provider: 'fal',
+                model: falModel,
+                video_url: output?.video?.url || output?.output?.video?.url || null,
+                raw: output?.video ? undefined : output,
+              }
+              break
+            }
+
+            // Higgsfield Cloud API
+            if (provider === 'higgsfield') {
+              const hfKey = process.env.HIGGSFIELD_API_KEY
+              if (!hfKey) {
+                results[node.id] = { status: 'simulated', provider: 'higgsfield', message: 'HIGGSFIELD_API_KEY not configured - simulated run' }
+                break
+              }
+              const hfModel = String(node.config.model || 'seedance-2.0-enhanced-fast')
+              const gen = await $fetch<any>('https://cloud.higgsfield.ai/v1/generations', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${hfKey}`, 'Content-Type': 'application/json' },
+                body: { model: hfModel, prompt, duration: Math.min(duration, 15) },
+              })
+              results[node.id] = {
+                status: gen?.status || 'queued',
+                provider: 'higgsfield',
+                model: hfModel,
+                generation_id: gen?.id || null,
+                video_url: gen?.video_url || gen?.output?.url || null,
+              }
+              break
+            }
+
+            // Runway (default/legacy)
             const runwayKey = process.env.RUNWAY_API_KEY
             if (!runwayKey) {
-              results[node.id] = { status: 'simulated', message: 'Runway API key not configured - simulated run' }
+              results[node.id] = { status: 'simulated', provider: 'runway', message: 'Runway API key not configured - simulated run' }
               break
             }
             results[node.id] = {
               status: 'queued',
+              provider: 'runway',
               model: node.config.runway_model || 'gen3a_turbo',
-              duration: node.config.duration || 5,
-              prompt: node.config.prompt || '',
+              duration,
+              prompt,
             }
             break
           }
@@ -246,3 +303,35 @@ export default defineEventHandler(async (event) => {
     results,
   }
 })
+
+/** Kahn's algorithm: execute graph nodes in dependency order. Orphan/cyclic nodes are appended at the end in array order. */
+function topologicalOrder<T extends { id: string }>(nodes: T[], edges: Array<{ source: string; target: string }>): T[] {
+  const byId = new Map(nodes.map(n => [n.id, n]))
+  const indegree = new Map<string, number>(nodes.map(n => [n.id, 0]))
+  const adjacency = new Map<string, string[]>()
+
+  for (const e of edges) {
+    if (!byId.has(e.source) || !byId.has(e.target)) continue
+    adjacency.set(e.source, [...(adjacency.get(e.source) || []), e.target])
+    indegree.set(e.target, (indegree.get(e.target) || 0) + 1)
+  }
+
+  const queue = nodes.filter(n => (indegree.get(n.id) || 0) === 0).map(n => n.id)
+  const ordered: T[] = []
+  const seen = new Set<string>()
+
+  while (queue.length) {
+    const id = queue.shift()!
+    if (seen.has(id)) continue
+    seen.add(id)
+    ordered.push(byId.get(id)!)
+    for (const next of adjacency.get(id) || []) {
+      indegree.set(next, (indegree.get(next) || 1) - 1)
+      if ((indegree.get(next) || 0) === 0) queue.push(next)
+    }
+  }
+
+  // Cycles or disconnected leftovers keep original order at the end
+  for (const n of nodes) if (!seen.has(n.id)) ordered.push(n)
+  return ordered
+}

@@ -481,6 +481,7 @@ export interface Workflow {
   type: WorkflowType
   status: WorkflowStatus
   nodes: WorkflowNode[]
+  edges?: { id: string; source: string; target: string }[]
   created_by: string
   last_run_at?: string
   run_count: number

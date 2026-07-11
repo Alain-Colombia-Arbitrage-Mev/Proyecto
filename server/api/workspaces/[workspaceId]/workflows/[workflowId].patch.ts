@@ -14,6 +14,7 @@ export default defineEventHandler(async (event) => {
   if (body.type !== undefined) updateData.type = body.type
   if (body.status !== undefined) updateData.status = body.status
   if (body.nodes !== undefined) updateData.nodes = body.nodes
+  if (body.edges !== undefined) updateData.edges = body.edges
 
   const { data, error } = await supabase
     .from('workflows')

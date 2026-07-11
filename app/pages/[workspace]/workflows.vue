@@ -336,6 +336,20 @@
         </div>
       </div>
 
+      <!-- View toggle -->
+      <div class="flex items-center gap-1 mb-3">
+        <button
+          v-for="vm in [{ v: 'canvas', label: 'Canvas', icon: 'i-heroicons-squares-plus' }, { v: 'list', label: 'Lista', icon: 'i-heroicons-list-bullet' }]"
+          :key="vm.v"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+          :class="viewMode === vm.v ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300 ring-1 ring-violet-200 dark:ring-violet-500/30' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'"
+          @click="viewMode = vm.v as any"
+        >
+          <UIcon :name="vm.icon" class="w-3.5 h-3.5" />
+          {{ vm.label }}
+        </button>
+      </div>
+
       <!-- Main editor: two-panel layout -->
       <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
         <!-- Left: Node pipeline canvas -->
@@ -376,9 +390,23 @@
               </div>
 
               <!-- Node flow -->
-              <div v-else class="space-y-2">
+              <div v-else>
+                <!-- Canvas view (ComfyUI-style node graph) -->
+                <WorkflowCanvas
+                  v-if="viewMode === 'canvas'"
+                  :nodes="editingWorkflow.nodes"
+                  :edges="editingWorkflow.edges || []"
+                  :selected="selectedNodeId"
+                  class="mb-3"
+                  @update:nodes="editingWorkflow.nodes = $event"
+                  @update:edges="editingWorkflow.edges = $event"
+                  @select="selectedNodeId = $event"
+                  @add="addNode($event as any)"
+                  @save="saveWorkflow"
+                />
+                <div class="space-y-2">
                 <div
-                  v-for="(node, idx) in editingWorkflow.nodes"
+                  v-for="(node, idx) in displayNodes"
                   :key="node.id"
                   class="group relative"
                 >
@@ -408,13 +436,13 @@
                           @click.stop
                         />
                         <div class="flex items-center gap-0.5 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                          <button class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 transition-colors" @click.stop="moveNode(idx, -1)" :disabled="idx === 0">
+                          <button v-if="viewMode === 'list'" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 transition-colors" @click.stop="moveNode(idx, -1)" :disabled="idx === 0">
                             <UIcon name="i-heroicons-arrow-up" class="w-3.5 h-3.5" />
                           </button>
-                          <button class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 transition-colors" @click.stop="moveNode(idx, 1)" :disabled="idx === editingWorkflow!.nodes.length - 1">
+                          <button v-if="viewMode === 'list'" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 transition-colors" @click.stop="moveNode(idx, 1)" :disabled="idx === editingWorkflow!.nodes.length - 1">
                             <UIcon name="i-heroicons-arrow-down" class="w-3.5 h-3.5" />
                           </button>
-                          <button class="p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors" @click.stop="removeNode(idx)">
+                          <button class="p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors" @click.stop="removeNodeById(node.id)">
                             <UIcon name="i-heroicons-trash" class="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -476,16 +504,43 @@
 
                         <!-- Video Generate config -->
                         <template v-if="node.type === 'video_generate'">
-                          <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-500/10 dark:to-orange-500/10 rounded-lg px-3 py-2 flex items-center gap-2 mb-2">
-                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#111"/><path d="M7 8h10v8H7z" fill="#fff"/><path d="M12 10l3 2-3 2v-4z" fill="#111"/></svg>
-                            <span class="text-xs font-bold text-amber-700 dark:text-amber-300">Runway AI</span>
+                          <div>
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">Provider</label>
+                            <div class="flex gap-1.5 mt-1">
+                              <button
+                                v-for="vp in videoProviders"
+                                :key="vp.value"
+                                type="button"
+                                class="flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer"
+                                :class="(node.config.provider || 'runway') === vp.value
+                                  ? 'border-amber-300 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                                  : 'border-gray-200/80 dark:border-white/10 text-gray-500 hover:border-gray-300'"
+                                @click="node.config.provider = vp.value; if (vp.value !== 'runway') node.config.model = vp.models[0]!.value; saveWorkflow()"
+                              >
+                                {{ vp.label }}
+                              </button>
+                            </div>
                           </div>
                           <div>
-                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.runwayModel }}</label>
-                            <select v-model="node.config.runway_model" class="w-full text-xs border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 cursor-pointer" @change="saveWorkflow">
+                            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{{ t.model }}</label>
+                            <select
+                              v-if="(node.config.provider || 'runway') === 'runway'"
+                              v-model="node.config.runway_model"
+                              class="w-full text-xs border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 cursor-pointer" @change="saveWorkflow"
+                            >
                               <option value="gen3a_turbo">Gen-3 Alpha Turbo</option>
                               <option value="gen3a">Gen-3 Alpha</option>
                               <option value="gen4_turbo">Gen-4 Turbo</option>
+                            </select>
+                            <select
+                              v-else
+                              v-model="node.config.model"
+                              class="w-full text-xs border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 mt-1 cursor-pointer" @change="saveWorkflow"
+                            >
+                              <option
+                                v-for="m in (videoProviders.find(vp => vp.value === node.config.provider)?.models || [])"
+                                :key="m.value" :value="m.value"
+                              >{{ m.label }}</option>
                             </select>
                           </div>
                           <div>
@@ -609,11 +664,13 @@
                   </div>
                 </div>
 
-                <!-- Add node button at the end -->
-                <div class="flex justify-center pt-2">
+                </div>
+
+                <!-- Add node button at the end (list view — canvas has its own palette) -->
+                <div v-if="viewMode === 'list'" class="flex justify-center pt-2">
                   <div v-if="(editingWorkflow!.nodes || []).length > 0" class="w-0.5 h-4 bg-violet-200 dark:bg-violet-500/30 rounded-full mb-2"></div>
                 </div>
-                <div class="flex justify-center">
+                <div v-if="viewMode === 'list'" class="flex justify-center">
                   <div class="relative" data-node-picker>
                     <button
                       class="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-violet-200 dark:border-violet-500/30 text-violet-500 hover:border-violet-400 hover:bg-violet-50 dark:hover:bg-violet-500/10 transition-all cursor-pointer text-xs font-semibold"
@@ -823,6 +880,20 @@ const executing = ref(false)
 const showCreateModal = ref(false)
 const editingWorkflow = ref<Workflow | null>(null)
 const selectedNodeId = ref<string | null>(null)
+const viewMode = ref<'canvas' | 'list'>('canvas')
+
+// In canvas mode the card list below only shows the selected node (config editor)
+const displayNodes = computed(() => {
+  const nodes = editingWorkflow.value?.nodes || []
+  if (viewMode.value === 'canvas') return nodes.filter(n => n.id === selectedNodeId.value)
+  return nodes
+})
+
+function removeNodeById(id: string) {
+  if (!editingWorkflow.value) return
+  const idx = editingWorkflow.value.nodes.findIndex(n => n.id === id)
+  if (idx !== -1) removeNode(idx)
+}
 const showNodePicker = ref(false)
 const showApiKeys = ref(false)
 const savingKeys = ref(false)
@@ -953,6 +1024,31 @@ const nodeCategories = computed(() => {
     { key: 'logic', label: t.value.catLogic, nodes: byType(['condition', 'delay', 'transform', 'output']) },
   ]
 })
+
+// Video generation providers: Runway (native), Seedance 2.0 via fal.ai (1M ctx queue), Higgsfield Cloud
+const videoProviders = [
+  {
+    value: 'runway',
+    label: 'Runway',
+    models: [{ value: 'gen3a_turbo', label: 'Gen-3 Alpha Turbo' }],
+  },
+  {
+    value: 'fal',
+    label: 'Seedance 2.0',
+    models: [
+      { value: 'bytedance/seedance-2.0/text-to-video', label: 'Seedance 2.0 (Standard)' },
+      { value: 'bytedance/seedance-2.0/fast/text-to-video', label: 'Seedance 2.0 Fast' },
+    ],
+  },
+  {
+    value: 'higgsfield',
+    label: 'Higgsfield',
+    models: [
+      { value: 'seedance-2.0-enhanced-fast', label: 'Seedance 2.0 Enhanced Fast' },
+      { value: 'higgsfield-dop', label: 'Higgsfield DoP (cámara cinematográfica)' },
+    ],
+  },
+]
 
 const socialPlatforms = [
   { value: 'instagram', label: 'Instagram', icon: 'i-simple-icons-instagram' },
@@ -1168,6 +1264,7 @@ async function saveWorkflow() {
         description: editingWorkflow.value.description,
         status: editingWorkflow.value.status,
         nodes: editingWorkflow.value.nodes,
+        edges: editingWorkflow.value.edges || [],
       },
     })
     const idx = workflows.value.findIndex(w => w.id === editingWorkflow.value!.id)
@@ -1209,7 +1306,7 @@ function getDefaultConfig(type: WorkflowNodeType): Record<string, unknown> {
     ai_prompt: { model: 'openai/gpt-4o-mini', prompt: '' },
     ai_agent: { model: 'openai/gpt-4o-mini', prompt: '' },
     social_post: { platform: 'twitter', caption: '', hashtags: '' },
-    video_generate: { runway_model: 'gen3a_turbo', prompt: '', duration: 5, style: 'cinematic' },
+    video_generate: { provider: 'runway', runway_model: 'gen3a_turbo', model: '', prompt: '', duration: 5, style: 'cinematic' },
     image_generate: { prompt: '' },
     send_email: { to: '', subject: '', body: '' },
     webhook: { url: '', method: 'POST' },
@@ -1231,7 +1328,10 @@ function addNode(type: WorkflowNodeType) {
     type,
     label: cfg.label,
     config: getDefaultConfig(type),
-    position: { x: 0, y: editingWorkflow.value.nodes.length },
+    position: {
+      x: 80 + (editingWorkflow.value.nodes.length % 3) * 280,
+      y: 60 + Math.floor(editingWorkflow.value.nodes.length / 3) * 170,
+    },
   }
 
   editingWorkflow.value.nodes = [...editingWorkflow.value.nodes, node]
