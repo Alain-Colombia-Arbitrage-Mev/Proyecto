@@ -3,16 +3,18 @@
     <div v-if="loading" class="flex items-center justify-center h-[560px] bg-white dark:bg-[#1b1b1b]">
       <UIcon name="i-heroicons-arrow-path" class="w-6 h-6 animate-spin text-gray-400" />
     </div>
-    <Filemanager
-      v-else
-      :data="entries"
-      :init="init"
-    />
+    <!-- SVAR widgets render invisible without a theme wrapper (CSS vars) -->
+    <component :is="isDark ? WillowDark : Willow" v-else>
+      <Filemanager
+        :data="entries"
+        :init="init"
+      />
+    </component>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Filemanager } from '@svar-ui/vue-filemanager'
+import { Filemanager, Willow, WillowDark } from '@svar-ui/vue-filemanager'
 import '@svar-ui/vue-filemanager/all.css'
 import type { WorkspaceFile } from '~/types'
 
@@ -20,6 +22,7 @@ const props = defineProps<{ workspaceId: string }>()
 const emit = defineEmits<{ open: [file: WorkspaceFile] }>()
 
 const lang = useLanguage()
+const { isDark } = useDarkMode()
 const es = computed(() => lang.language.value !== 'en')
 
 const loading = ref(true)
