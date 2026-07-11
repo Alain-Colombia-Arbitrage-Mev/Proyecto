@@ -28,14 +28,6 @@
       </div>
       <div class="flex items-center gap-2">
         <UButton
-          v-if="source === 'workspace'"
-          size="sm" variant="ghost" icon="i-heroicons-folder-plus"
-          class="font-medium"
-          @click="createFolder"
-        >
-          {{ es ? 'Nueva carpeta' : 'New folder' }}
-        </UButton>
-        <UButton
           size="sm" variant="soft" icon="i-heroicons-arrow-up-tray"
           :loading="source === 'drive' ? driveUploading : uploading"
           class="font-medium"
@@ -63,266 +55,9 @@
       </button>
     </div>
 
-    <!-- Toolbar: search + sort + view -->
-    <div v-if="source === 'workspace'" class="flex items-center gap-2 mb-3 animate-fade-up flex-wrap">
-      <div class="relative flex-1 min-w-[180px] max-w-xs">
-        <UIcon name="i-heroicons-magnifying-glass" class="w-4 h-4 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-        <input
-          v-model="searchQuery"
-          type="text"
-          :placeholder="es ? 'Buscar archivos…' : 'Search files…'"
-          class="w-full bg-white dark:bg-white/[0.06] border border-gray-200 dark:border-white/10 rounded-lg pl-8 pr-3 py-1.5 text-xs text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-focusflow-400/40"
-        >
-      </div>
-      <select
-        v-model="sortBy"
-        class="bg-white dark:bg-white/[0.06] border border-gray-200 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-gray-700 dark:text-gray-300 cursor-pointer focus:outline-none"
-      >
-        <option value="date_desc">{{ es ? 'Más recientes' : 'Newest' }}</option>
-        <option value="date_asc">{{ es ? 'Más antiguos' : 'Oldest' }}</option>
-        <option value="name">{{ es ? 'Nombre A-Z' : 'Name A-Z' }}</option>
-        <option value="size_desc">{{ es ? 'Más pesados' : 'Largest' }}</option>
-      </select>
-      <div class="flex items-center rounded-lg bg-gray-100 dark:bg-white/[0.06] p-0.5">
-        <button
-          v-for="v in [{ v: 'list', icon: 'i-heroicons-list-bullet' }, { v: 'grid', icon: 'i-heroicons-squares-2x2' }]"
-          :key="v.v"
-          class="w-7 h-6 rounded-md flex items-center justify-center transition-colors cursor-pointer"
-          :class="fileView === v.v ? 'bg-white dark:bg-white/15 text-focusflow-600 dark:text-focusflow-300 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
-          @click="fileView = v.v as any"
-        >
-          <UIcon :name="v.icon" class="w-3.5 h-3.5" />
-        </button>
-      </div>
-    </div>
-
-    <!-- Bulk actions bar -->
-    <div v-if="source === 'workspace' && selectedIds.size > 0" class="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-focusflow-50 dark:bg-focusflow-950/40 ring-1 ring-focusflow-200 dark:ring-focusflow-500/30 animate-fade-up">
-      <span class="text-xs font-bold text-focusflow-700 dark:text-focusflow-300">{{ selectedIds.size }} {{ es ? 'seleccionados' : 'selected' }}</span>
-      <button class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white dark:bg-white/10 text-gray-700 dark:text-gray-200 hover:bg-amber-50 dark:hover:bg-amber-500/10 cursor-pointer transition-colors" @click="openMoveModal(null)">
-        <UIcon name="i-heroicons-arrow-right-start-on-rectangle" class="w-3.5 h-3.5" />{{ es ? 'Mover' : 'Move' }}
-      </button>
-      <button class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white dark:bg-white/10 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 cursor-pointer transition-colors" @click="bulkDelete">
-        <UIcon name="i-heroicons-trash" class="w-3.5 h-3.5" />{{ es ? 'Eliminar' : 'Delete' }}
-      </button>
-      <button class="ml-auto text-[11px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 underline cursor-pointer" @click="selectedIds = new Set()">
-        {{ es ? 'Deseleccionar' : 'Clear' }}
-      </button>
-    </div>
-
-    <!-- Breadcrumb -->
-    <div v-if="source === 'workspace'" class="flex items-center gap-1.5 mb-4 text-sm animate-fade-up">
-      <button
-        class="text-gray-500 dark:text-gray-400 hover:text-focusflow-700 dark:hover:text-focusflow-400 font-medium transition-colors cursor-pointer"
-        @click="navigateTo('/')"
-      >
-        <UIcon name="i-heroicons-home" class="w-4 h-4" />
-      </button>
-      <template v-for="(part, i) in breadcrumbs" :key="i">
-        <UIcon name="i-heroicons-chevron-right" class="w-3 h-3 text-gray-300 dark:text-gray-600" />
-        <button
-          class="text-gray-500 dark:text-gray-400 hover:text-focusflow-700 dark:hover:text-focusflow-400 font-medium transition-colors cursor-pointer"
-          @click="navigateTo(breadcrumbPath(i))"
-        >
-          {{ part }}
-        </button>
-      </template>
-    </div>
-
-    <!-- Loading -->
-    <div v-if="source === 'workspace' && loading" class="flex justify-center py-16">
-      <div class="flex items-center gap-3 text-gray-400 dark:text-gray-500">
-        <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 animate-spin" />
-        <span class="text-sm">{{ t.loadingFiles }}</span>
-      </div>
-    </div>
-
-    <!-- Empty state -->
-    <div v-else-if="source === 'workspace' && files.length === 0 && subfolders.length === 0" class="text-center py-20 animate-fade-up">
-      <div class="w-20 h-20 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center mx-auto mb-5">
-        <UIcon name="i-heroicons-folder-open" class="w-10 h-10 text-gray-300 dark:text-gray-600" />
-      </div>
-      <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ t.noFiles }}</h2>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 mb-8 max-w-xs mx-auto">{{ t.noFilesDesc }}</p>
-      <UButton icon="i-heroicons-arrow-up-tray" color="primary" size="lg" class="font-semibold" @click="triggerUpload">{{ t.uploadFile }}</UButton>
-    </div>
-
-    <!-- File explorer (unified: view toggle applies to folders AND files) -->
-    <div v-else-if="source === 'workspace'" class="animate-fade-up delay-100">
-      <!-- ═ GRID VIEW ═ -->
-      <template v-if="fileView === 'grid'">
-        <div v-if="subfolders.length > 0" class="mb-4">
-          <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 px-1">{{ t.folders }}</p>
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-            <div
-              v-for="folder in subfolders"
-              :key="folder.name"
-              class="relative flex items-center gap-3 bg-white dark:bg-[#1b1b1b] rounded-xl p-3.5 border transition-all cursor-pointer group shadow-card hover:shadow-card-hover"
-              :class="dropFolder === folder.name
-                ? 'border-focusflow-400 ring-2 ring-focusflow-400/40 scale-[1.02]'
-                : 'border-gray-200/80 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30'"
-              @click="navigateTo(currentFolder === '/' ? `/${folder.name}` : `${currentFolder}/${folder.name}`)"
-              @dragover.prevent="onFolderDragOver(folder.name, $event)"
-              @dragleave="dropFolder === folder.name && (dropFolder = null)"
-              @drop.prevent.stop="onDropToFolder(folder.name, $event)"
-            >
-              <div class="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
-                <UIcon name="i-heroicons-folder" class="w-5 h-5 text-amber-500" />
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-focusflow-700 dark:group-hover:text-focusflow-400 transition-colors">{{ folder.name }}</p>
-                <p class="text-[10px] text-gray-400">{{ folder.count }} {{ es ? 'elementos' : 'items' }}</p>
-              </div>
-              <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                <button class="w-6 h-6 rounded-md flex items-center justify-center text-gray-400 hover:text-focusflow-600 hover:bg-focusflow-50 dark:hover:bg-focusflow-500/10 cursor-pointer" :title="es ? 'Renombrar carpeta' : 'Rename folder'" @click.stop="renameFolder(folder.name)">
-                  <UIcon name="i-heroicons-pencil" class="w-3.5 h-3.5" />
-                </button>
-                <button class="w-6 h-6 rounded-md flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 cursor-pointer" :title="es ? 'Eliminar carpeta y su contenido' : 'Delete folder and its contents'" @click.stop="deleteFolder(folder.name)">
-                  <UIcon name="i-heroicons-trash" class="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div v-if="files.length > 0">
-          <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 px-1">
-            {{ t.filesTitle }}
-            <span v-if="searchQuery" class="normal-case font-medium tracking-normal">· {{ visibleFiles.length }} / {{ files.length }}</span>
-          </p>
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-            <div
-              v-for="file in visibleFiles"
-              :key="file.id"
-              class="relative bg-white dark:bg-[#1b1b1b] rounded-xl border overflow-hidden group cursor-pointer transition-all shadow-card hover:shadow-card-hover"
-              :class="selectedIds.has(file.id) ? 'border-focusflow-400 ring-1 ring-focusflow-400/40' : 'border-gray-200/80 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30'"
-              draggable="true"
-              @dragstart="onFileDragStart(file, $event)"
-              @click="openPreview(file)"
-            >
-              <div class="h-24 flex items-center justify-center bg-gray-50 dark:bg-black/20 overflow-hidden">
-                <img
-                  v-if="file.mime_type.startsWith('image/') && thumbUrls[file.id]"
-                  :src="thumbUrls[file.id]"
-                  class="w-full h-full object-cover"
-                  loading="lazy"
-                >
-                <UIcon v-else :name="fileIcon(file.mime_type)" class="w-8 h-8" :class="fileIconColor(file.mime_type)" />
-              </div>
-              <div class="px-2.5 py-2">
-                <p class="text-[11px] font-medium text-gray-900 dark:text-white truncate">{{ file.file_name }}</p>
-                <p class="text-[9px] text-gray-400">{{ formatFileSize(file.file_size) }}</p>
-              </div>
-              <button
-                class="absolute top-1.5 left-1.5 w-5 h-5 rounded-md flex items-center justify-center transition-all cursor-pointer"
-                :class="selectedIds.has(file.id) ? 'bg-focusflow-500 text-white opacity-100' : 'bg-white/80 dark:bg-black/50 text-gray-400 opacity-0 group-hover:opacity-100'"
-                @click.stop="toggleSelect(file.id)"
-              >
-                <UIcon name="i-heroicons-check" class="w-3 h-3" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </template>
-
-      <!-- ═ LIST VIEW: unified rows, folders first ═ -->
-      <div v-else class="bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200/80 dark:border-white/10 shadow-card overflow-hidden divide-y divide-gray-50 dark:divide-white/5">
-        <!-- Folder rows (drop targets) -->
-        <div
-          v-for="folder in subfolders"
-          :key="'dir-' + folder.name"
-          class="flex items-center gap-4 px-4 py-3 transition-colors group cursor-pointer"
-          :class="dropFolder === folder.name ? 'bg-focusflow-50 dark:bg-focusflow-950/40 ring-1 ring-inset ring-focusflow-400/40' : 'hover:bg-gray-50/50 dark:hover:bg-white/5'"
-          @click="navigateTo(currentFolder === '/' ? `/${folder.name}` : `${currentFolder}/${folder.name}`)"
-          @dragover.prevent="onFolderDragOver(folder.name, $event)"
-          @dragleave="dropFolder === folder.name && (dropFolder = null)"
-          @drop.prevent.stop="onDropToFolder(folder.name, $event)"
-        >
-          <span class="w-5 shrink-0" />
-          <div class="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
-            <UIcon name="i-heroicons-folder" class="w-5 h-5 text-amber-500" />
-          </div>
-          <div class="min-w-0 flex-1">
-            <p class="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-focusflow-700 dark:group-hover:text-focusflow-400 transition-colors">{{ folder.name }}</p>
-            <p class="text-[10px] text-gray-400">{{ folder.count }} {{ es ? 'elementos' : 'items' }} · {{ es ? 'arrastra archivos aquí para moverlos' : 'drag files here to move them' }}</p>
-          </div>
-          <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-focusflow-600 hover:bg-focusflow-50 dark:hover:bg-focusflow-500/10 cursor-pointer" :title="es ? 'Renombrar carpeta' : 'Rename folder'" @click.stop="renameFolder(folder.name)">
-              <UIcon name="i-heroicons-pencil" class="w-4 h-4" />
-            </button>
-            <button class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 cursor-pointer" :title="es ? 'Eliminar carpeta y su contenido' : 'Delete folder and its contents'" @click.stop="deleteFolder(folder.name)">
-              <UIcon name="i-heroicons-trash" class="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        <!-- File rows (draggable) -->
-        <div
-          v-for="file in visibleFiles"
-          :key="file.id"
-          class="flex items-center gap-4 px-4 py-3 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors group"
-          :class="{ 'bg-focusflow-50/40 dark:bg-focusflow-950/20': selectedIds.has(file.id) }"
-          draggable="true"
-          @dragstart="onFileDragStart(file, $event)"
-        >
-            <!-- Select checkbox -->
-            <button
-              class="w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-all cursor-pointer"
-              :class="selectedIds.has(file.id)
-                ? 'bg-focusflow-500 border-focusflow-500 text-white'
-                : 'border-gray-300 dark:border-white/20 text-transparent opacity-0 group-hover:opacity-100 hover:border-focusflow-400'"
-              @click.stop="toggleSelect(file.id)"
-            >
-              <UIcon name="i-heroicons-check" class="w-3 h-3" />
-            </button>
-            <!-- Icon -->
-            <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" :class="fileIconBg(file.mime_type)">
-              <UIcon :name="fileIcon(file.mime_type)" class="w-5 h-5" :class="fileIconColor(file.mime_type)" />
-            </div>
-
-            <!-- Info (click = open preview) -->
-            <div class="min-w-0 flex-1 cursor-pointer" @click="openPreview(file)">
-              <p class="text-sm font-medium text-gray-900 dark:text-white truncate hover:text-focusflow-700 dark:hover:text-focusflow-400 transition-colors">{{ file.file_name }}</p>
-              <div class="flex items-center gap-3 mt-0.5">
-                <span class="text-[10px] text-gray-400 dark:text-gray-500 font-medium">{{ formatFileSize(file.file_size) }}</span>
-                <span class="text-[10px] text-gray-400 dark:text-gray-500 font-medium">{{ formatDate(file.created_at) }}</span>
-                <span v-if="file.source === 'ai_generated'" class="text-[10px] font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 px-1.5 py-0.5 rounded">AI</span>
-              </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-focusflow-600 dark:hover:text-focusflow-400 hover:bg-focusflow-50 dark:hover:bg-focusflow-500/10 transition-all cursor-pointer"
-                :title="es ? 'Renombrar' : 'Rename'"
-                @click="renameFile(file)"
-              >
-                <UIcon name="i-heroicons-pencil" class="w-4 h-4" />
-              </button>
-              <button
-                class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-all cursor-pointer"
-                :title="es ? 'Mover a carpeta' : 'Move to folder'"
-                @click="openMoveModal(file)"
-              >
-                <UIcon name="i-heroicons-arrow-right-start-on-rectangle" class="w-4 h-4" />
-              </button>
-              <button
-                class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-focusflow-700 dark:hover:text-focusflow-400 hover:bg-focusflow-50 dark:hover:bg-focusflow-500/10 transition-all cursor-pointer"
-                @click="downloadFile(file)"
-                :title="t.download"
-              >
-                <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
-              </button>
-              <button
-                class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all cursor-pointer"
-                @click="deleteFile(file)"
-                :title="t.delete"
-              >
-                <UIcon name="i-heroicons-trash" class="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
+    <!-- Workspace explorer (SVAR File Manager) -->
+    <div v-if="source === 'workspace'" class="animate-fade-up">
+      <FilesSvarExplorer ref="svarExplorer" :workspace-id="workspaceId" @open="openPreview" />
     </div>
 
     <!-- ══ Google Drive ══ -->
@@ -564,6 +299,7 @@ const currentFolder = ref('/')
 const loading = ref(true)
 const uploading = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
+const svarExplorer = ref<{ reload: () => Promise<void> } | null>(null)
 
 // ── Google Drive ──
 const drive = useGoogleDrive()
@@ -936,6 +672,7 @@ async function onDrop(e: DragEvent) {
       await $fetch(`/api/workspaces/${workspaceId.value}/files`, { method: 'POST', body: formData })
     }
     await loadFiles()
+    await svarExplorer.value?.reload()
   } catch (e2: any) {
     alert(e2.data?.message || t.value.errorUploading)
   } finally {
@@ -960,6 +697,7 @@ async function handleFileUpload(event: Event) {
       })
     }
     await loadFiles()
+    await svarExplorer.value?.reload()
   } catch (e: any) {
     alert(e.data?.message || t.value.errorUploading)
   } finally {

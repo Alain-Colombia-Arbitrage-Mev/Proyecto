@@ -7,6 +7,32 @@ export default defineEventHandler(async (event) => {
   await requireWorkspaceMember(event, workspaceId)
 
   const query = getQuery(event)
+
+  // Full-tree mode for the SVAR explorer: every file + every folder in one call
+  if (query.all === '1') {
+    const supabaseAll = serverSupabaseServiceRole(event)
+    const { data: allRows } = await supabaseAll
+      .from('workspace_files')
+      .select('id, file_name, file_size, mime_type, folder, source, created_at, metadata')
+      .eq('workspace_id', workspaceId)
+      .order('created_at', { ascending: false })
+      .limit(1000)
+    const rows = allRows || []
+    const folders = new Set<string>()
+    for (const r of rows) {
+      // Register the folder and every ancestor so the tree is complete
+      let f = r.folder || '/'
+      while (f && f !== '/') {
+        folders.add(f)
+        f = f.slice(0, f.lastIndexOf('/')) || '/'
+      }
+    }
+    return {
+      files: rows.filter(r => r.mime_type !== 'inode/directory'),
+      folders: Array.from(folders).sort(),
+    }
+  }
+
   const folder = sanitizeFolder(query.folder as string | undefined)
   const projectId = query.project_id as string | undefined
   const page = Math.max(1, parseInt(query.page as string) || 1)
