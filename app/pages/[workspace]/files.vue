@@ -57,7 +57,7 @@
 
     <!-- Workspace explorer (SVAR File Manager) -->
     <div v-if="source === 'workspace'" class="animate-fade-up">
-      <FilesSvarExplorer ref="svarExplorer" :workspace-id="workspaceId" @open="openPreview" />
+      <SvarExplorer ref="svarExplorer" :workspace-id="workspaceId" @open="openPreview" />
     </div>
 
     <!-- ══ Google Drive ══ -->
