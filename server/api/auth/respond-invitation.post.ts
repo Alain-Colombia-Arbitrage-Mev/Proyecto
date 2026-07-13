@@ -1,8 +1,10 @@
-import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
+import { serverSupabaseServiceRole } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
-  const user = await serverSupabaseUser(event)
-  if (!user?.id || !user?.email) throw createError({ statusCode: 401, message: 'Not authenticated' })
+  // requireUser normalizes JWT-payload users (sub → id); raw serverSupabaseUser
+  // returns claims without `id` under asymmetric keys and broke this check
+  const user = await requireUser(event)
+  if (!user.email) throw createError({ statusCode: 401, message: 'Not authenticated' })
 
   const body = await readBody(event)
   const inviteId = body.inviteId as string

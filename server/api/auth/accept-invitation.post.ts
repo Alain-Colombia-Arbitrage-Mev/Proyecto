@@ -14,8 +14,10 @@ export default defineEventHandler(async (event) => {
   // Get the authenticated user — required
   try {
     const user = await serverSupabaseUser(event)
-    if (user?.id && user?.email) {
-      userId = user.id
+    // Under asymmetric JWTs the payload carries `sub` instead of `id`
+    const uid = user?.id || (user as any)?.sub
+    if (uid && user?.email) {
+      userId = uid
       userEmail = user.email.toLowerCase()
     }
   } catch {}
