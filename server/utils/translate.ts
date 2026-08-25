@@ -64,7 +64,7 @@ export async function translateTaskToEnglish(opts: {
   taskId: string
   title: string
   description: string | null
-}): Promise<void> {
+}): Promise<boolean> {
   return translateTaskToAll(opts)
 }
 
@@ -74,9 +74,9 @@ export async function translateTaskToAll(opts: {
   title: string
   description: string | null
   sourceLang?: string
-}): Promise<void> {
+}): Promise<boolean> {
   const { openrouterApiKey } = useRuntimeConfig()
-  if (!openrouterApiKey) return
+  if (!openrouterApiKey) return false
 
   const { supabase, taskId, title, description } = opts
   const cleanDesc = description ? stripHtml(description).slice(0, 400) : ''
@@ -95,7 +95,7 @@ export async function translateTaskToAll(opts: {
       body: {
         model: TRANSLATE_MODEL,
         messages: [
-          { role: 'system', content: 'ES→EN,UR. JSON:{en:{t,d},ur:{t,d}}. d=null if empty.' },
+          { role: 'system', content: 'Detect source (ES/EN/UR). Return EN and Urdu. JSON:{en:{t,d},ur:{t,d}}. Preserve names/code. d=null if empty.' },
           { role: 'user', content: input },
         ],
         temperature: 0.1,
@@ -104,11 +104,13 @@ export async function translateTaskToAll(opts: {
     })
 
     const parsed = tryParseJson(response.choices?.[0]?.message?.content || '')
-    if (!parsed) return
+    if (!parsed) return false
 
     await applyTranslation(supabase, taskId, parsed)
+    return true
   } catch (err: any) {
     console.error('[translate] Failed:', err.message)
+    return false
   }
 }
 
@@ -144,7 +146,7 @@ export async function translateTasksBatch(opts: {
       body: {
         model: TRANSLATE_MODEL,
         messages: [
-          { role: 'system', content: 'ES→EN,UR. JSON array, each:{i,en:{t,d},ur:{t,d}}. d=null if empty.' },
+          { role: 'system', content: 'Detect each source (ES/EN/UR). Return EN and Urdu. JSON array, each:{i,en:{t,d},ur:{t,d}}. Preserve names/code. d=null if empty.' },
           { role: 'user', content: lines.join('\n') },
         ],
         temperature: 0.1,

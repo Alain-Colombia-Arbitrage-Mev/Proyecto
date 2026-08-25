@@ -129,7 +129,8 @@ export default defineEventHandler(async (event) => {
   // Only for IT/dev templates (dev, devops, backend_senior_dev, frontend_design, app_development)
   const titleChanged = body.title !== undefined && body.title !== (task as any).title
   const descChanged = body.description !== undefined
-  if (titleChanged || descChanged) {
+  const skipAutoTranslate = body.skip_auto_translate === true
+  if (!skipAutoTranslate && (titleChanged || descChanged)) {
     shouldTranslateProject(supabase, updated.project_id).then((shouldTranslate) => {
       if (!shouldTranslate) return
       translateTaskToAll({

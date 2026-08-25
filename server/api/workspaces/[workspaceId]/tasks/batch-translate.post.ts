@@ -14,6 +14,7 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody(event).catch(() => ({}))
   const limit = Math.min(body?.limit || 20, 50)
+  const scanLimit = Math.min(Math.max(limit * 10, limit), 500)
 
   const supabase = serverSupabaseServiceRole(event)
 
@@ -22,17 +23,18 @@ export default defineEventHandler(async (event) => {
     .select('id, title, description, title_en, description_en, translations, projects!inner(workspace_id, kanban_template)')
     .eq('projects.workspace_id', workspaceId)
     .in('projects.kanban_template', ['dev', 'devops', 'backend_senior_dev', 'frontend_design', 'app_development'])
-    .or('title_en.is.null,title_en.eq.,description_en.is.null')
     .not('title', 'is', null)
-    .limit(limit)
+    .order('updated_at', { ascending: false })
+    .limit(scanLimit)
 
   if (error) {
     throw createError({ statusCode: 500, message: 'Error fetching tasks' })
   }
 
   const needsTranslation = (tasks || []).filter(t => {
-    return !t.title_en || (t.description && !t.description_en) || (t.description && !(t.translations as any)?.ur?.description)
-  })
+    const ur = (t.translations as any)?.ur || {}
+    return !t.title_en || !ur.title || (t.description && (!t.description_en || !ur.description))
+  }).slice(0, limit)
 
   if (!needsTranslation.length) {
     return { translated: 0, remaining: 0 }
@@ -51,12 +53,5 @@ export default defineEventHandler(async (event) => {
     translated += count
   }
 
-  const { count } = await supabase
-    .from('tasks')
-    .select('id, projects!inner(workspace_id, kanban_template)', { count: 'exact', head: true })
-    .eq('projects.workspace_id', workspaceId)
-    .in('projects.kanban_template', ['dev', 'devops', 'backend_senior_dev', 'frontend_design', 'app_development'])
-    .or('title_en.is.null,title_en.eq.,description_en.is.null')
-
-  return { translated, remaining: Math.max((count || 0) - translated, 0) }
+  return { translated, remaining: Math.max(needsTranslation.length - translated, 0) }
 })

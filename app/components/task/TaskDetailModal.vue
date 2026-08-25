@@ -15,7 +15,7 @@
               }"
             />
             <h2 v-if="!editingTitle" class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate cursor-pointer hover:text-focusflow-700 dark:hover:text-focusflow-300" @click="editingTitle = true">
-              {{ language === 'en' ? (editForm.title_en || editForm.title || task.title) : (editForm.title || task.title) }}
+              {{ language === 'ur' ? (editForm.title_ur || editForm.title_en || editForm.title || task.title) : language === 'en' ? (editForm.title_en || editForm.title || task.title) : (editForm.title || task.title) }}
             </h2>
             <input
               v-else
@@ -67,33 +67,46 @@
             <div class="flex-1 px-6 py-5 space-y-6 md:border-r border-gray-200/80 dark:border-white/10 min-w-0">
               <!-- Description -->
               <div>
-                <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center justify-between gap-2 mb-2">
                   <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ lang.labels.value.description }}</h4>
-                  <div class="flex items-center bg-gray-100 dark:bg-white/10 rounded-md p-0.5">
-                    <button
-                      class="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer flex items-center gap-0.5"
-                      :class="descLang === 'es' ? 'bg-white dark:bg-white/15 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-400 dark:text-gray-400'"
-                      @click="descLang = 'es'"
+                  <div class="flex flex-wrap items-center justify-end gap-2">
+                    <UButton
+                      size="xs"
+                      variant="soft"
+                      color="primary"
+                      icon="i-heroicons-language"
+                      :loading="translatingTask"
+                      :disabled="saving || !editForm.title.trim()"
+                      @click="handleTranslateTask"
                     >
-                      <svg class="w-3.5 h-2.5 rounded-[1px]" viewBox="0 0 640 480"><rect width="640" height="480" fill="#c60b1e"/><rect width="640" height="240" y="120" fill="#ffc400"/></svg>
-                      ES
-                    </button>
-                    <button
-                      class="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer flex items-center gap-0.5"
-                      :class="descLang === 'en' ? 'bg-white dark:bg-white/15 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-400 dark:text-gray-400'"
-                      @click="descLang = 'en'"
-                    >
-                      <svg class="w-3.5 h-2.5 rounded-[1px]" viewBox="0 0 640 480"><rect width="640" height="480" fill="#fff"/><g fill="#b22234"><rect width="640" height="37"/><rect width="640" height="37" y="74"/><rect width="640" height="37" y="148"/><rect width="640" height="37" y="222"/><rect width="640" height="37" y="296"/><rect width="640" height="37" y="370"/><rect width="640" height="37" y="444"/></g><rect width="256" height="259" fill="#3c3b6e"/></svg>
-                      EN
-                    </button>
-                    <button
-                      class="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer flex items-center gap-0.5"
-                      :class="descLang === 'ur' ? 'bg-white dark:bg-white/15 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-400 dark:text-gray-400'"
-                      @click="descLang = 'ur'"
-                    >
-                      <svg class="w-3.5 h-2.5 rounded-[1px]" viewBox="0 0 640 480"><rect width="640" height="480" fill="#01411c"/><rect width="160" height="480" fill="#fff"/></svg>
-                      UR
-                    </button>
+                      {{ language === 'en' ? 'Translate EN/UR' : 'Traducir EN/UR' }}
+                    </UButton>
+                    <div class="flex items-center bg-gray-100 dark:bg-white/10 rounded-md p-0.5">
+                      <button
+                        class="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer flex items-center gap-0.5"
+                        :class="descLang === 'es' ? 'bg-white dark:bg-white/15 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-400 dark:text-gray-400'"
+                        @click="descLang = 'es'"
+                      >
+                        <svg class="w-3.5 h-2.5 rounded-[1px]" viewBox="0 0 640 480"><rect width="640" height="480" fill="#c60b1e"/><rect width="640" height="240" y="120" fill="#ffc400"/></svg>
+                        ES
+                      </button>
+                      <button
+                        class="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer flex items-center gap-0.5"
+                        :class="descLang === 'en' ? 'bg-white dark:bg-white/15 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-400 dark:text-gray-400'"
+                        @click="descLang = 'en'"
+                      >
+                        <svg class="w-3.5 h-2.5 rounded-[1px]" viewBox="0 0 640 480"><rect width="640" height="480" fill="#fff"/><g fill="#b22234"><rect width="640" height="37"/><rect width="640" height="37" y="74"/><rect width="640" height="37" y="148"/><rect width="640" height="37" y="222"/><rect width="640" height="37" y="296"/><rect width="640" height="37" y="370"/><rect width="640" height="37" y="444"/></g><rect width="256" height="259" fill="#3c3b6e"/></svg>
+                        EN
+                      </button>
+                      <button
+                        class="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all cursor-pointer flex items-center gap-0.5"
+                        :class="descLang === 'ur' ? 'bg-white dark:bg-white/15 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-400 dark:text-gray-400'"
+                        @click="descLang = 'ur'"
+                      >
+                        <svg class="w-3.5 h-2.5 rounded-[1px]" viewBox="0 0 640 480"><rect width="640" height="480" fill="#01411c"/><rect width="160" height="480" fill="#fff"/></svg>
+                        UR
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <LazyTaskEditor
@@ -120,6 +133,8 @@
                 />
                 <p v-if="descLang === 'en' && !editForm.description_en" class="text-[10px] text-amber-500 mt-1">{{ lang.labels.value.noTranslation }}</p>
                 <p v-if="descLang === 'ur' && !editForm.description_ur" class="text-[10px] text-amber-500 mt-1">{{ lang.labels.value.noTranslation }}</p>
+                <p v-if="translationActionMessage" class="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1">{{ translationActionMessage }}</p>
+                <p v-if="translationActionError" class="text-[10px] text-red-500 mt-1">{{ translationActionError }}</p>
               </div>
 
               <!-- Deliverables -->
@@ -352,6 +367,9 @@ const isOpen = computed({
 })
 
 const saving = ref(false)
+const translatingTask = ref(false)
+const translationActionMessage = ref('')
+const translationActionError = ref('')
 const editingTitle = ref(false)
 const selectedLabelIds = ref<string[]>([])
 const showDelegateModal = ref(false)
@@ -359,6 +377,7 @@ const showDelegateModal = ref(false)
 const editForm = reactive({
   title: '',
   title_en: '',
+  title_ur: '',
   description: '',
   description_en: '',
   description_ur: '',
@@ -392,6 +411,7 @@ function populateForm(t: Task) {
   Object.assign(editForm, {
     title: t.title,
     title_en: t.title_en || '',
+    title_ur: t.translations?.ur?.title || '',
     description: desc,
     description_en: descEn,
     description_ur: descUr,
@@ -414,6 +434,8 @@ watch(() => props.task, (t) => {
   populateForm(t)
   editingTitle.value = false
   descLang.value = 'es'
+  translationActionMessage.value = ''
+  translationActionError.value = ''
 
   // If translations are missing, refetch after a delay to pick up fire-and-forget translations
   if (translationRefetchTimer) clearTimeout(translationRefetchTimer)
@@ -422,8 +444,9 @@ watch(() => props.task, (t) => {
       try {
         const res = await $fetch<{ task: Task }>(`/api/workspaces/${props.workspaceId}/tasks/${t.id}`)
         const fresh = res.task
-        if (fresh.title_en || fresh.translations?.ur?.description) {
+        if (fresh.title_en || fresh.translations?.ur?.title || fresh.translations?.ur?.description) {
           editForm.title_en = fresh.title_en || ''
+          editForm.title_ur = fresh.translations?.ur?.title || ''
           editForm.description_en = fresh.description_en ? plainTextToHtml(fresh.description_en) : ''
           editForm.description_ur = fresh.translations?.ur?.description ? plainTextToHtml(fresh.translations.ur.description) : ''
         }
@@ -452,29 +475,73 @@ function handleLabelsChanged(labels: Label[]) {
   selectedLabelIds.value = labels.map(l => l.id)
 }
 
+function buildUpdatePayload(skipAutoTranslate = false) {
+  const tags = editForm.tagsStr ? editForm.tagsStr.split(',').map(t => t.trim()).filter(Boolean) : []
+  return {
+    title: editForm.title,
+    title_en: editForm.title_en || null,
+    description: editForm.description || null,
+    description_en: editForm.description_en || null,
+    priority: editForm.priority,
+    column_id: editForm.column_id || null,
+    due_date: editForm.due_date || null,
+    estimated_hours: editForm.estimated_hours ? parseFloat(editForm.estimated_hours) : null,
+    tags,
+    assignees: editForm.assignees,
+    figma_links: editForm.figma_links,
+    color: editForm.color || null,
+    translations: editForm.title_ur || editForm.description_ur ? { ur: { title: editForm.title_ur || null, description: editForm.description_ur || null } } : undefined,
+    skip_auto_translate: skipAutoTranslate,
+  }
+}
+
+async function persistTaskEdits(skipAutoTranslate = false) {
+  if (!props.task) return null
+  return await $fetch<Task>(`/api/workspaces/${props.workspaceId}/tasks/${props.task.id}`, {
+    method: 'PATCH',
+    body: buildUpdatePayload(skipAutoTranslate),
+  })
+}
+
+function applyTranslatedTask(fresh: Task) {
+  editForm.title_en = fresh.title_en || ''
+  editForm.title_ur = fresh.translations?.ur?.title || ''
+  editForm.description_en = fresh.description_en ? plainTextToHtml(fresh.description_en) : ''
+  editForm.description_ur = fresh.translations?.ur?.description ? plainTextToHtml(fresh.translations.ur.description) : ''
+  descLang.value = language.value === 'ur' ? 'ur' : 'en'
+}
+
+async function handleTranslateTask() {
+  if (!props.task || translatingTask.value) return
+  translatingTask.value = true
+  translationActionMessage.value = ''
+  translationActionError.value = ''
+  try {
+    await persistTaskEdits(true)
+    const result = await $fetch<{ ok: boolean; task: Task }>(`/api/workspaces/${props.workspaceId}/tasks/${props.task.id}/translate`, {
+      method: 'POST',
+      body: {
+        title: editForm.title,
+        description: editForm.description || null,
+      },
+    })
+    applyTranslatedTask(result.task)
+    translationActionMessage.value = language.value === 'en'
+      ? 'English and Urdu translations updated.'
+      : 'Traducciones en inglés y urdu actualizadas.'
+    emit('updated')
+  } catch (e: any) {
+    translationActionError.value = e.data?.message || e.message || (language.value === 'en' ? 'Translation failed' : 'No se pudo traducir')
+  } finally {
+    translatingTask.value = false
+  }
+}
+
 async function handleSave() {
   if (!props.task) return
   saving.value = true
   try {
-    const tags = editForm.tagsStr ? editForm.tagsStr.split(',').map(t => t.trim()).filter(Boolean) : []
-    await $fetch(`/api/workspaces/${props.workspaceId}/tasks/${props.task.id}`, {
-      method: 'PATCH',
-      body: {
-        title: editForm.title,
-        title_en: editForm.title_en || null,
-        description: editForm.description || null,
-        description_en: editForm.description_en || null,
-        priority: editForm.priority,
-        column_id: editForm.column_id || null,
-        due_date: editForm.due_date || null,
-        estimated_hours: editForm.estimated_hours ? parseFloat(editForm.estimated_hours) : null,
-        tags,
-        assignees: editForm.assignees,
-        figma_links: editForm.figma_links,
-        color: editForm.color || null,
-        translations: editForm.description_ur ? { ur: { description: editForm.description_ur } } : undefined,
-      },
-    })
+    await persistTaskEdits(false)
     isOpen.value = false
     emit('updated')
   } catch { /* */ } finally {
