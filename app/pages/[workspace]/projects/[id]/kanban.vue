@@ -82,9 +82,59 @@
       </div>
     </div>
 
+    <!-- Board pulse -->
+    <div v-if="!loading && !focusMode" class="grid gap-3 mb-4 animate-fade-up md:grid-cols-[1.1fr_0.9fr_0.9fr_1.2fr]">
+      <div class="rounded-lg border border-white/60 bg-white/60 p-3.5 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.055]">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">{{ language === 'en' ? 'Board health' : 'Salud del tablero' }}</p>
+            <p class="mt-1 text-xl font-bold tabular-nums" :class="boardHealthTone.text">{{ boardHealthScore }}%</p>
+          </div>
+          <div class="h-10 w-10 rounded-full flex items-center justify-center" :class="boardHealthTone.bg">
+            <UIcon :name="boardHealthScore >= 80 ? 'i-heroicons-shield-check' : boardHealthScore >= 55 ? 'i-heroicons-exclamation-triangle' : 'i-heroicons-fire'" class="w-5 h-5" :class="boardHealthTone.text" />
+          </div>
+        </div>
+        <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-100 dark:bg-white/10">
+          <div class="h-full rounded-full transition-all duration-500" :class="boardHealthTone.bar" :style="{ width: `${boardHealthScore}%` }" />
+        </div>
+      </div>
+
+      <button
+        class="rounded-lg border border-white/60 bg-white/55 p-3 text-left shadow-sm backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:border-red-200 dark:border-white/10 dark:bg-white/[0.045] dark:hover:border-red-500/20"
+        @click="showKanbanFilter = true; kanbanFilterDue = 'overdue'"
+      >
+        <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">{{ language === 'en' ? 'Risk queue' : 'Riesgos' }}</p>
+        <div class="mt-1 flex items-end justify-between">
+          <span class="text-xl font-bold tabular-nums" :class="overdueOpenCount > 0 ? 'text-red-600 dark:text-red-300' : 'text-gray-900 dark:text-gray-100'">{{ overdueOpenCount }}</span>
+          <span class="text-[11px] font-semibold text-gray-400">{{ language === 'en' ? 'overdue' : 'atrasadas' }}</span>
+        </div>
+      </button>
+
+      <button
+        class="rounded-lg border border-white/60 bg-white/55 p-3 text-left shadow-sm backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:border-amber-200 dark:border-white/10 dark:bg-white/[0.045] dark:hover:border-amber-500/20"
+        @click="showKanbanFilter = true; kanbanFilterAssignee = '__none'"
+      >
+        <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">{{ language === 'en' ? 'Ownership' : 'Responsables' }}</p>
+        <div class="mt-1 flex items-end justify-between">
+          <span class="text-xl font-bold tabular-nums" :class="unassignedOpenCount > 0 ? 'text-amber-600 dark:text-amber-300' : 'text-gray-900 dark:text-gray-100'">{{ unassignedOpenCount }}</span>
+          <span class="text-[11px] font-semibold text-gray-400">{{ language === 'en' ? 'unassigned' : 'sin dueño' }}</span>
+        </div>
+      </button>
+
+      <div class="rounded-lg border border-white/60 bg-white/55 p-3 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
+        <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">{{ language === 'en' ? 'Next action' : 'Siguiente acción' }}</p>
+        <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100 leading-snug">{{ nextBoardAction }}</p>
+        <div class="mt-2 flex flex-wrap gap-1.5">
+          <span v-if="wipExceededColumns.length" class="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold text-red-600 dark:bg-red-500/10 dark:text-red-300">WIP {{ wipExceededColumns.length }}</span>
+          <span v-if="criticalOpenCount" class="rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-bold text-orange-600 dark:bg-orange-500/10 dark:text-orange-300">{{ criticalOpenCount }} {{ language === 'en' ? 'critical' : 'críticas' }}</span>
+          <span v-if="blockedAgingCount" class="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:bg-amber-500/10 dark:text-amber-300">{{ blockedAgingCount }} {{ language === 'en' ? 'aging' : 'estancadas' }}</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Tablero header bar -->
     <div class="flex items-center justify-between mb-4 animate-fade-up flex-wrap gap-2">
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3 flex-wrap">
         <h2 class="text-[16px] font-semibold text-[#0D0D0D] dark:text-gray-100">{{ t.board }}</h2>
         <!-- View toggle -->
         <div class="flex items-center bg-gray-100 dark:bg-white/10 rounded-lg p-0.5">
@@ -103,6 +153,13 @@
             <UIcon name="i-heroicons-bars-3" class="w-4 h-4" />
           </button>
         </div>
+        <select v-model="boardSortBy" class="workos-select max-w-[180px]" :title="language === 'en' ? 'Sort board cards' : 'Ordenar tarjetas del tablero'">
+          <option value="position">{{ language === 'en' ? 'Board order' : 'Orden tablero' }}</option>
+          <option value="priority">{{ language === 'en' ? 'Priority first' : 'Prioridad primero' }}</option>
+          <option value="due_date">{{ language === 'en' ? 'Due date first' : 'Fecha primero' }}</option>
+          <option value="updated_at">{{ language === 'en' ? 'Recent activity' : 'Actividad reciente' }}</option>
+          <option value="title">{{ language === 'en' ? 'Name A-Z' : 'Nombre A-Z' }}</option>
+        </select>
         <LanguageToggle />
         <!-- Bulk delete -->
         <button
@@ -163,6 +220,7 @@
         class="text-xs font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-white/10 rounded-full px-3 py-2 border-0 outline-none cursor-pointer"
       >
         <option value="">{{ t.assignedTo }}</option>
+        <option value="__none">{{ language === 'en' ? 'Unassigned' : 'Sin responsable' }}</option>
         <option v-for="m in workspaceMembers" :key="m.user_id" :value="m.user_id">{{ m.email || m.user_id.slice(0, 12) }}</option>
       </select>
       <select
@@ -176,7 +234,7 @@
         <option value="none">{{ language === 'en' ? 'No due date' : 'Sin fecha' }}</option>
       </select>
       <button
-        v-if="kanbanSearch || kanbanFilterPriority || kanbanFilterAssignee || kanbanFilterDue"
+        v-if="hasActiveTaskFilters"
         class="text-[11px] text-red-500 font-medium cursor-pointer hover:text-red-700"
         @click="clearTaskFilters"
       >
@@ -212,13 +270,14 @@
               class="text-[10px] rounded-full px-1.5 py-0.5 font-semibold tabular-nums"
               :style="{ backgroundColor: column.color + '20', color: column.color }"
             >
-              {{ filteredTasksByColumn(column.id).length }}
+              {{ displayTasksByColumn(column.id).length }}
+              <span v-if="hasActiveTaskFilters" :style="{ color: column.color + '99' }">/{{ tasksByColumn(column.id).length }}</span>
               <span v-if="column.wip_limit" :style="{ color: column.color + '99' }">/{{ column.wip_limit }}</span>
             </span>
           </div>
           <div class="flex items-center gap-0.5">
             <button
-              v-if="canDeleteTasks && filteredTasksByColumn(column.id).length > 0"
+              v-if="canDeleteTasks && tasksByColumn(column.id).length > 0"
               class="w-7 h-7 flex items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-all sm:opacity-0 sm:group-hover/col:opacity-100"
               @click="handleClearColumn(column)"
               :title="language === 'en' ? 'Clear all tasks in column' : 'Vaciar tareas de la columna'"
@@ -259,7 +318,7 @@
           @drop="onDrop($event, column.id)"
         >
           <div
-            v-for="task in filteredTasksByColumn(column.id)"
+            v-for="task in displayTasksByColumn(column.id)"
             :key="task.id"
             draggable="true"
             class="group/card bg-white dark:bg-[#1b1b1b] rounded-xl p-2.5 sm:p-3.5 cursor-grab active:cursor-grabbing border border-gray-200/70 dark:border-white/10 hover:border-focusflow-200 dark:hover:border-focusflow-500/30 transition-all duration-200 shadow-card hover:shadow-card-hover active:scale-[0.98] relative overflow-hidden"
@@ -418,22 +477,57 @@
 
           <!-- Drop hint -->
           <div
-            v-if="filteredTasksByColumn(column.id).length === 0"
+            v-if="displayTasksByColumn(column.id).length === 0"
             class="flex items-center justify-center h-24 border border-dashed border-gray-300 dark:border-white/10 rounded-xl bg-white/50 dark:bg-transparent"
           >
-            <p class="text-[10px] text-gray-500 dark:text-gray-400 font-medium"><span class="hidden sm:inline">{{ t.noTasksDrag }}</span><span class="sm:hidden">{{ t.noTasksMobile }}</span></p>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
+              <span v-if="tasksByColumn(column.id).length && hasActiveTaskFilters">{{ language === 'en' ? 'No matches' : 'Sin coincidencias' }}</span>
+              <span v-else><span class="hidden sm:inline">{{ t.noTasksDrag }}</span><span class="sm:hidden">{{ t.noTasksMobile }}</span></span>
+            </p>
           </div>
         </div>
 
         <!-- Quick add -->
-        <button
-          v-if="canCreateTasks"
-          class="mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-focusflow-700 dark:hover:text-focusflow-400 hover:bg-focusflow-50/50 dark:hover:bg-focusflow-500/10 rounded-xl transition-all"
-          @click="openAddTask(column.id)"
-        >
-          <UIcon name="i-heroicons-plus" class="w-3.5 h-3.5" />
-          {{ language === 'en' ? 'Add' : 'Agregar' }}
-        </button>
+        <div v-if="canCreateTasks" class="mt-2">
+          <form
+            v-if="quickAddColumnId === column.id"
+            class="rounded-xl border border-focusflow-200/80 bg-white/80 p-2 shadow-sm backdrop-blur-xl dark:border-focusflow-500/20 dark:bg-white/[0.055]"
+            @submit.prevent="handleQuickAddTask(column.id)"
+          >
+            <input
+              v-model="quickAddTitle"
+              type="text"
+              class="w-full rounded-lg border border-gray-200/80 bg-white/90 px-3 py-2 text-xs font-semibold text-gray-800 outline-none focus:border-focusflow-300 focus:ring-2 focus:ring-focusflow-200/60 dark:border-white/10 dark:bg-white/[0.07] dark:text-gray-100"
+              :placeholder="language === 'en' ? 'Task title + Enter' : 'Título + Enter'"
+              autofocus
+              @keydown.esc.prevent="cancelQuickAdd"
+            />
+            <p v-if="quickAddError && quickAddColumnId === column.id" class="mt-1.5 text-[10px] font-medium text-red-500">{{ quickAddError }}</p>
+            <div class="mt-2 flex items-center justify-between gap-2">
+              <button type="button" class="text-[11px] font-semibold text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" @click="cancelQuickAdd">
+                {{ t.cancel }}
+              </button>
+              <button
+                type="submit"
+                class="inline-flex items-center gap-1 rounded-lg bg-focusflow-500 px-2.5 py-1.5 text-[11px] font-bold text-white transition-all hover:bg-focusflow-600 disabled:cursor-not-allowed disabled:opacity-50"
+                :disabled="quickAddLoading || !quickAddTitle.trim()"
+              >
+                <UIcon v-if="quickAddLoading" name="i-heroicons-arrow-path" class="w-3 h-3 animate-spin" />
+                <UIcon v-else name="i-heroicons-bolt" class="w-3 h-3" />
+                {{ language === 'en' ? 'Quick add' : 'Crear rápido' }}
+              </button>
+            </div>
+          </form>
+          <button
+            v-else
+            class="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-focusflow-700 dark:hover:text-focusflow-400 hover:bg-focusflow-50/50 dark:hover:bg-focusflow-500/10 rounded-xl transition-all"
+            @click="startQuickAdd(column.id)"
+            @dblclick.stop="openAddTask(column.id)"
+          >
+            <UIcon name="i-heroicons-bolt" class="w-3.5 h-3.5" />
+            {{ language === 'en' ? 'Quick add' : 'Crear rápido' }}
+          </button>
+        </div>
       </div>
 
       <!-- Add Column button -->
@@ -890,17 +984,42 @@ const savingColumn = ref(false)
 const editingColumnId = ref('')
 const editColumnData = reactive({ title: '', color: '', wip_limit: '' })
 const columnColors = ['#3B82F6', '#8B5CF6', '#F59E0B', '#10B981', '#F97316', '#EF4444', '#EC4899', '#6B7280', '#14B8A6', '#6366F1']
+const quickAddColumnId = ref('')
+const quickAddTitle = ref('')
+const quickAddLoading = ref(false)
+const quickAddError = ref('')
 
 let draggedTask: Task | null = null
 const dragOverColumn = ref('')
 
-// View mode (columns or list)
-const viewMode = ref<'columns' | 'list'>((typeof localStorage !== 'undefined' && localStorage.getItem('focusflow-kanban-view') as any) || 'columns')
+type KanbanViewMode = 'columns' | 'list'
+type BoardSortMode = 'position' | 'due_date' | 'priority' | 'updated_at' | 'title'
 
-function setViewMode(mode: 'columns' | 'list') {
+const validBoardSorts: BoardSortMode[] = ['position', 'due_date', 'priority', 'updated_at', 'title']
+
+function getStoredViewMode(): KanbanViewMode {
+  if (typeof localStorage === 'undefined') return 'columns'
+  return localStorage.getItem('focusflow-kanban-view') === 'list' ? 'list' : 'columns'
+}
+
+function getStoredBoardSort(): BoardSortMode {
+  if (typeof localStorage === 'undefined') return 'position'
+  const saved = localStorage.getItem('focusflow-kanban-sort') as BoardSortMode | null
+  return saved && validBoardSorts.includes(saved) ? saved : 'position'
+}
+
+// View mode (columns or list)
+const viewMode = ref<KanbanViewMode>(getStoredViewMode())
+const boardSortBy = ref<BoardSortMode>(getStoredBoardSort())
+
+function setViewMode(mode: KanbanViewMode) {
   viewMode.value = mode
   if (typeof localStorage !== 'undefined') localStorage.setItem('focusflow-kanban-view', mode)
 }
+
+watch(boardSortBy, (sort) => {
+  if (typeof localStorage !== 'undefined') localStorage.setItem('focusflow-kanban-sort', sort)
+})
 
 // Kanban filters
 const showKanbanFilter = ref(false)
@@ -937,14 +1056,55 @@ const dueTodayCount = computed(() => {
   return tasks.value.filter(t => t.due_date && t.due_date.startsWith(todayStr)).length
 })
 
+const hasActiveTaskFilters = computed(() => !!(kanbanSearch.value || kanbanFilterPriority.value || kanbanFilterAssignee.value || kanbanFilterDue.value))
+
+const overdueOpenCount = computed(() => tasks.value.filter(isTaskOverdue).length)
+const unassignedOpenCount = computed(() => tasks.value.filter(task => !isTaskDone(task) && !(task.assignees || []).length).length)
+const criticalOpenCount = computed(() => tasks.value.filter(task => !isTaskDone(task) && task.priority === 'critical').length)
+const blockedAgingCount = computed(() => tasks.value.filter(task => !isTaskDone(task) && columnAgeDays(task) >= 7).length)
+const wipExceededColumns = computed(() => columns.value.filter(column => !!column.wip_limit && tasksByColumn(column.id).length > column.wip_limit))
+
+const boardHealthScore = computed(() => {
+  const open = Math.max(tasks.value.filter(task => !isTaskDone(task)).length, 1)
+  const penalties =
+    overdueOpenCount.value * 11
+    + criticalOpenCount.value * 7
+    + unassignedOpenCount.value * 4
+    + blockedAgingCount.value * 5
+    + wipExceededColumns.value.length * 9
+  return Math.max(0, Math.min(100, Math.round(100 - (penalties / open) * 8)))
+})
+
+const boardHealthTone = computed(() => {
+  if (boardHealthScore.value >= 80) {
+    return { text: 'text-emerald-600 dark:text-emerald-300', bg: 'bg-emerald-50 dark:bg-emerald-500/10', bar: 'bg-emerald-500' }
+  }
+  if (boardHealthScore.value >= 55) {
+    return { text: 'text-amber-600 dark:text-amber-300', bg: 'bg-amber-50 dark:bg-amber-500/10', bar: 'bg-amber-500' }
+  }
+  return { text: 'text-red-600 dark:text-red-300', bg: 'bg-red-50 dark:bg-red-500/10', bar: 'bg-red-500' }
+})
+
+const nextBoardAction = computed(() => {
+  if (overdueOpenCount.value > 0) return language.value === 'en' ? 'Move overdue work into today or re-date it.' : 'Reagenda o mueve las tareas atrasadas a hoy.'
+  if (wipExceededColumns.value.length > 0) return language.value === 'en' ? 'Reduce WIP before starting new work.' : 'Reduce el WIP antes de iniciar más trabajo.'
+  if (criticalOpenCount.value > 0) return language.value === 'en' ? 'Assign an owner and next step to every critical task.' : 'Asigna responsable y siguiente paso a cada tarea crítica.'
+  if (unassignedOpenCount.value > 0) return language.value === 'en' ? 'Assign owners to remove ambiguity.' : 'Asigna responsables para quitar ambigüedad.'
+  return language.value === 'en' ? 'Board is stable. Pull the next high-priority item.' : 'Tablero estable. Toma el siguiente ítem prioritario.'
+})
+
 function isWipExceeded(column: KanbanColumn): boolean {
   if (!column.wip_limit) return false
-  return filteredTasksByColumn(column.id).length > column.wip_limit
+  return tasksByColumn(column.id).length > column.wip_limit
+}
+
+function columnAgeDays(task: Task): number {
+  if (!task.column_entered_at) return 0
+  return differenceInDays(new Date(), new Date(task.column_entered_at))
 }
 
 function taskAgingClass(task: Task): string {
-  if (!task.column_entered_at) return ''
-  const days = differenceInDays(new Date(), new Date(task.column_entered_at))
+  const days = columnAgeDays(task)
   if (days >= 7) return 'border-l-4 border-l-red-500'
   if (days >= 3) return 'border-l-4 border-l-amber-400'
   return ''
@@ -1001,7 +1161,8 @@ const allFilteredTasks = computed(() => {
   const query = kanbanSearch.value.trim().toLowerCase()
   return tasks.value.filter((task) => {
     if (kanbanFilterPriority.value && task.priority !== kanbanFilterPriority.value) return false
-    if (kanbanFilterAssignee.value && !(task.assignees || []).includes(kanbanFilterAssignee.value)) return false
+    if (kanbanFilterAssignee.value === '__none' && (task.assignees || []).length > 0) return false
+    if (kanbanFilterAssignee.value && kanbanFilterAssignee.value !== '__none' && !(task.assignees || []).includes(kanbanFilterAssignee.value)) return false
     if (!matchesDueFilter(task)) return false
     return matchesTextSearch(task, query)
   })
@@ -1019,6 +1180,10 @@ const _filteredByColumn = computed(() => {
 
 function filteredTasksByColumn(columnId: string) {
   return _filteredByColumn.value[columnId] || []
+}
+
+function displayTasksByColumn(columnId: string) {
+  return [...filteredTasksByColumn(columnId)].sort(compareBoardTasks)
 }
 
 const priorityRank: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 }
@@ -1045,6 +1210,22 @@ function compareTasks(a: Task, b: Task): number {
     return localizedTitle(a).localeCompare(localizedTitle(b))
   }
   return compareTasksByPosition(a, b)
+}
+
+function compareBoardTasks(a: Task, b: Task): number {
+  if (boardSortBy.value === 'position') return compareTasksByPosition(a, b)
+  if (boardSortBy.value === 'due_date') {
+    const ad = toDateInput(a.due_date) || '9999-12-31'
+    const bd = toDateInput(b.due_date) || '9999-12-31'
+    return ad.localeCompare(bd) || compareTasksByPosition(a, b)
+  }
+  if (boardSortBy.value === 'priority') {
+    return (priorityRank[a.priority] ?? 99) - (priorityRank[b.priority] ?? 99) || compareTasksByPosition(a, b)
+  }
+  if (boardSortBy.value === 'updated_at') {
+    return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime() || compareTasksByPosition(a, b)
+  }
+  return localizedTitle(a).localeCompare(localizedTitle(b)) || compareTasksByPosition(a, b)
 }
 
 function compareTasksByPosition(a: Task, b: Task): number {
@@ -1435,6 +1616,62 @@ async function onDrop(_e: DragEvent, columnId: string) {
 function openAddTask(columnId: string) {
   addToColumnId.value = columnId
   showAddTask.value = true
+}
+
+function startQuickAdd(columnId: string) {
+  quickAddColumnId.value = columnId
+  quickAddTitle.value = ''
+  quickAddError.value = ''
+}
+
+function cancelQuickAdd() {
+  quickAddColumnId.value = ''
+  quickAddTitle.value = ''
+  quickAddError.value = ''
+}
+
+function inferQuickTaskPriority(title: string): Task['priority'] {
+  const text = title.toLowerCase()
+  if (/bloquead|urgent|urgente|critico|crítico|incident|incidente|caido|caído/.test(text)) return 'critical'
+  if (/bug|error|hotfix|fix|reparar|fallo/.test(text)) return 'high'
+  if (/idea|nice|later|despues|después/.test(text)) return 'low'
+  return 'medium'
+}
+
+function inferQuickTaskTags(title: string): string[] {
+  const text = title.toLowerCase()
+  const tags = new Set<string>(['quick'])
+  if (/bug|error|hotfix|fix|fallo/.test(text)) tags.add('bugfix')
+  if (/ui|ux|diseño|design|frontend/.test(text)) tags.add('frontend')
+  if (/api|backend|server|db|base de datos/.test(text)) tags.add('backend')
+  if (/test|qa|prueba/.test(text)) tags.add('qa')
+  return [...tags].slice(0, 4)
+}
+
+async function handleQuickAddTask(columnId: string) {
+  const title = quickAddTitle.value.trim()
+  if (!title || quickAddLoading.value) return
+  quickAddLoading.value = true
+  quickAddError.value = ''
+  try {
+    const created = await $fetch<Task>(`/api/workspaces/${workspaceId.value}/tasks`, {
+      method: 'POST',
+      body: {
+        project_id: route.params.id,
+        column_id: columnId,
+        title,
+        priority: inferQuickTaskPriority(title),
+        tags: inferQuickTaskTags(title),
+      },
+    })
+    tasks.value = [...tasks.value, { ...created, labels: created.labels || [] }]
+    quickAddTitle.value = ''
+    quickAddColumnId.value = ''
+  } catch (e: any) {
+    quickAddError.value = e.data?.message || (language.value === 'en' ? 'Could not create task' : 'No se pudo crear la tarea')
+  } finally {
+    quickAddLoading.value = false
+  }
 }
 
 // --- Delegate to AI Agent ---
