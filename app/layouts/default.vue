@@ -470,11 +470,11 @@ interface NavItem {
 
 // Focused navigation: 5 primary items, everything else under a collapsible "More"
 const allNav = computed<NavItem[]>(() => [
+  { label: t.value.dashboard, icon: 'i-heroicons-squares-2x2', to: `/${workspaceSlug.value}/dashboard`, show: true },
   { label: t.value.myDay, icon: 'i-heroicons-sun', to: `/${workspaceSlug.value}/my-day`, show: true },
   { label: t.value.projects, icon: 'i-heroicons-folder-open', to: `/${workspaceSlug.value}/projects`, show: true },
   { label: t.value.aiAgents, icon: 'i-heroicons-cpu-chip', to: `/${workspaceSlug.value}/agents`, show: canUseAI.value && moduleEnabled('ai_agents') },
   { label: lang.language.value === 'en' ? 'Deliverables' : 'Entregables', icon: 'i-heroicons-archive-box', to: `/${workspaceSlug.value}/files`, show: moduleEnabled('files') },
-  { label: t.value.dashboard, icon: 'i-heroicons-squares-2x2', to: `/${workspaceSlug.value}/dashboard`, show: true },
   { label: t.value.agenda, icon: 'i-heroicons-calendar-days', to: `/${workspaceSlug.value}/agenda`, show: canViewAgenda.value && moduleEnabled('agenda') },
   { label: t.value.team, icon: 'i-heroicons-user-group', to: `/${workspaceSlug.value}/team`, show: canManageMembers.value },
   {

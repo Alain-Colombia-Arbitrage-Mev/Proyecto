@@ -47,7 +47,27 @@
                 :class="msg.role === 'user'
                   ? 'bg-focusflow-500 text-white rounded-br-md'
                   : 'bg-gray-100 dark:bg-white/[0.06] text-gray-800 dark:text-gray-200 rounded-bl-md'"
-              >{{ msg.text }}</div>
+              >
+                <p>{{ msg.text }}</p>
+                <div v-if="msg.auto?.tasksCreated || msg.auto?.postError" class="mt-2 pt-2 border-t border-black/5 dark:border-white/10 space-y-1.5">
+                  <p v-if="msg.auto.tasksCreated" class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                    {{ es ? `${msg.auto.tasksCreated} tareas creadas` : `${msg.auto.tasksCreated} tasks created` }}
+                  </p>
+                  <div
+                    v-for="task in msg.auto.createdTasks.slice(0, 4)"
+                    :key="task.id"
+                    class="flex min-w-0 items-center gap-1.5 text-[11px]"
+                  >
+                    <span class="shrink-0 rounded bg-white/70 px-1.5 py-0.5 text-[9px] font-bold text-gray-600 ring-1 ring-gray-200 dark:bg-white/10 dark:text-gray-300 dark:ring-white/10">
+                      {{ task.ai_agent || 'AI' }}
+                    </span>
+                    <span class="truncate">{{ task.title }}</span>
+                  </div>
+                  <p v-if="msg.auto.postError" class="text-[10px] text-amber-600 dark:text-amber-400">
+                    {{ msg.auto.postError }}
+                  </p>
+                </div>
+              </div>
             </div>
             <div v-if="loading" class="flex justify-start">
               <div class="bg-gray-100 dark:bg-white/[0.06] rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1.5">
@@ -191,7 +211,18 @@ async function generatePlan() {
   }
 }
 
-interface AdvisorMessage { role: 'user' | 'assistant'; text: string }
+interface AdvisorAutoSummary {
+  tasksCreated: number
+  createdTasks: any[]
+  agentsAssigned: string[]
+  postError?: string
+}
+
+interface AdvisorMessage {
+  role: 'user' | 'assistant'
+  text: string
+  auto?: AdvisorAutoSummary
+}
 const messages = ref<AdvisorMessage[]>([])
 
 const teamTypeLabel = computed(() => {
@@ -239,8 +270,25 @@ async function send() {
         },
       },
     })
-    const text = typeof res.data === 'string' ? res.data : JSON.stringify(res.data)
-    messages.value.push({ role: 'assistant', text })
+    if (res.type === 'json' && res.data?.reply) {
+      const auto = res.data.tasksCreated > 0 || res.data.postError
+        ? {
+            tasksCreated: Number(res.data.tasksCreated || 0),
+            createdTasks: Array.isArray(res.data.createdTasks) ? res.data.createdTasks : [],
+            agentsAssigned: Array.isArray(res.data.agentsAssigned) ? res.data.agentsAssigned : [],
+            postError: res.data.postError,
+          }
+        : undefined
+      messages.value.push({ role: 'assistant', text: String(res.data.reply), auto })
+
+      const projectIds = [...new Set((auto?.createdTasks || []).map((task: any) => task.project_id).filter(Boolean))]
+      for (const projectId of projectIds) {
+        window.dispatchEvent(new CustomEvent('focusflow:reload-tasks', { detail: { projectId } }))
+      }
+    } else {
+      const text = typeof res.data === 'string' ? res.data : JSON.stringify(res.data)
+      messages.value.push({ role: 'assistant', text })
+    }
   } catch (e: any) {
     messages.value.push({
       role: 'assistant',

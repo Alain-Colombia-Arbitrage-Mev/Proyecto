@@ -1,6 +1,7 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import { generateTaskDocs } from '~~/server/utils/taskDocGenerator'
-import { DOC_PLAN_MODEL } from '~~/server/utils/agentAI'
+import { DOC_PLAN_MODEL, agentRegistryPrompt, buildMemberRoster, rosterPrompt } from '~~/server/utils/agentAI'
+import { normalizeAdvisorAutomation, type AdvisorProjectContext } from '~~/server/utils/advisorAutomation'
 
 const MAX_MESSAGE_LENGTH = 100_000
 const MAX_HISTORY_MESSAGES = 50
@@ -242,7 +243,7 @@ Específico, basado en datos reales. Solo JSON.`
       const today = new Date().toISOString().slice(0, 10)
       const in7days = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
 
-      const [{ data: advisorWs }, { data: advisorProjects }] = await Promise.all([
+      const [{ data: advisorWs }, { data: advisorProjects }, advisorRoster] = await Promise.all([
         supabase
           .from('workspaces')
           .select('name, team_type')
@@ -250,17 +251,20 @@ Específico, basado en datos reales. Solo JSON.`
           .maybeSingle(),
         supabase
           .from('projects')
-          .select('id, name, status, kanban_template')
+          .select('id, name, description, status, kanban_template, owner_id')
           .eq('workspace_id', context.workspaceId)
           .neq('status', 'completed')
           .limit(20),
+        buildMemberRoster(supabase, context.workspaceId),
       ])
 
       const advisorProjectIds = (advisorProjects || []).map((p: any) => p.id)
       let overdueCount = 0
       let upcomingCount = 0
+      let advisorColumns: any[] = []
+      let advisorTasks: any[] = []
       if (advisorProjectIds.length > 0) {
-        const [{ count: overdue }, { count: upcoming }] = await Promise.all([
+        const [{ count: overdue }, { count: upcoming }, { data: columnsData }, { data: tasksData }] = await Promise.all([
           supabase
             .from('tasks')
             .select('id', { count: 'exact', head: true })
@@ -272,9 +276,23 @@ Específico, basado en datos reales. Solo JSON.`
             .in('project_id', advisorProjectIds)
             .gte('due_date', today)
             .lte('due_date', in7days),
+          supabase
+            .from('kanban_columns')
+            .select('id, title, project_id, position')
+            .in('project_id', advisorProjectIds)
+            .order('position'),
+          supabase
+            .from('tasks')
+            .select('id, title, project_id, column_id, priority, due_date, estimated_hours, assignees, tags, created_at')
+            .in('project_id', advisorProjectIds)
+            .is('parent_task_id', null)
+            .order('created_at', { ascending: false })
+            .limit(120),
         ])
         overdueCount = overdue || 0
         upcomingCount = upcoming || 0
+        advisorColumns = columnsData || []
+        advisorTasks = tasksData || []
       }
 
       const teamType = advisorWs?.team_type || 'kanban'
@@ -296,19 +314,93 @@ Específico, basado en datos reales. Solo JSON.`
         } catch { /* sprints table optional */ }
       }
 
-      const projectsSummary = (advisorProjects || [])
-        .map((p: any) => `${p.name} [${p.kanban_template}/${p.status}]`)
-        .join(', ') || (isEnglish ? 'none' : 'ninguno')
+      const columnsByProject = new Map<string, any[]>()
+      for (const col of advisorColumns) {
+        const list = columnsByProject.get(col.project_id) || []
+        list.push(col)
+        columnsByProject.set(col.project_id, list)
+      }
 
-      systemPrompt = `Eres el Asesor de FocusFlow para un equipo tipo "${teamType}".
-Workspace: ${advisorWs?.name || ''}. Proyectos activos: ${projectsSummary}.
-Tareas atrasadas: ${overdueCount}. Tareas próximas 7 días: ${upcomingCount}. ${sprintInfo}
-Da consejos accionables y breves según la metodología del equipo:
-- scrum: salud del sprint, bloqueos, velocity
-- kanban/dev: cuellos de botella, límites WIP
-- audio: etapas de producción estancadas (grabación→master)
-- creative: revisiones y aprobaciones pendientes
-Responde en ${isEnglish ? 'inglés' : 'español'}, máximo 8 líneas, texto plano sin markdown pesado. No <think>.`
+      const advisorProjectContexts: AdvisorProjectContext[] = (advisorProjects || []).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        owner_id: p.owner_id,
+        columns: (columnsByProject.get(p.id) || []).map((c: any) => ({
+          id: c.id,
+          title: c.title,
+          position: c.position,
+        })),
+      }))
+
+      const columnTitleById = new Map(advisorColumns.map((c: any) => [c.id, c.title]))
+      const projectsSummary = advisorProjectContexts
+        .map((p) => `${p.name} (${p.id}) [${p.columns.map(c => c.title).join(' > ') || 'sin columnas'}]`)
+        .join('\n') || (isEnglish ? 'none' : 'ninguno')
+
+      const existingTasksSummary = advisorTasks
+        .slice(0, 60)
+        .map((t: any) => `- ${t.title} | project:${t.project_id} | column:${columnTitleById.get(t.column_id) || '?'} | p:${t.priority} | due:${t.due_date || '-'}`)
+        .join('\n') || (isEnglish ? 'none' : 'ninguna')
+
+      const workload = new Map<string, number>()
+      for (const task of advisorTasks) {
+        const assignees = Array.isArray(task.assignees) ? task.assignees : []
+        for (const assignee of assignees) workload.set(assignee, (workload.get(assignee) || 0) + 1)
+      }
+      const workloadPrompt = advisorRoster
+        .map((m: any) => `- ${m.id}: ${m.name || 'sin nombre'} | ${m.role}${m.specialty ? ` | ${m.specialty}` : ''} | carga:${workload.get(m.id) || 0}`)
+        .join('\n') || '(sin miembros)'
+
+      systemPrompt = `Eres el Asesor AI + Orchestrator de FocusFlow para un equipo tipo "${teamType}".
+Fecha: ${today}. Workspace: ${advisorWs?.name || ''}. Tareas atrasadas: ${overdueCount}. Tareas próximas 7 días: ${upcomingCount}. ${sprintInfo}
+
+Tu trabajo en CADA mensaje:
+1. Calcular la intención del mensaje.
+2. Si hay trabajo accionable, crear tareas automaticamente.
+3. Asignar cada tarea al agente AI necesario y al miembro humano que mejor encaje.
+4. Si hacen falta varios agentes, divide el trabajo en varias tareas, una por agente principal.
+
+Proyectos y columnas validas (usa project_id exacto):
+${projectsSummary}
+
+Tareas existentes recientes (no duplicar literalmente):
+${existingTasksSummary}
+
+Agentes AI disponibles para ai_agent:
+${agentRegistryPrompt()}
+
+Miembros humanos validos para assignee_id:
+${rosterPrompt(advisorRoster)}
+
+Carga actual por miembro:
+${workloadPrompt}
+
+Responde SOLO JSON, sin markdown, sin <think>:
+{
+  "reply": "respuesta breve para el usuario, maximo 6 lineas, en ${isEnglish ? 'ingles' : 'espanol'}",
+  "analysis": {"intent":"question|create_tasks|delegate|status|risk|other","should_create_tasks":true,"confidence":0.0},
+  "tasks": [
+    {
+      "project_id":"uuid exacto",
+      "column":"nombre de columna",
+      "title":"titulo claro",
+      "description":"objetivo, pasos clave y criterios de aceptacion",
+      "priority":"low|medium|high|critical",
+      "estimated_hours":2,
+      "due_date":"YYYY-MM-DD o null",
+      "ai_agent":"tipo exacto de agente",
+      "assignee_id":"uuid exacto o null",
+      "tags":["advisor","..."]
+    }
+  ]
+}
+
+Reglas:
+- Si el mensaje es saludo, pregunta general o no requiere ejecutar trabajo, usa "tasks":[] y should_create_tasks:false.
+- Maximo 8 tareas por mensaje.
+- Nunca inventes project_id ni assignee_id; usa null si no hay miembro claro.
+- ai_agent es obligatorio cuando hay tareas; si solo es planificacion usa "planner"; si coordina varios roles usa "orchestrator".
+- Descripciones siempre accionables y verificables.`
       userPrompt = advisorMessage
 
       const advisorHistory = Array.isArray(context.history) ? context.history.slice(-MAX_HISTORY_MESSAGES) : []
@@ -318,6 +410,14 @@ Responde en ${isEnglish ? 'inglés' : 'español'}, máximo 8 líneas, texto plan
           role: h.role === 'user' ? 'user' : 'assistant',
           content: String(h.text).slice(0, MAX_HISTORY_MSG_LENGTH),
         }))
+      ;(event.context as any)._advisorAutomationMeta = {
+        workspaceId: context.workspaceId,
+        userId: user.id,
+        userMessage: advisorMessage,
+        isEnglish,
+        projects: advisorProjectContexts,
+        roster: advisorRoster,
+      }
       break
     }
 
@@ -655,9 +755,120 @@ ${JSON.stringify((tasksFull || []).map((t: any) => ({
     }).catch(() => {})
   }
 
-  // Advisor always answers in plain text — never treat its output as JSON
   if (action === 'advisor') {
-    return { type: 'text', data: stripThinkTags(content) }
+    const advisorMeta = (event.context as any)._advisorAutomationMeta
+    const advisorParsed = extractJSON(content)
+    if (!advisorMeta || advisorParsed === null) {
+      return { type: 'text', data: stripThinkTags(content) }
+    }
+
+    const normalized = normalizeAdvisorAutomation(advisorParsed, {
+      projects: advisorMeta.projects || [],
+      validAssigneeIds: (advisorMeta.roster || []).map((m: any) => m.id),
+      reporterId: user.id,
+      maxTasks: 8,
+    })
+
+    let createdTasks: any[] = []
+    let postError = ''
+
+    if (normalized.tasks.length > 0) {
+      try {
+        const columnIds = [...new Set(normalized.tasks.map(t => t.column_id))]
+        const nextPositions = new Map<string, number>()
+
+        await Promise.all(columnIds.map(async (columnId) => {
+          const { data: maxPos } = await supabase
+            .from('tasks')
+            .select('position')
+            .eq('column_id', columnId)
+            .order('position', { ascending: false })
+            .limit(1)
+          nextPositions.set(columnId, maxPos?.[0]?.position != null ? maxPos[0].position + 1 : 0)
+        }))
+
+        const rows = normalized.tasks.map((task) => {
+          const position = nextPositions.get(task.column_id) || 0
+          nextPositions.set(task.column_id, position + 1)
+          return { ...task, position }
+        })
+
+        const { data: inserted, error: insertErr } = await supabase
+          .from('tasks')
+          .insert(rows)
+          .select('id, title, description, priority, ai_agent, assignees, estimated_hours, tags, project_id, column_id')
+
+        if (insertErr) throw insertErr
+        createdTasks = inserted || []
+
+        if (createdTasks.length > 0) {
+          const tasksByProject = new Map<string, any[]>()
+          for (const task of createdTasks) {
+            const list = tasksByProject.get(task.project_id) || []
+            list.push(task)
+            tasksByProject.set(task.project_id, list)
+          }
+          for (const [projectId, tasks] of tasksByProject) {
+            generateTaskDocs({
+              supabase,
+              workspaceId: advisorMeta.workspaceId,
+              projectId,
+              userId: user.id,
+              tasks: tasks.map((t: any) => ({ id: t.id, title: t.title, description: t.description || null })),
+            }).catch(() => {})
+          }
+
+          const agentsAssigned = [...new Set(createdTasks.map((t: any) => t.ai_agent).filter(Boolean))]
+          supabase.from('ai_orchestrator_runs').insert({
+            workspace_id: advisorMeta.workspaceId,
+            project_id: createdTasks[0].project_id,
+            triggered_by: user.id,
+            prompt: `advisor: ${String(advisorMeta.userMessage || '').slice(0, 200)}`,
+            agent_type: 'advisor',
+            status: 'completed',
+            result: {
+              analysis: normalized.analysis,
+              agents_assigned: agentsAssigned,
+              tasks_created: createdTasks.length,
+              reply: normalized.reply,
+            },
+            tasks_created: createdTasks.map((t: any) => t.id),
+            completed_at: new Date().toISOString(),
+          }).then(() => {}, () => {})
+
+          storeMemory({
+            supabase,
+            workspaceId: advisorMeta.workspaceId,
+            contentText: `Advisor: ${String(advisorMeta.userMessage || '').slice(0, 500)}. Tareas creadas: ${createdTasks.map((t: any) => `${t.title} (${t.ai_agent || 'sin agente'})`).join(' | ')}`,
+            agentType: 'advisor',
+            contentType: 'advisor_automation',
+            projectId: createdTasks[0].project_id,
+            metadata: { agentsAssigned },
+            createdBy: user.id,
+          }).catch(() => {})
+        }
+      } catch (err: any) {
+        console.error('[advisor] Task automation error:', err.message || err)
+        postError = err.message || 'Task automation failed'
+      }
+    }
+
+    const reply = normalized.reply
+      || (createdTasks.length > 0
+        ? (advisorMeta.isEnglish ? `Created ${createdTasks.length} tasks and assigned the required agents.` : `Creé ${createdTasks.length} tareas y asigné los agentes necesarios.`)
+        : (advisorMeta.isEnglish ? 'I reviewed the message. No automatic task was needed.' : 'Revisé el mensaje. No hacía falta crear tareas automáticamente.'))
+
+    return {
+      type: 'json',
+      data: {
+        reply,
+        analysis: normalized.analysis,
+        tasksCreated: createdTasks.length,
+        createdTasks,
+        agentsAssigned: [...new Set(createdTasks.map((t: any) => t.ai_agent).filter(Boolean))],
+        postError: postError || undefined,
+      },
+    }
   }
 
   const parsed = extractJSON(content)

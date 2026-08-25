@@ -21,159 +21,89 @@ export interface LofiStation {
 // Self-hosted audio from Supabase storage can be added as primary URLs.
 // Format: set type='youtube' + youtubeId for YouTube, or url for direct stream.
 const stations: LofiStation[] = [
-  // === HYPERFOCUS / DEEP WORK (Pomodoro) ===
+  // === HYPERFOCUS / DEEP WORK ===
   {
-    id: 'hyperfocus-house',
+    id: 'focus-lofi-radio',
     focus: true,
-    name: 'Hyperfocus House',
-    emoji: '🧠',
+    name: 'Lofi Flow',
+    emoji: '🎧',
     url: '',
-    color: '#DC2626',
+    color: '#8B5CF6',
     fallbackUrls: [],
     type: 'youtube',
-    youtubeId: '4VQW7PLJkQc',
+    youtubeId: 'jfKfPfyJRdk',
     tracks: [
-      { title: 'Hyperfocus House · Pomodoro 50/10', artist: 'Work With Paul', duration: '2h' },
+      { title: 'Lofi Hip Hop Radio · Deep Work', artist: 'Lofi Girl', duration: 'LIVE' },
     ],
   },
   {
-    id: 'tunnel-vision',
+    id: 'synthwave-drive',
     focus: true,
-    name: 'Tunnel Vision',
-    emoji: '🎯',
+    name: 'Synthwave Drive',
+    emoji: '🌌',
     url: '',
-    color: '#7C2D12',
+    color: '#E040FB',
     fallbackUrls: [],
     type: 'youtube',
-    youtubeId: 'rV8W_YHoueY',
+    youtubeId: '4xDzrJKXOOY',
     tracks: [
-      { title: 'House Tunnel Vision · Pomodoro 50/10', artist: 'Work With Paul', duration: '2h' },
+      { title: 'Synthwave Radio · Coding Flow', artist: 'Lofi Girl', duration: 'LIVE' },
     ],
   },
   {
-    id: 'pomodoro-50-10',
+    id: 'chillhop-focus',
     focus: true,
-    name: 'Pomodoro 50/10',
-    emoji: '🍅',
+    name: 'Chillhop Focus',
+    emoji: '☕',
     url: '',
-    color: '#EF4444',
+    color: '#F59E0B',
     fallbackUrls: [],
     type: 'youtube',
-    youtubeId: 'Th3ldd8Hwdo',
+    youtubeId: '5yx6BWlEVcY',
     tracks: [
-      { title: 'Deep Work Session · Timer 50-10-50', artist: 'Work With Ron', duration: '2h' },
+      { title: 'Chillhop Radio · Jazzy Focus Beats', artist: 'Chillhop Music', duration: 'LIVE' },
     ],
   },
   {
-    id: 'brown-noise-focus',
+    id: 'deep-focus-ambient',
     focus: true,
-    name: 'Brown Noise Focus',
-    emoji: '🌊',
+    name: 'Deep Ambient',
+    emoji: '⚡',
     url: '',
-    color: '#92400E',
+    color: '#0EA5E9',
     fallbackUrls: [],
     type: 'youtube',
-    youtubeId: 'iUyQQY3od2g',
+    youtubeId: 'oPVte6aMprI',
     tracks: [
-      { title: 'Activate Hyperfocus · Pomodoro 40/10 + Brown Noise', artist: 'Calme Hush', duration: '5h' },
+      { title: 'Deep Focus · Concentration and Work', artist: 'Quiet Quest Study Music', duration: 'LIVE' },
     ],
   },
   {
-    id: 'deep-focus-lofi',
+    id: 'nature-focus',
     focus: true,
-    name: 'Deep Focus 3h',
-    emoji: '⏱️',
-    url: '',
-    color: '#0891B2',
-    fallbackUrls: [],
-    type: 'youtube',
-    youtubeId: 'qMJ8CZdUu2M',
-    tracks: [
-      { title: 'Deep Focus Session · Lo-Fi Pomodoro', artist: 'Work With Ron', duration: '3h' },
-    ],
-  },
-  {
-    id: 'techno-tunnel',
-    focus: true,
-    name: 'Techno Tunnel 4h',
-    emoji: '🚇',
-    url: '',
-    color: '#9333EA',
-    fallbackUrls: [],
-    type: 'youtube',
-    youtubeId: 'oLcZLb5ytbs',
-    tracks: [
-      { title: 'Techno Tunnel Vision · Pomodoro 50/10', artist: 'Study with Philly', duration: '4h' },
-    ],
-  },
-  {
-    id: 'deep-house-sunset',
-    focus: true,
-    name: 'Sunset House 3h',
-    emoji: '🌅',
-    url: '',
-    color: '#F97316',
-    fallbackUrls: [],
-    type: 'youtube',
-    youtubeId: 'yv3baY14XRM',
-    tracks: [
-      { title: 'Deep House Focus · Sunset Study 50/10', artist: 'Study with Philly', duration: '3h' },
-    ],
-  },
-  {
-    id: 'focus-frequencies',
-    focus: true,
-    name: 'Frecuencias Focus',
-    emoji: '🎛️',
+    name: 'Nature Focus',
+    emoji: '🌿',
     url: '',
     color: '#059669',
     fallbackUrls: [],
     type: 'youtube',
-    youtubeId: 'yaADgMXzKik',
+    youtubeId: 'eKFTSSKCzWA',
     tracks: [
-      { title: 'Focus Frequencies & Nature · Pomodoro 50/10', artist: 'Study with Philly', duration: '3h' },
+      { title: 'Forest Waterfall · Calm Focus', artist: 'Nature Sounds', duration: 'LIVE' },
     ],
   },
   {
-    id: 'late-night-deep',
+    id: 'classical-focus',
     focus: true,
-    name: 'Late Night 4h',
-    emoji: '🌙',
+    name: 'Classical Focus',
+    emoji: '🎻',
     url: '',
-    color: '#4F46E5',
+    color: '#B45309',
     fallbackUrls: [],
     type: 'youtube',
-    youtubeId: 'oocpjL0phy0',
+    youtubeId: 'mIYzp5rcTvU',
     tracks: [
-      { title: 'Late Night Deep Focus Ambient · 50/10', artist: 'tani study', duration: '4h' },
-    ],
-  },
-  {
-    id: 'marathon-10h',
-    focus: true,
-    name: 'Maratón 10h',
-    emoji: '🔥',
-    url: '',
-    color: '#B91C1C',
-    fallbackUrls: [],
-    type: 'youtube',
-    youtubeId: 'xPpqKyaEoEM',
-    tracks: [
-      { title: '10 Hours Challenge · Fireplace Focus 50/10', artist: 'tani study', duration: '10h' },
-    ],
-  },
-  {
-    id: 'hyper-efficient',
-    focus: true,
-    name: 'Hyper Efficient 3h',
-    emoji: '🩺',
-    url: '',
-    color: '#0D9488',
-    fallbackUrls: [],
-    type: 'youtube',
-    youtubeId: '74cOUSKXMz0',
-    tracks: [
-      { title: 'Hyper Efficient Doctor · Pomodoro 50/10', artist: 'iCanStudy', duration: '3h' },
+      { title: 'Classical for Reading · Deep Work', artist: 'Halidon Music', duration: 'LIVE' },
     ],
   },
   // === TOP PICKS ===
@@ -506,6 +436,8 @@ export function useLofiPlayer() {
     return station.tracks[currentTrackIndex.value] || station.tracks[0] || { title: 'Live Stream', artist: station.name, duration: '--:--' }
   })
 
+  const focusStations = computed(() => stations.filter(s => s.focus))
+
   const sessionTimeFormatted = computed(() => {
     const secs = sessionElapsed.value
     const h = Math.floor(secs / 3600)
@@ -709,12 +641,15 @@ export function useLofiPlayer() {
   }
 
   function setStation(stationId: string) {
+    const target = stations.find(s => s.id === stationId)
+    if (!target) return
+
     // Stop current playback
     if (audio) { audio.pause(); audio.src = '' }
     destroyYTPlayer()
     isPlaying.value = false
 
-    currentStationId.value = stationId
+    currentStationId.value = target.id
     currentTrackIndex.value = 0
     hasError.value = false
     errorMessage.value = ''
@@ -756,8 +691,44 @@ export function useLofiPlayer() {
 
   function skip() {
     const idx = stations.findIndex(s => s.id === currentStationId.value)
-    const next = stations[(idx + 1) % stations.length]!
+    const safeIdx = idx >= 0 ? idx : 0
+    const next = stations[(safeIdx + 1) % stations.length]!
     setStation(next.id)
+  }
+
+  function skipFocus(direction: -1 | 1 = 1) {
+    const list = focusStations.value
+    if (!list.length) return
+
+    const idx = list.findIndex(s => s.id === currentStationId.value)
+    const safeIdx = idx >= 0 ? idx : direction > 0 ? -1 : 0
+    const next = list[(safeIdx + direction + list.length) % list.length]!
+    setStation(next.id)
+  }
+
+  async function syncHyperfocusAudio() {
+    // If the shared player is already active from the sidebar/search bar,
+    // keep that exact station running instead of replacing it.
+    if (isPlaying.value || isLoading.value) {
+      saveState()
+      return
+    }
+
+    const list = focusStations.value
+    const shouldKeepStation = list.some(s => s.id === currentStationId.value)
+    const target = shouldKeepStation ? currentStation.value : list[0]
+
+    if (target && target.id !== currentStationId.value) {
+      currentStationId.value = target.id
+      currentTrackIndex.value = 0
+      hasError.value = false
+      errorMessage.value = ''
+      fallbackIndex = 0
+      rotateQuote()
+      saveState()
+    }
+
+    await play()
   }
 
   function expand() {
@@ -779,6 +750,7 @@ export function useLofiPlayer() {
 
   return {
     stations,
+    focusStations,
     currentStation,
     currentStationId,
     currentTrack,
@@ -799,6 +771,8 @@ export function useLofiPlayer() {
     setStation,
     setVolume,
     skip,
+    skipFocus,
+    syncHyperfocusAudio,
     nextTrack,
     prevTrack,
     selectTrack,

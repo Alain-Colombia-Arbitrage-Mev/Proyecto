@@ -3,162 +3,280 @@
     <Transition name="hyperfocus-fade">
       <div
         v-if="pomodoro.hyperfocusOpen.value"
-        class="fixed inset-0 z-[200] flex flex-col items-center justify-between overflow-hidden bg-[#060609] text-white select-none"
+        class="fixed inset-0 z-[200] flex flex-col overflow-hidden bg-[#050507] text-white select-none"
         :class="{ 'hf-idle': isIdle }"
         @mousemove="wakeUI"
         @touchstart="wakeUI"
       >
-        <!-- Ambient glow: station color, breathes slowly during break -->
         <div
           class="pointer-events-none absolute inset-0 transition-all duration-[3000ms]"
           :class="pomodoro.phase.value === 'break' ? 'hf-breathe' : ''"
-          :style="{ background: `radial-gradient(ellipse 90% 60% at 50% 38%, ${stationColor}26 0%, transparent 70%)`, opacity: pomodoro.phase.value === 'work' ? 0.5 : 0.35 }"
+          :style="{ background: `radial-gradient(ellipse 95% 58% at 50% 42%, ${stationColor}2e 0%, rgba(5,5,7,0.74) 58%, #050507 100%)` }"
         />
+        <div class="pointer-events-none absolute inset-0 hf-grid" />
         <div
-          class="pointer-events-none absolute inset-0 opacity-30"
-          :style="{ background: `radial-gradient(ellipse 40% 30% at 50% 105%, ${glowColor}1f 0%, transparent 70%)` }"
+          class="pointer-events-none absolute inset-x-0 top-0 h-28 opacity-70"
+          :style="{ background: `linear-gradient(180deg, ${stationColor}18 0%, transparent 100%)` }"
         />
 
-        <!-- Top bar (fades when idle) -->
-        <div class="hf-chrome relative w-full flex items-center justify-between px-5 sm:px-8 pt-5">
-          <div class="flex items-center gap-2">
-            <UIcon name="i-heroicons-bolt-solid" class="w-4 h-4 text-amber-400" />
-            <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-white/60">{{ en ? 'Hyperfocus Mode' : 'Modo Hiperenfoque' }}</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <!-- Auto-continue cycles -->
-            <button
-              class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-colors cursor-pointer"
-              :class="pomodoro.autoContinue.value ? 'bg-amber-400/15 text-amber-300' : 'bg-white/[0.06] text-white/40 hover:text-white/70'"
-              :title="en ? 'Chain work/break cycles automatically' : 'Encadenar ciclos trabajo/descanso automáticamente'"
-              @click="pomodoro.autoContinue.value = !pomodoro.autoContinue.value"
-            >
-              <UIcon name="i-heroicons-arrow-path" class="w-3 h-3" />
-              {{ en ? 'Auto cycle' : 'Ciclo auto' }}
-            </button>
-            <!-- Mode switch -->
-            <div class="flex items-center rounded-lg bg-white/[0.06] p-0.5">
-              <button
-                v-for="m in modes"
-                :key="m.value"
-                class="px-2.5 py-1 rounded-md text-[10px] font-bold tabular-nums transition-colors cursor-pointer"
-                :class="pomodoro.mode.value === m.value ? 'bg-white/15 text-white' : 'text-white/40 hover:text-white/70'"
-                @click="pomodoro.setMode(m.value)"
-              >{{ m.label }}</button>
-            </div>
-            <button
-              class="w-8 h-8 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-              :title="en ? 'Minimize (timer keeps running)' : 'Minimizar (el timer sigue corriendo)'"
-              @click="minimize"
-            >
-              <UIcon name="i-heroicons-arrows-pointing-in" class="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        <!-- Center: timer ring -->
-        <div class="relative flex flex-col items-center gap-4 px-6">
-          <span
-            class="text-[10px] font-bold uppercase tracking-[0.25em] px-3 py-1 rounded-full transition-colors"
-            :class="pomodoro.phase.value === 'work' ? 'bg-amber-400/10 text-amber-300' : 'bg-emerald-400/10 text-emerald-300'"
-          >
-            {{ pomodoro.phase.value === 'work' ? (en ? 'Focus' : 'Enfoque') : (en ? 'Break — breathe' : 'Descanso — respira') }}
-          </span>
-
-          <div class="relative w-64 h-64 sm:w-72 sm:h-72" :class="pomodoro.phase.value === 'break' ? 'hf-breathe' : ''">
-            <svg class="w-full h-full -rotate-90" viewBox="0 0 260 260">
-              <circle cx="130" cy="130" r="120" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="6" />
-              <circle
-                cx="130" cy="130" r="120" fill="none"
-                :stroke="glowColor" stroke-width="6" stroke-linecap="round"
-                :stroke-dasharray="RING_C"
-                :stroke-dashoffset="ringOffset"
-                class="transition-[stroke-dashoffset] duration-1000 ease-linear"
-                :style="{ filter: `drop-shadow(0 0 12px ${glowColor}66)` }"
-              />
-            </svg>
-            <div class="absolute inset-0 flex flex-col items-center justify-center">
-              <p class="text-6xl sm:text-7xl font-bold tabular-nums tracking-tight">{{ pomodoro.display.value }}</p>
-              <!-- Session dots: one per completed pomodoro (cycles of 4) -->
-              <div class="flex items-center gap-1.5 mt-3">
-                <span
-                  v-for="i in 4"
-                  :key="i"
-                  class="w-1.5 h-1.5 rounded-full transition-colors"
-                  :class="i <= (pomodoro.sessions.value % 4 === 0 && pomodoro.sessions.value > 0 ? 4 : pomodoro.sessions.value % 4) ? 'bg-amber-400' : 'bg-white/15'"
-                />
-                <span v-if="pomodoro.sessions.value > 4" class="text-[10px] text-amber-400/80 font-bold tabular-nums ml-1">×{{ pomodoro.sessions.value }}</span>
+        <header class="hf-chrome relative w-full px-4 pt-4 sm:px-8 sm:pt-5">
+          <div class="flex h-[3.25rem] items-center justify-between gap-3 rounded-lg border border-white/[0.08] bg-white/[0.045] px-3 backdrop-blur-xl sm:px-4">
+            <div class="flex min-w-0 items-center gap-3">
+              <div
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-black/35"
+                :style="{ boxShadow: `inset 0 0 0 1px ${stationColor}30` }"
+              >
+                <UIcon name="i-heroicons-bolt-solid" class="h-[1.125rem] w-[1.125rem] text-amber-300" />
               </div>
-              <p class="text-[10px] text-white/35 mt-2">{{ nextPhaseHint }}</p>
+              <div class="min-w-0">
+                <p class="truncate text-[11px] font-bold uppercase tracking-[0.22em] text-white/55">
+                  {{ en ? 'Hyperfocus Mode' : 'Modo Hiperenfoque' }}
+                </p>
+                <p class="truncate text-xs font-semibold text-white/85">
+                  {{ lofi.currentTrack.value.title }}
+                </p>
+              </div>
+            </div>
+
+            <div class="flex shrink-0 items-center gap-2">
+              <button
+                class="hidden items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] font-bold transition-colors cursor-pointer sm:flex"
+                :class="pomodoro.autoContinue.value ? 'bg-amber-400/15 text-amber-300' : 'bg-white/[0.06] text-white/45 hover:text-white/75'"
+                :title="en ? 'Auto cycle' : 'Ciclo automático'"
+                @click="pomodoro.autoContinue.value = !pomodoro.autoContinue.value"
+              >
+                <UIcon name="i-heroicons-arrow-path" class="h-3.5 w-3.5" />
+                {{ en ? 'Auto' : 'Auto' }}
+              </button>
+
+              <div class="hidden items-center rounded-lg bg-white/[0.06] p-0.5 sm:flex">
+                <button
+                  v-for="m in modes"
+                  :key="m.value"
+                  class="rounded-md px-2.5 py-1.5 text-[10px] font-bold tabular-nums transition-colors cursor-pointer"
+                  :class="pomodoro.mode.value === m.value ? 'bg-white/15 text-white' : 'text-white/42 hover:text-white/75'"
+                  @click="pomodoro.setMode(m.value)"
+                >
+                  {{ m.label }}
+                </button>
+              </div>
+
+              <button
+                class="flex h-9 w-9 items-center justify-center rounded-lg text-white/55 transition-colors hover:bg-white/10 hover:text-white cursor-pointer"
+                :title="en ? 'Minimize' : 'Minimizar'"
+                @click="minimize"
+              >
+                <UIcon name="i-heroicons-arrows-pointing-in" class="h-[1.125rem] w-[1.125rem]" />
+              </button>
             </div>
           </div>
+        </header>
 
-          <p v-if="pomodoro.activeTask.value" class="max-w-md text-center text-sm font-medium text-white/80 truncate px-4">
-            {{ pomodoro.activeTask.value.title }}
-          </p>
-          <p v-else class="text-xs text-white/35 italic">{{ en ? 'Free focus session' : 'Sesión de enfoque libre' }}</p>
+        <main class="relative flex min-h-0 flex-1 items-center px-4 py-4 sm:px-8 sm:py-6">
+          <div class="mx-auto grid w-full max-w-6xl items-center gap-4 lg:grid-cols-[260px_minmax(300px,1fr)_300px]">
+            <section class="hf-chrome hidden rounded-lg border border-white/[0.08] bg-white/[0.045] p-4 backdrop-blur-xl sm:block">
+              <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-white/35">
+                {{ en ? 'Session' : 'Sesión' }}
+              </p>
+              <div class="mt-4 space-y-4">
+                <div>
+                  <p class="text-sm font-bold text-white">
+                    {{ pomodoro.activeTask.value?.title || (en ? 'Free focus' : 'Enfoque libre') }}
+                  </p>
+                  <p class="mt-1 text-xs text-white/42">
+                    {{ phaseHint }}
+                  </p>
+                </div>
 
-          <!-- Controls (fade when idle) -->
-          <div class="hf-chrome flex items-center gap-3">
-            <button
-              class="w-14 h-14 rounded-full bg-white text-[#08080d] flex items-center justify-center hover:scale-105 active:scale-95 transition-transform cursor-pointer shadow-lg shadow-white/10"
-              :title="en ? 'Play/Pause (Space)' : 'Reproducir/Pausar (Espacio)'"
-              @click="toggleSession"
-            >
-              <UIcon :name="pomodoro.running.value ? 'i-heroicons-pause-solid' : 'i-heroicons-play-solid'" class="w-6 h-6" />
-            </button>
-            <button
-              class="w-10 h-10 rounded-full bg-white/[0.08] text-white/60 hover:text-white hover:bg-white/15 flex items-center justify-center transition-colors cursor-pointer"
-              :title="en ? 'End session' : 'Terminar sesión'"
-              @click="endSession"
-            >
-              <UIcon name="i-heroicons-stop" class="w-4.5 h-4.5" />
-            </button>
-          </div>
-        </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div class="rounded-lg bg-black/25 p-3">
+                    <p class="text-[10px] font-semibold uppercase tracking-wider text-white/32">
+                      {{ en ? 'Mode' : 'Modo' }}
+                    </p>
+                    <p class="mt-1 text-sm font-bold tabular-nums text-white">{{ pomodoro.mode.value === 'deep' ? '50/10' : '25/5' }}</p>
+                  </div>
+                  <div class="rounded-lg bg-black/25 p-3">
+                    <p class="text-[10px] font-semibold uppercase tracking-wider text-white/32">
+                      {{ en ? 'Rounds' : 'Rondas' }}
+                    </p>
+                    <p class="mt-1 text-sm font-bold tabular-nums text-white">{{ pomodoro.sessions.value }}</p>
+                  </div>
+                </div>
 
-        <!-- Bottom: music + quote (fades when idle) -->
-        <div class="hf-chrome relative w-full px-5 sm:px-8 pb-6 space-y-4">
-          <p class="text-center text-xs text-white/35 italic">"{{ lofi.currentQuote.value }}"</p>
+                <div>
+                  <div class="mb-2 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-white/32">
+                    <span>{{ en ? 'Cycle' : 'Ciclo' }}</span>
+                    <span class="tabular-nums">{{ activeSessionDotCount }}/4</span>
+                  </div>
+                  <div class="grid grid-cols-4 gap-1.5">
+                    <span
+                      v-for="i in 4"
+                      :key="i"
+                      class="h-1.5 rounded-full transition-colors"
+                      :class="i <= activeSessionDotCount ? 'bg-amber-300' : 'bg-white/12'"
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
 
-          <div class="max-w-3xl mx-auto rounded-2xl bg-white/[0.04] border border-white/[0.07] px-4 py-3 backdrop-blur-sm">
-            <div class="flex items-center gap-3 flex-wrap justify-center sm:justify-between">
-              <!-- Hyperfocus station chips -->
-              <div class="flex items-center gap-1.5 flex-wrap justify-center max-w-xl">
+            <section class="order-first flex flex-col items-center gap-4 lg:order-none">
+              <span
+                class="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] transition-colors"
+                :class="pomodoro.phase.value === 'work' ? 'bg-amber-400/12 text-amber-300' : 'bg-emerald-400/12 text-emerald-300'"
+              >
+                {{ phaseLabel }}
+              </span>
+
+              <div
+                class="relative aspect-square w-[72vw] max-w-[20rem] sm:w-80 sm:max-w-none"
+                :class="pomodoro.phase.value === 'break' ? 'hf-breathe' : ''"
+              >
+                <div
+                  class="absolute inset-5 rounded-full opacity-45 blur-2xl"
+                  :style="{ backgroundColor: glowColor }"
+                />
+                <svg class="relative h-full w-full -rotate-90" viewBox="0 0 260 260">
+                  <circle cx="130" cy="130" r="120" fill="none" stroke="rgba(255,255,255,0.075)" stroke-width="6" />
+                  <circle
+                    cx="130"
+                    cy="130"
+                    r="120"
+                    fill="none"
+                    :stroke="glowColor"
+                    stroke-width="6"
+                    stroke-linecap="round"
+                    :stroke-dasharray="RING_C"
+                    :stroke-dashoffset="ringOffset"
+                    class="transition-[stroke-dashoffset] duration-1000 ease-linear"
+                    :style="{ filter: `drop-shadow(0 0 16px ${glowColor}66)` }"
+                  />
+                </svg>
+
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                  <p class="text-6xl font-bold tabular-nums tracking-tight sm:text-7xl">{{ pomodoro.display.value }}</p>
+                  <p class="mt-2 text-xs font-semibold text-white/42">{{ nextPhaseHint }}</p>
+                  <div class="mt-4 flex items-end gap-[3px] opacity-80" :style="{ color: stationColor }">
+                    <span class="hf-eq h-3 w-[3px] rounded-full bg-current" />
+                    <span class="hf-eq h-5 w-[3px] rounded-full bg-current" />
+                    <span class="hf-eq h-4 w-[3px] rounded-full bg-current" />
+                    <span class="hf-eq h-6 w-[3px] rounded-full bg-current" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="hf-chrome flex items-center gap-3">
+                <button
+                  class="flex h-[3.75rem] w-[3.75rem] items-center justify-center rounded-full bg-white text-[#08080d] shadow-lg shadow-white/10 transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+                  :title="pomodoro.running.value ? (en ? 'Pause' : 'Pausar') : (en ? 'Play' : 'Reproducir')"
+                  @click="toggleSession"
+                >
+                  <UIcon :name="pomodoro.running.value ? 'i-heroicons-pause-solid' : 'i-heroicons-play-solid'" class="h-[1.625rem] w-[1.625rem]" />
+                </button>
+                <button
+                  class="flex h-11 w-11 items-center justify-center rounded-full bg-white/[0.08] text-white/60 transition-colors hover:bg-white/15 hover:text-white cursor-pointer"
+                  :title="en ? 'End session' : 'Terminar sesión'"
+                  @click="endSession"
+                >
+                  <UIcon name="i-heroicons-stop" class="h-[1.125rem] w-[1.125rem]" />
+                </button>
+              </div>
+            </section>
+
+            <section class="hf-chrome rounded-lg border border-white/[0.08] bg-white/[0.045] p-4 backdrop-blur-xl">
+              <div class="flex items-center justify-between gap-3">
+                <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-white/35">
+                  {{ en ? 'Audio' : 'Audio' }}
+                </p>
+                <span
+                  class="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-bold"
+                  :class="musicStatusClass"
+                >
+                  <span class="h-1.5 w-1.5 rounded-full bg-current" />
+                  {{ musicStatusLabel }}
+                </span>
+              </div>
+
+              <div class="mt-4 flex items-center gap-3">
+                <div
+                  class="flex h-[3.75rem] w-[3.75rem] shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-black/35 text-2xl"
+                  :style="{ boxShadow: `0 0 24px ${stationColor}22, inset 0 0 0 1px ${stationColor}33` }"
+                >
+                  {{ lofi.currentStation.value.emoji }}
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-sm font-bold text-white">{{ lofi.currentTrack.value.title }}</p>
+                  <p class="mt-0.5 truncate text-xs text-white/42">
+                    {{ lofi.currentTrack.value.artist }} · {{ lofi.currentStation.value.name }}
+                  </p>
+                  <p v-if="lofi.sessionElapsed.value > 0" class="mt-1 text-[10px] font-mono text-white/30 tabular-nums">
+                    {{ lofi.sessionTimeFormatted.value }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="mt-4 flex items-center justify-center gap-4">
+                <button
+                  class="flex h-9 w-9 items-center justify-center rounded-full text-white/45 transition-colors hover:bg-white/[0.08] hover:text-white cursor-pointer"
+                  :title="en ? 'Previous focus station' : 'Estación focus anterior'"
+                  @click="skipFocus(-1)"
+                >
+                  <UIcon name="i-heroicons-backward" class="h-[1.125rem] w-[1.125rem]" />
+                </button>
+                <button
+                  class="flex h-12 w-12 items-center justify-center rounded-full bg-white text-black shadow-lg shadow-white/10 transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+                  :disabled="lofi.isLoading.value"
+                  :title="lofi.isPlaying.value ? (en ? 'Pause audio' : 'Pausar audio') : (en ? 'Play audio' : 'Reproducir audio')"
+                  @click="toggleMusic"
+                >
+                  <UIcon v-if="lofi.isLoading.value" name="i-heroicons-arrow-path" class="h-[1.375rem] w-[1.375rem] animate-spin" />
+                  <UIcon v-else :name="lofi.isPlaying.value ? 'i-heroicons-pause' : 'i-heroicons-play'" class="h-[1.375rem] w-[1.375rem]" />
+                </button>
+                <button
+                  class="flex h-9 w-9 items-center justify-center rounded-full text-white/45 transition-colors hover:bg-white/[0.08] hover:text-white cursor-pointer"
+                  :title="en ? 'Next focus station' : 'Siguiente estación focus'"
+                  @click="skipFocus(1)"
+                >
+                  <UIcon name="i-heroicons-forward" class="h-[1.125rem] w-[1.125rem]" />
+                </button>
+              </div>
+
+              <div class="mt-4 flex items-center gap-2.5">
+                <UIcon name="i-heroicons-speaker-x-mark" class="h-3.5 w-3.5 text-white/25" />
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.02"
+                  :value="lofi.volume.value"
+                  class="w-full accent-white/80 cursor-pointer"
+                  @input="lofi.setVolume(Number(($event.target as HTMLInputElement).value))"
+                >
+                <UIcon name="i-heroicons-speaker-wave" class="h-3.5 w-3.5 text-white/25" />
+              </div>
+
+              <div class="mt-4 grid grid-cols-2 gap-2">
                 <button
                   v-for="st in focusStations"
                   :key="st.id"
-                  class="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer"
-                  :class="lofi.currentStationId.value === st.id ? 'text-white' : 'bg-transparent text-white/40 hover:text-white/75 hover:bg-white/[0.06]'"
-                  :style="lofi.currentStationId.value === st.id ? { backgroundColor: st.color + '33', boxShadow: `inset 0 0 0 1px ${st.color}55` } : {}"
+                  class="flex min-w-0 items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-semibold transition-colors cursor-pointer"
+                  :class="lofi.currentStationId.value === st.id ? 'text-white' : 'bg-black/20 text-white/48 hover:bg-white/[0.06] hover:text-white/78'"
+                  :style="lofi.currentStationId.value === st.id ? { backgroundColor: st.color + '26', boxShadow: `inset 0 0 0 1px ${st.color}55` } : {}"
                   @click="lofi.setStation(st.id)"
                 >
-                  <span>{{ st.emoji }}</span>{{ st.name }}
+                  <span class="shrink-0 text-base">{{ st.emoji }}</span>
+                  <span class="truncate">{{ st.name }}</span>
                 </button>
               </div>
-
-              <div class="flex items-center gap-2.5 shrink-0">
-                <button
-                  class="w-8 h-8 rounded-lg bg-white/[0.08] flex items-center justify-center text-white/70 hover:text-white transition-colors cursor-pointer"
-                  @click="lofi.toggle()"
-                >
-                  <UIcon v-if="lofi.isLoading.value" name="i-heroicons-arrow-path" class="w-3.5 h-3.5 animate-spin" />
-                  <UIcon v-else :name="lofi.isPlaying.value ? 'i-heroicons-pause' : 'i-heroicons-play'" class="w-3.5 h-3.5" />
-                </button>
-                <input
-                  type="range" min="0" max="1" step="0.05"
-                  :value="lofi.volume.value"
-                  class="w-20 accent-white/80 cursor-pointer"
-                  @input="lofi.setVolume(parseFloat(($event.target as HTMLInputElement).value))"
-                >
-              </div>
-            </div>
+            </section>
           </div>
+        </main>
 
-          <p class="text-center text-[10px] text-white/25">
-            {{ en ? 'Space: play/pause · Esc: minimize' : 'Espacio: reproducir/pausar · Esc: minimizar' }}
+        <footer class="hf-chrome relative w-full px-4 pb-5 sm:px-8 sm:pb-6">
+          <p class="mx-auto max-w-3xl text-center text-xs italic leading-relaxed text-white/35">
+            "{{ lofi.currentQuote.value }}"
           </p>
-        </div>
+        </footer>
       </div>
     </Transition>
   </Teleport>
@@ -178,14 +296,32 @@ const modes = computed(() => [
   { value: 'deep' as const, label: '50/10' },
 ])
 
-const focusStations = computed(() => lofi.stations.filter(s => s.focus))
+const focusStations = computed(() => lofi.focusStations.value)
 
 const glowColor = computed(() => pomodoro.phase.value === 'work' ? '#F59E0B' : '#10B981')
 const stationColor = computed(() => lofi.currentStation.value?.color || '#F59E0B')
 
+const activeSessionDotCount = computed(() => {
+  const sessions = pomodoro.sessions.value
+  if (sessions > 0 && sessions % 4 === 0) return 4
+  return sessions % 4
+})
+
 const ringOffset = computed(() => {
   const progress = pomodoro.seconds.value / pomodoro.total.value
   return RING_C * (1 - progress)
+})
+
+const phaseLabel = computed(() => {
+  if (pomodoro.phase.value === 'work') return en.value ? 'Focus' : 'Enfoque'
+  return en.value ? 'Break' : 'Descanso'
+})
+
+const phaseHint = computed(() => {
+  if (pomodoro.phase.value === 'work') {
+    return en.value ? 'Protect attention until the next break.' : 'Protege la atención hasta el próximo descanso.'
+  }
+  return en.value ? 'Reset energy before the next sprint.' : 'Recupera energía antes del siguiente sprint.'
 })
 
 const nextPhaseHint = computed(() => {
@@ -196,6 +332,18 @@ const nextPhaseHint = computed(() => {
   }
   const mins = deep ? 50 : 25
   return en.value ? `Next: ${mins} min focus` : `Siguiente: enfoque de ${mins} min`
+})
+
+const musicStatusLabel = computed(() => {
+  if (lofi.isLoading.value) return en.value ? 'Syncing' : 'Sincronizando'
+  if (lofi.isPlaying.value) return en.value ? 'Synced' : 'Sincronizado'
+  return en.value ? 'Paused' : 'Pausado'
+})
+
+const musicStatusClass = computed(() => {
+  if (lofi.isLoading.value) return 'bg-amber-400/12 text-amber-300'
+  if (lofi.isPlaying.value) return 'bg-emerald-400/12 text-emerald-300'
+  return 'bg-white/[0.06] text-white/42'
 })
 
 // ── Idle UI: hide chrome + cursor after 4s without movement while running ──
@@ -214,7 +362,7 @@ function wakeUI() {
 async function enterFullscreen() {
   try {
     if (!document.fullscreenElement) await document.documentElement.requestFullscreen()
-  } catch { /* fullscreen not available — overlay still covers the app */ }
+  } catch { /* fullscreen not available; overlay still covers the app */ }
 }
 
 function exitFullscreen() {
@@ -226,14 +374,25 @@ function minimize() {
   exitFullscreen()
 }
 
-// Timer and music pause/resume together inside hyperfocus mode
+function toggleMusic() {
+  if (lofi.isPlaying.value) lofi.pause()
+  else lofi.syncHyperfocusAudio().catch(() => {})
+  wakeUI()
+}
+
+function skipFocus(direction: -1 | 1) {
+  lofi.skipFocus(direction)
+  wakeUI()
+}
+
+// Timer and music pause/resume together inside hyperfocus mode.
 function toggleSession() {
   const wasRunning = pomodoro.running.value
   pomodoro.togglePomodoro()
   if (wasRunning) {
     if (lofi.isPlaying.value) lofi.pause()
-  } else {
-    if (!lofi.isPlaying.value) lofi.play()
+  } else if (!lofi.isPlaying.value) {
+    lofi.syncHyperfocusAudio().catch(() => {})
   }
   wakeUI()
 }
@@ -256,20 +415,13 @@ function onKeydown(e: KeyboardEvent) {
   }
 }
 
-// Auto-start hyperfocus music + fullscreen when the overlay opens
 watch(() => pomodoro.hyperfocusOpen.value, (open) => {
   if (!open) {
     isIdle.value = false
     if (idleTimer) clearTimeout(idleTimer)
     return
   }
-  if (!lofi.isPlaying.value) {
-    const focusIds = focusStations.value.map(s => s.id)
-    const target = focusIds.includes(lofi.currentStationId.value)
-      ? lofi.currentStationId.value
-      : (focusIds[0] || lofi.currentStationId.value)
-    lofi.setStation(target)
-  }
+  lofi.syncHyperfocusAudio().catch(() => {})
   enterFullscreen()
   wakeUI()
 })
@@ -291,7 +443,16 @@ onUnmounted(() => {
   opacity: 0;
 }
 
-/* Chrome fades away when idle to leave only the timer */
+.hf-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.032) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.032) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 78% 64% at 50% 48%, black 0%, transparent 76%);
+  opacity: 0.4;
+}
+
+/* Chrome fades away when idle to leave only the timer. */
 .hf-chrome {
   transition: opacity 0.8s ease;
 }
@@ -303,12 +464,23 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
-/* Slow breathing during break — 4s in / 4s out like a breathing exercise */
 @keyframes hf-breathe {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.04); }
+  50% { transform: scale(1.035); }
 }
 .hf-breathe {
   animation: hf-breathe 8s ease-in-out infinite;
 }
+
+@keyframes hf-eq {
+  0%, 100% { transform: scaleY(0.55); opacity: 0.55; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+.hf-eq {
+  transform-origin: bottom;
+  animation: hf-eq 0.95s ease-in-out infinite;
+}
+.hf-eq:nth-child(2) { animation-delay: 0.12s; }
+.hf-eq:nth-child(3) { animation-delay: 0.24s; }
+.hf-eq:nth-child(4) { animation-delay: 0.36s; }
 </style>
