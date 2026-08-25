@@ -85,6 +85,7 @@ export interface Task {
   ai_suggested_priority?: string
   ai_decomposed: boolean
   ai_quick_task: boolean
+  ai_agent?: string
   last_activity_at: string
   created_at: string
   updated_at: string

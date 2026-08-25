@@ -310,9 +310,11 @@ const STATUS_SYNONYMS: Record<string, string[]> = {
 const synonymToCanonical = new Map<string, string>()
 for (const [canonical, synonyms] of Object.entries(STATUS_SYNONYMS)) {
   for (const syn of synonyms) {
-    synonymToCanonical.set(stripDiacritics(syn.toLowerCase()), canonical)
+    const key = stripDiacritics(syn.toLowerCase())
+    if (!synonymToCanonical.has(key)) synonymToCanonical.set(key, canonical)
   }
-  synonymToCanonical.set(stripDiacritics(canonical.toLowerCase()), canonical)
+  const canonicalKey = stripDiacritics(canonical.toLowerCase())
+  if (!synonymToCanonical.has(canonicalKey)) synonymToCanonical.set(canonicalKey, canonical)
 }
 
 // Template column signatures (canonical keys from synonym map or direct lowercase+stripped)

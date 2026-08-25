@@ -139,6 +139,15 @@
 
     <!-- Kanban filters row -->
     <div v-if="showKanbanFilter" class="flex items-center gap-2 mb-4 animate-fade-up flex-wrap">
+      <div class="relative min-w-[220px] flex-1 sm:flex-none">
+        <UIcon name="i-heroicons-magnifying-glass" class="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+        <input
+          v-model="kanbanSearch"
+          type="search"
+          :placeholder="language === 'en' ? 'Search tasks, tags, owners...' : 'Buscar tareas, tags, responsables...'"
+          class="w-full sm:w-[260px] text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-white/10 rounded-full pl-8 pr-3 py-2 border-0 outline-none focus:ring-2 focus:ring-focusflow-300/60"
+        />
+      </div>
       <select
         v-model="kanbanFilterPriority"
         class="text-xs font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-white/10 rounded-full px-3 py-2 border-0 outline-none cursor-pointer"
@@ -156,10 +165,20 @@
         <option value="">{{ t.assignedTo }}</option>
         <option v-for="m in workspaceMembers" :key="m.user_id" :value="m.user_id">{{ m.email || m.user_id.slice(0, 12) }}</option>
       </select>
+      <select
+        v-model="kanbanFilterDue"
+        class="text-xs font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-white/10 rounded-full px-3 py-2 border-0 outline-none cursor-pointer"
+      >
+        <option value="">{{ language === 'en' ? 'Any due date' : 'Cualquier fecha' }}</option>
+        <option value="overdue">{{ language === 'en' ? 'Overdue' : 'Atrasadas' }}</option>
+        <option value="today">{{ language === 'en' ? 'Due today' : 'Vencen hoy' }}</option>
+        <option value="week">{{ language === 'en' ? 'Next 7 days' : 'Próximos 7 días' }}</option>
+        <option value="none">{{ language === 'en' ? 'No due date' : 'Sin fecha' }}</option>
+      </select>
       <button
-        v-if="kanbanFilterPriority || kanbanFilterAssignee"
+        v-if="kanbanSearch || kanbanFilterPriority || kanbanFilterAssignee || kanbanFilterDue"
         class="text-[11px] text-red-500 font-medium cursor-pointer hover:text-red-700"
-        @click="kanbanFilterPriority = ''; kanbanFilterAssignee = ''"
+        @click="clearTaskFilters"
       >
         {{ t.clear }}
       </button>
@@ -456,133 +475,251 @@
 
     <!-- List View -->
     <div v-if="!loading && viewMode === 'list'" class="animate-fade-up delay-100">
-      <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-200/80 dark:border-white/10 overflow-hidden">
-        <!-- Table header -->
-        <div class="grid grid-cols-[2fr_1fr_1fr_auto] md:grid-cols-[2fr_1fr_0.8fr_0.8fr_0.8fr_0.6fr_auto] px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 border-b border-gray-200/80 dark:border-white/10 bg-gray-50/50 dark:bg-white/5">
-          <span>{{ language === 'en' ? 'Task' : 'Tarea' }}</span>
-          <span class="hidden md:block">{{ t.column }}</span>
-          <span>{{ t.deadline }}</span>
-          <span>{{ t.priority }}</span>
-          <span class="hidden md:block">{{ t.tags }}</span>
-          <span class="hidden md:block">{{ t.assigned }}</span>
-          <span class="w-8" />
-        </div>
-        <!-- Rows grouped by column -->
-        <template v-for="column in columns" :key="'list-'+column.id">
-          <div
-            v-if="filteredTasksByColumn(column.id).length > 0"
-            class="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest border-b border-gray-50 dark:border-white/5"
-            :style="{ color: column.color, backgroundColor: column.color + '08' }"
-          >
-            <span class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: column.color }" />
-              {{ column.title }} ({{ filteredTasksByColumn(column.id).length }})
-            </span>
-          </div>
-          <div
-            v-for="task in filteredTasksByColumn(column.id)"
-            :key="'lt-'+task.id"
-            class="grid grid-cols-[2fr_1fr_1fr_auto] md:grid-cols-[2fr_1fr_0.8fr_0.8fr_0.8fr_0.6fr_auto] px-4 py-2.5 text-[12px] border-b border-gray-50 dark:border-white/5 last:border-0 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors cursor-pointer group"
-            draggable="true"
-            @dragstart="onDragStart($event, task)"
-            @click="openTaskDetail(task)"
-          >
-            <!-- Task name -->
-            <div class="flex items-center gap-2 min-w-0">
-              <span
-                class="w-1.5 h-1.5 rounded-full shrink-0"
-                :class="{
-                  'bg-red-500': task.priority === 'critical',
-                  'bg-orange-400': task.priority === 'high',
-                  'bg-blue-400': task.priority === 'medium',
-                  'bg-gray-300 dark:bg-gray-600': task.priority === 'low',
-                }"
+      <div class="space-y-3">
+        <!-- Work OS controls -->
+        <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-200/80 dark:border-white/10 p-3.5">
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="relative flex-1 min-w-[220px]">
+              <UIcon name="i-heroicons-magnifying-glass" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                v-model="kanbanSearch"
+                type="search"
+                :placeholder="language === 'en' ? 'Search tasks, tags, owners...' : 'Buscar tareas, tags, responsables...'"
+                class="w-full text-sm text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-focusflow-300/60"
               />
-              <span class="text-gray-900 dark:text-gray-100 font-medium truncate">{{ localizedTitle(task) }}</span>
             </div>
-            <!-- Column (hidden mobile) -->
-            <span class="text-gray-500 dark:text-gray-400 truncate flex items-center gap-1 hidden md:flex">
-              <span class="w-1.5 h-1.5 rounded-full shrink-0" :style="{ backgroundColor: column.color }" />
-              {{ column.title }}
-            </span>
-            <!-- Deadline + progress -->
-            <div class="flex flex-col gap-1">
-              <span>
-                <span v-if="task.due_date && getDeadlineInfo(task.due_date)"
-                  class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                  :class="getDeadlineInfo(task.due_date)!.bgClass + ' ' + getDeadlineInfo(task.due_date)!.colorClass">
-                  {{ getDeadlineInfo(task.due_date)!.label }}
-                </span>
-                <span v-else-if="task.due_date" class="font-medium text-gray-500 dark:text-gray-400">{{ formatDate(task.due_date) }}</span>
-                <span v-else-if="task.estimated_hours" class="text-[10px] font-medium text-gray-500 dark:text-gray-400">~{{ task.estimated_hours }}h</span>
-                <span v-else class="text-gray-300">—</span>
-              </span>
-              <div v-if="getTaskProgress(task.due_date, task.created_at, task.estimated_hours)" class="flex items-center gap-1.5">
-                <div class="h-1 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden w-full max-w-20">
-                  <div
-                    class="h-full rounded-full transition-all duration-500"
-                    :style="{
-                      width: getTaskProgress(task.due_date, task.created_at, task.estimated_hours)!.percent + '%',
-                      backgroundColor: getTaskProgress(task.due_date, task.created_at, task.estimated_hours)!.color,
-                    }"
-                  />
-                </div>
-                <span class="text-[8px] text-gray-500 dark:text-gray-400 tabular-nums whitespace-nowrap">{{ getTaskProgress(task.due_date, task.created_at, task.estimated_hours)!.label }}</span>
-              </div>
+            <select v-model="kanbanFilterDue" class="workos-select">
+              <option value="">{{ language === 'en' ? 'Any due date' : 'Cualquier fecha' }}</option>
+              <option value="overdue">{{ language === 'en' ? 'Overdue' : 'Atrasadas' }}</option>
+              <option value="today">{{ language === 'en' ? 'Due today' : 'Vencen hoy' }}</option>
+              <option value="week">{{ language === 'en' ? 'Next 7 days' : 'Próximos 7 días' }}</option>
+              <option value="none">{{ language === 'en' ? 'No due date' : 'Sin fecha' }}</option>
+            </select>
+            <select v-model="listGroupBy" class="workos-select">
+              <option value="column">{{ language === 'en' ? 'Group: Status' : 'Grupo: Estado' }}</option>
+              <option value="priority">{{ language === 'en' ? 'Group: Priority' : 'Grupo: Prioridad' }}</option>
+              <option value="assignee">{{ language === 'en' ? 'Group: Owner' : 'Grupo: Responsable' }}</option>
+              <option value="none">{{ language === 'en' ? 'No groups' : 'Sin grupos' }}</option>
+            </select>
+            <select v-model="listSortBy" class="workos-select">
+              <option value="position">{{ language === 'en' ? 'Sort: Board order' : 'Orden: Tablero' }}</option>
+              <option value="due_date">{{ language === 'en' ? 'Sort: Due date' : 'Orden: Fecha' }}</option>
+              <option value="priority">{{ language === 'en' ? 'Sort: Priority' : 'Orden: Prioridad' }}</option>
+              <option value="updated_at">{{ language === 'en' ? 'Sort: Recent activity' : 'Orden: Actividad' }}</option>
+              <option value="title">{{ language === 'en' ? 'Sort: Name' : 'Orden: Nombre' }}</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3">
+            <div class="rounded-lg bg-gray-50 dark:bg-white/5 px-3 py-2">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">{{ language === 'en' ? 'Visible' : 'Visibles' }}</p>
+              <p class="text-lg font-bold text-gray-900 dark:text-gray-100 tabular-nums">{{ allFilteredTasks.length }}</p>
             </div>
-            <!-- Priority -->
-            <span>
-              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                :class="{
-                  'bg-red-50 text-red-600': task.priority === 'critical' || task.priority === 'high',
-                  'bg-blue-50 text-blue-600': task.priority === 'medium',
-                  'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400': task.priority === 'low',
-                }">
-                {{ { critical: t.priorityCritical, high: t.priorityHigh, medium: t.priorityMedium, low: t.priorityLow }[task.priority] || task.priority }}
-              </span>
-            </span>
-            <!-- Labels + Tags (hidden mobile) -->
-            <div class="gap-1 flex-wrap items-center hidden md:flex">
-              <span v-for="label in (task.labels || []).slice(0, 2)" :key="label.id"
-                class="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
-                :style="{ backgroundColor: label.color + '20', color: label.color }">
-                {{ label.name }}
-              </span>
-              <span v-for="tag in (task.tags || []).slice(0, 2)" :key="tag"
-                class="text-[9px] font-semibold px-1.5 py-0.5 rounded-md"
-                :style="{ backgroundColor: tagColor(tag) + '18', color: tagColor(tag) }">
-                #{{ tag }}
-              </span>
+            <div class="rounded-lg bg-red-50 dark:bg-red-500/10 px-3 py-2">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-red-400">{{ language === 'en' ? 'Overdue' : 'Atrasadas' }}</p>
+              <p class="text-lg font-bold text-red-600 dark:text-red-300 tabular-nums">{{ overdueVisibleCount }}</p>
             </div>
-            <!-- Assignees (hidden mobile) -->
-            <div class="hidden md:flex -space-x-1.5 items-center">
-              <div
-                v-for="uid in (task.assignees || []).slice(0, 3)"
-                :key="uid"
-                class="w-5 h-5 rounded-full bg-focusflow-100 dark:bg-focusflow-500/20 text-focusflow-700 dark:text-focusflow-400 flex items-center justify-center text-[8px] font-bold ring-2 ring-white dark:ring-[#1b1b1b]"
-                :title="getMemberEmail(uid)"
-              >
-                {{ getMemberInitials(uid) }}
-              </div>
-              <span v-if="(task.assignees || []).length > 3" class="text-[9px] text-gray-500 dark:text-gray-400 ml-1">+{{ task.assignees!.length - 3 }}</span>
-              <span v-if="!(task.assignees || []).length" class="text-[10px] text-gray-300">—</span>
+            <div class="rounded-lg bg-amber-50 dark:bg-amber-500/10 px-3 py-2">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-amber-500">{{ language === 'en' ? 'Unassigned' : 'Sin responsable' }}</p>
+              <p class="text-lg font-bold text-amber-700 dark:text-amber-300 tabular-nums">{{ unassignedVisibleCount }}</p>
             </div>
-            <!-- Delete -->
-            <div class="flex items-center justify-center w-8">
-              <button
-                v-if="canDeleteTasks"
-                class="w-6 h-6 rounded-full flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
-                :title="t.deleteTask"
-                @click.stop="handleDeleteTask(task)"
-              >
-                <UIcon name="i-heroicons-trash" class="w-3.5 h-3.5" />
-              </button>
+            <div class="rounded-lg bg-focusflow-50 dark:bg-focusflow-500/10 px-3 py-2">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-focusflow-600 dark:text-focusflow-300">{{ language === 'en' ? 'Estimated' : 'Estimado' }}</p>
+              <p class="text-lg font-bold text-focusflow-700 dark:text-focusflow-300 tabular-nums">{{ visibleEstimatedHours }}h</p>
             </div>
           </div>
-        </template>
-        <div v-if="allFilteredTasks.length === 0" class="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
-          <UIcon name="i-heroicons-clipboard-document-list" class="w-8 h-8 text-gray-300 mb-2" />
-          <p class="text-[12px]">{{ t.noTasksMobile }}</p>
+        </div>
+
+        <!-- Bulk action bar -->
+        <div
+          v-if="selectedTaskIds.length > 0"
+          class="bg-[#0d0d0d] dark:bg-white/10 text-white rounded-[15px] px-3.5 py-3 flex flex-wrap items-center gap-2"
+        >
+          <span class="text-xs font-bold mr-1">{{ selectedTaskIds.length }} {{ language === 'en' ? 'selected' : 'seleccionadas' }}</span>
+          <select v-model="bulkColumnId" class="bulk-select" @change="applyBulkColumn">
+            <option value="">{{ language === 'en' ? 'Move to status' : 'Mover a estado' }}</option>
+            <option v-for="column in columns" :key="'bulk-col-'+column.id" :value="column.id">{{ column.title }}</option>
+          </select>
+          <select v-model="bulkPriority" class="bulk-select" @change="applyBulkPriority">
+            <option value="">{{ language === 'en' ? 'Set priority' : 'Cambiar prioridad' }}</option>
+            <option value="critical">{{ t.priorityCritical }}</option>
+            <option value="high">{{ t.priorityHigh }}</option>
+            <option value="medium">{{ t.priorityMedium }}</option>
+            <option value="low">{{ t.priorityLow }}</option>
+          </select>
+          <select v-model="bulkAssignee" class="bulk-select" @change="applyBulkAssignee">
+            <option value="">{{ language === 'en' ? 'Assign owner' : 'Asignar responsable' }}</option>
+            <option value="__none">{{ language === 'en' ? 'Clear owner' : 'Sin responsable' }}</option>
+            <option v-for="member in workspaceMembers" :key="'bulk-member-'+member.user_id" :value="member.user_id">{{ member.email }}</option>
+          </select>
+          <button class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 transition-colors" @click="selectedTaskIds = []">
+            {{ t.clear }}
+          </button>
+          <button
+            v-if="canDeleteTasks"
+            class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-500/20 text-red-100 hover:bg-red-500/30 transition-colors"
+            @click="handleDeleteSelectedTasks"
+          >
+            {{ language === 'en' ? 'Delete selected' : 'Borrar seleccionadas' }}
+          </button>
+        </div>
+
+        <!-- Work OS table -->
+        <div class="bg-white dark:bg-[#1b1b1b] rounded-[15px] border border-gray-200/80 dark:border-white/10 overflow-hidden">
+          <div class="overflow-x-auto">
+            <div class="min-w-[1120px]">
+              <div class="grid grid-cols-[42px_minmax(260px,2fr)_minmax(150px,0.9fr)_minmax(132px,0.8fr)_minmax(132px,0.8fr)_minmax(150px,0.9fr)_minmax(108px,0.6fr)_minmax(128px,0.7fr)_48px] px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 border-b border-gray-200/80 dark:border-white/10 bg-gray-50/50 dark:bg-white/5">
+                <label class="flex items-center">
+                  <input type="checkbox" class="workos-checkbox" :checked="allVisibleSelected" @change="toggleAllVisibleTasks" />
+                </label>
+                <span>{{ language === 'en' ? 'Task' : 'Tarea' }}</span>
+                <span>{{ language === 'en' ? 'Status' : 'Estado' }}</span>
+                <span>{{ t.deadline }}</span>
+                <span>{{ t.priority }}</span>
+                <span>{{ language === 'en' ? 'Owner' : 'Responsable' }}</span>
+                <span>{{ language === 'en' ? 'Estimate' : 'Estimado' }}</span>
+                <span>{{ language === 'en' ? 'Progress' : 'Progreso' }}</span>
+                <span class="w-8" />
+              </div>
+
+              <template v-for="group in listTaskGroups" :key="'list-group-'+group.id">
+                <div
+                  v-if="group.tasks.length > 0"
+                  class="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest border-b border-gray-50 dark:border-white/5"
+                  :style="{ color: group.color, backgroundColor: group.color + '08' }"
+                >
+                  <span class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: group.color }" />
+                    {{ group.title }} ({{ group.tasks.length }})
+                  </span>
+                </div>
+
+                <div
+                  v-for="task in group.tasks"
+                  :key="'lt-'+task.id"
+                  class="grid grid-cols-[42px_minmax(260px,2fr)_minmax(150px,0.9fr)_minmax(132px,0.8fr)_minmax(132px,0.8fr)_minmax(150px,0.9fr)_minmax(108px,0.6fr)_minmax(128px,0.7fr)_48px] px-4 py-2.5 text-[12px] border-b border-gray-50 dark:border-white/5 last:border-0 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors cursor-pointer group/row"
+                  :class="isTaskSaving(task.id) ? 'opacity-70' : ''"
+                  draggable="true"
+                  @dragstart="onDragStart($event, task)"
+                  @click="openTaskDetail(task)"
+                >
+                  <label class="flex items-center" @click.stop>
+                    <input
+                      type="checkbox"
+                      class="workos-checkbox"
+                      :checked="selectedTaskIds.includes(task.id)"
+                      @change="toggleTaskSelection(task.id, $event)"
+                    />
+                  </label>
+
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span
+                      class="w-1.5 h-1.5 rounded-full shrink-0"
+                      :class="{
+                        'bg-red-500': task.priority === 'critical',
+                        'bg-orange-400': task.priority === 'high',
+                        'bg-blue-400': task.priority === 'medium',
+                        'bg-gray-300 dark:bg-gray-600': task.priority === 'low',
+                      }"
+                    />
+                    <div class="min-w-0">
+                      <span class="block text-gray-900 dark:text-gray-100 font-medium truncate">{{ localizedTitle(task) }}</span>
+                      <div v-if="task.labels?.length || task.tags?.length" class="mt-1 flex flex-wrap gap-1">
+                        <span v-for="label in (task.labels || []).slice(0, 2)" :key="label.id" class="text-[9px] font-semibold px-1.5 py-0.5 rounded-full" :style="{ backgroundColor: label.color + '20', color: label.color }">
+                          {{ label.name }}
+                        </span>
+                        <span v-for="tag in (task.tags || []).slice(0, 2)" :key="tag" class="text-[9px] font-semibold px-1.5 py-0.5 rounded-md" :style="{ backgroundColor: tagColor(tag) + '18', color: tagColor(tag) }">
+                          #{{ tag }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <select
+                    class="workos-cell-select"
+                    :value="task.column_id || ''"
+                    @click.stop
+                    @change="handleInlineColumnChange(task, $event)"
+                  >
+                    <option v-for="column in columns" :key="'row-col-'+task.id+'-'+column.id" :value="column.id">{{ column.title }}</option>
+                  </select>
+
+                  <input
+                    type="date"
+                    class="workos-cell-input"
+                    :value="toDateInput(task.due_date)"
+                    @click.stop
+                    @change="handleInlineDueDateChange(task, $event)"
+                  />
+
+                  <select
+                    class="workos-cell-select"
+                    :value="task.priority"
+                    @click.stop
+                    @change="handleInlinePriorityChange(task, $event)"
+                  >
+                    <option value="critical">{{ t.priorityCritical }}</option>
+                    <option value="high">{{ t.priorityHigh }}</option>
+                    <option value="medium">{{ t.priorityMedium }}</option>
+                    <option value="low">{{ t.priorityLow }}</option>
+                  </select>
+
+                  <div class="flex items-center gap-1.5 min-w-0" @click.stop>
+                    <select
+                      class="workos-cell-select min-w-0 flex-1"
+                      :value="firstAssignee(task) || ''"
+                      @change="handleInlineAssigneeChange(task, $event)"
+                    >
+                      <option value="">{{ language === 'en' ? 'Unassigned' : 'Sin responsable' }}</option>
+                      <option v-for="member in workspaceMembers" :key="'row-member-'+task.id+'-'+member.user_id" :value="member.user_id">{{ member.email }}</option>
+                    </select>
+                    <span v-if="(task.assignees || []).length > 1" class="text-[10px] text-gray-400 shrink-0">+{{ task.assignees!.length - 1 }}</span>
+                  </div>
+
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    class="workos-cell-input"
+                    :value="task.estimated_hours ?? ''"
+                    :placeholder="language === 'en' ? 'Hours' : 'Horas'"
+                    @click.stop
+                    @change="handleInlineEstimateChange(task, $event)"
+                  />
+
+                  <div class="flex items-center gap-2">
+                    <div class="h-1.5 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden flex-1">
+                      <div class="h-full rounded-full bg-focusflow-500 transition-all duration-300" :style="{ width: `${taskProgress(task)}%` }" />
+                    </div>
+                    <span class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 tabular-nums w-8">{{ taskProgress(task) }}%</span>
+                  </div>
+
+                  <div class="flex items-center justify-center gap-1">
+                    <button
+                      class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-300 hover:text-focusflow-600 hover:bg-focusflow-50 dark:hover:bg-focusflow-500/10 transition-all opacity-0 group-hover/row:opacity-100"
+                      :title="language === 'en' ? 'Open task' : 'Abrir tarea'"
+                      @click.stop="openTaskDetail(task)"
+                    >
+                      <UIcon name="i-heroicons-arrow-top-right-on-square" class="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      v-if="canDeleteTasks"
+                      class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all opacity-0 group-hover/row:opacity-100"
+                      :title="t.deleteTask"
+                      @click.stop="handleDeleteTask(task)"
+                    >
+                      <UIcon name="i-heroicons-trash" class="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </template>
+
+              <div v-if="allFilteredTasks.length === 0" class="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
+                <UIcon name="i-heroicons-clipboard-document-list" class="w-8 h-8 text-gray-300 mb-2" />
+                <p class="text-[12px]">{{ t.noTasksMobile }}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -769,9 +906,19 @@ function setViewMode(mode: 'columns' | 'list') {
 const showKanbanFilter = ref(false)
 const kanbanFilterPriority = ref('')
 const kanbanFilterAssignee = ref('')
+const kanbanFilterDue = ref('')
+const kanbanSearch = ref('')
+const listGroupBy = ref<'column' | 'priority' | 'assignee' | 'none'>('column')
+const listSortBy = ref<'position' | 'due_date' | 'priority' | 'updated_at' | 'title'>('position')
+const selectedTaskIds = ref<string[]>([])
+const bulkColumnId = ref('')
+const bulkPriority = ref('')
+const bulkAssignee = ref('')
+const savingTaskIds = ref<Set<string>>(new Set())
 
 // Stat computeds
 const todayStr = new Date().toISOString().slice(0, 10)
+const nextWeekStr = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
 
 const inProgressCount = computed(() => {
   // Count tasks not in first or last column
@@ -803,12 +950,67 @@ function taskAgingClass(task: Task): string {
   return ''
 }
 
+function clearTaskFilters() {
+  kanbanSearch.value = ''
+  kanbanFilterPriority.value = ''
+  kanbanFilterAssignee.value = ''
+  kanbanFilterDue.value = ''
+}
+
+function toDateInput(dateStr?: string | null): string {
+  return dateStr ? String(dateStr).slice(0, 10) : ''
+}
+
+const doneColumnId = computed(() => columns.value[columns.value.length - 1]?.id || '')
+
+function isTaskDone(task: Task): boolean {
+  return !!doneColumnId.value && task.column_id === doneColumnId.value
+}
+
+function isTaskOverdue(task: Task): boolean {
+  const due = toDateInput(task.due_date)
+  return !!due && due < todayStr && !isTaskDone(task)
+}
+
+function matchesTextSearch(task: Task, query: string): boolean {
+  if (!query) return true
+  const assignees = (task.assignees || []).map(getMemberEmail).join(' ')
+  const labels = (task.labels || []).map(label => label.name).join(' ')
+  const haystack = [
+    localizedTitle(task),
+    localizedDescription(task),
+    (task.tags || []).join(' '),
+    labels,
+    assignees,
+  ].join(' ').toLowerCase()
+  return haystack.includes(query)
+}
+
+function matchesDueFilter(task: Task): boolean {
+  const due = toDateInput(task.due_date)
+  if (!kanbanFilterDue.value) return true
+  if (kanbanFilterDue.value === 'none') return !due
+  if (!due) return false
+  if (kanbanFilterDue.value === 'overdue') return isTaskOverdue(task)
+  if (kanbanFilterDue.value === 'today') return due === todayStr
+  if (kanbanFilterDue.value === 'week') return due >= todayStr && due <= nextWeekStr
+  return true
+}
+
+const allFilteredTasks = computed(() => {
+  const query = kanbanSearch.value.trim().toLowerCase()
+  return tasks.value.filter((task) => {
+    if (kanbanFilterPriority.value && task.priority !== kanbanFilterPriority.value) return false
+    if (kanbanFilterAssignee.value && !(task.assignees || []).includes(kanbanFilterAssignee.value)) return false
+    if (!matchesDueFilter(task)) return false
+    return matchesTextSearch(task, query)
+  })
+})
+
 // Memoized: group filtered tasks by column in a single pass (called once per reactive change, not per render)
 const _filteredByColumn = computed(() => {
   const map: Record<string, Task[]> = {}
-  for (const t of tasks.value) {
-    if (kanbanFilterPriority.value && t.priority !== kanbanFilterPriority.value) continue
-    if (kanbanFilterAssignee.value && !(t.assignees || []).includes(kanbanFilterAssignee.value)) continue
+  for (const t of allFilteredTasks.value) {
     if (!map[t.column_id]) map[t.column_id] = []
     map[t.column_id]!.push(t)
   }
@@ -819,15 +1021,87 @@ function filteredTasksByColumn(columnId: string) {
   return _filteredByColumn.value[columnId] || []
 }
 
-const allFilteredTasks = computed(() => {
-  let result = [...tasks.value]
-  if (kanbanFilterPriority.value) {
-    result = result.filter(t => t.priority === kanbanFilterPriority.value)
+const priorityRank: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 }
+const priorityMeta = computed(() => [
+  { value: 'critical', label: t.value.priorityCritical, color: '#EF4444' },
+  { value: 'high', label: t.value.priorityHigh, color: '#F97316' },
+  { value: 'medium', label: t.value.priorityMedium, color: '#3B82F6' },
+  { value: 'low', label: t.value.priorityLow, color: '#9CA3AF' },
+])
+
+function compareTasks(a: Task, b: Task): number {
+  if (listSortBy.value === 'due_date') {
+    const ad = toDateInput(a.due_date) || '9999-12-31'
+    const bd = toDateInput(b.due_date) || '9999-12-31'
+    return ad.localeCompare(bd) || compareTasksByPosition(a, b)
   }
-  if (kanbanFilterAssignee.value) {
-    result = result.filter(t => (t.assignees || []).includes(kanbanFilterAssignee.value))
+  if (listSortBy.value === 'priority') {
+    return (priorityRank[a.priority] ?? 99) - (priorityRank[b.priority] ?? 99) || compareTasksByPosition(a, b)
   }
-  return result
+  if (listSortBy.value === 'updated_at') {
+    return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+  }
+  if (listSortBy.value === 'title') {
+    return localizedTitle(a).localeCompare(localizedTitle(b))
+  }
+  return compareTasksByPosition(a, b)
+}
+
+function compareTasksByPosition(a: Task, b: Task): number {
+  const aCol = columns.value.findIndex(c => c.id === a.column_id)
+  const bCol = columns.value.findIndex(c => c.id === b.column_id)
+  return (aCol - bCol) || ((a.position || 0) - (b.position || 0)) || localizedTitle(a).localeCompare(localizedTitle(b))
+}
+
+const sortedListTasks = computed(() => [...allFilteredTasks.value].sort(compareTasks))
+
+const listTaskGroups = computed(() => {
+  if (listGroupBy.value === 'none') {
+    return [{ id: 'all', title: language.value === 'en' ? 'All tasks' : 'Todas las tareas', color: '#10B981', tasks: sortedListTasks.value }]
+  }
+  if (listGroupBy.value === 'priority') {
+    return priorityMeta.value.map(priority => ({
+      id: `priority-${priority.value}`,
+      title: priority.label,
+      color: priority.color,
+      tasks: sortedListTasks.value.filter(task => task.priority === priority.value),
+    }))
+  }
+  if (listGroupBy.value === 'assignee') {
+    const groups = workspaceMembers.value.map(member => ({
+      id: `assignee-${member.user_id}`,
+      title: member.email,
+      color: '#14B8A6',
+      tasks: sortedListTasks.value.filter(task => firstAssignee(task) === member.user_id),
+    }))
+    groups.push({
+      id: 'assignee-none',
+      title: language.value === 'en' ? 'Unassigned' : 'Sin responsable',
+      color: '#F59E0B',
+      tasks: sortedListTasks.value.filter(task => !firstAssignee(task)),
+    })
+    return groups
+  }
+  return columns.value.map(column => ({
+    id: `column-${column.id}`,
+    title: column.title,
+    color: column.color || '#10B981',
+    tasks: sortedListTasks.value.filter(task => task.column_id === column.id),
+  }))
+})
+
+const overdueVisibleCount = computed(() => allFilteredTasks.value.filter(isTaskOverdue).length)
+const unassignedVisibleCount = computed(() => allFilteredTasks.value.filter(task => !(task.assignees || []).length).length)
+const visibleEstimatedHours = computed(() => {
+  const total = allFilteredTasks.value.reduce((sum, task) => sum + Number(task.estimated_hours || 0), 0)
+  return Number.isInteger(total) ? total : total.toFixed(1)
+})
+
+const visibleTaskIds = computed(() => allFilteredTasks.value.map(task => task.id))
+const allVisibleSelected = computed(() => visibleTaskIds.value.length > 0 && visibleTaskIds.value.every(id => selectedTaskIds.value.includes(id)))
+
+watch(visibleTaskIds, (ids) => {
+  selectedTaskIds.value = selectedTaskIds.value.filter(id => ids.includes(id))
 })
 
 function taskProgress(task: Task): number {
@@ -872,6 +1146,144 @@ function getMemberInitials(userId: string) {
   const email = getMemberEmail(userId)
   if (email.includes('@')) return email.split('@')[0]!.slice(0, 2).toUpperCase()
   return email.slice(0, 2).toUpperCase()
+}
+
+function firstAssignee(task: Task): string {
+  return (task.assignees || [])[0] || ''
+}
+
+function eventValue(event: Event): string {
+  return (event.target as HTMLInputElement | HTMLSelectElement).value
+}
+
+function markTaskSaving(taskId: string, saving: boolean) {
+  const next = new Set(savingTaskIds.value)
+  if (saving) next.add(taskId)
+  else next.delete(taskId)
+  savingTaskIds.value = next
+}
+
+function isTaskSaving(taskId: string): boolean {
+  return savingTaskIds.value.has(taskId)
+}
+
+async function updateTaskInline(task: Task, updates: Record<string, unknown>) {
+  if (!workspaceId.value || isTaskSaving(task.id)) return
+  const index = tasks.value.findIndex(t => t.id === task.id)
+  if (index === -1) return
+
+  const previous = { ...tasks.value[index] } as Task
+  tasks.value[index] = { ...tasks.value[index]!, ...updates, updated_at: new Date().toISOString() } as Task
+  markTaskSaving(task.id, true)
+
+  try {
+    const updated = await $fetch<Task>(`/api/workspaces/${workspaceId.value}/tasks/${task.id}`, {
+      method: 'PATCH',
+      body: updates,
+    })
+    const freshIndex = tasks.value.findIndex(t => t.id === task.id)
+    if (freshIndex !== -1) tasks.value[freshIndex] = { ...tasks.value[freshIndex]!, ...updated } as Task
+  } catch {
+    const freshIndex = tasks.value.findIndex(t => t.id === task.id)
+    if (freshIndex !== -1) tasks.value[freshIndex] = previous
+  } finally {
+    markTaskSaving(task.id, false)
+  }
+}
+
+function handleInlineColumnChange(task: Task, event: Event) {
+  const columnId = eventValue(event)
+  if (columnId && columnId !== task.column_id) updateTaskInline(task, { column_id: columnId })
+}
+
+function handleInlinePriorityChange(task: Task, event: Event) {
+  const priority = eventValue(event)
+  if (priority && priority !== task.priority) updateTaskInline(task, { priority })
+}
+
+function handleInlineDueDateChange(task: Task, event: Event) {
+  const dueDate = eventValue(event)
+  const current = toDateInput(task.due_date)
+  if (dueDate !== current) updateTaskInline(task, { due_date: dueDate || null })
+}
+
+function handleInlineEstimateChange(task: Task, event: Event) {
+  const raw = eventValue(event)
+  const estimated = raw === '' ? null : Number(raw)
+  const current = task.estimated_hours ?? null
+  if (estimated !== current && (estimated === null || Number.isFinite(estimated))) {
+    updateTaskInline(task, { estimated_hours: estimated })
+  }
+}
+
+function handleInlineAssigneeChange(task: Task, event: Event) {
+  const assignee = eventValue(event)
+  const assignees = assignee ? [assignee] : []
+  if (assignees.join(',') !== (task.assignees || []).join(',')) {
+    updateTaskInline(task, { assignees })
+  }
+}
+
+function toggleTaskSelection(taskId: string, event: Event) {
+  const checked = (event.target as HTMLInputElement).checked
+  if (checked && !selectedTaskIds.value.includes(taskId)) {
+    selectedTaskIds.value = [...selectedTaskIds.value, taskId]
+  } else if (!checked) {
+    selectedTaskIds.value = selectedTaskIds.value.filter(id => id !== taskId)
+  }
+}
+
+function toggleAllVisibleTasks(event: Event) {
+  const checked = (event.target as HTMLInputElement).checked
+  if (checked) {
+    selectedTaskIds.value = [...new Set([...selectedTaskIds.value, ...visibleTaskIds.value])]
+  } else {
+    selectedTaskIds.value = selectedTaskIds.value.filter(id => !visibleTaskIds.value.includes(id))
+  }
+}
+
+async function applyBulkUpdate(updates: Record<string, unknown>) {
+  const ids = [...selectedTaskIds.value]
+  const selected = tasks.value.filter(task => ids.includes(task.id))
+  await Promise.all(selected.map(task => updateTaskInline(task, updates)))
+  selectedTaskIds.value = []
+}
+
+async function applyBulkColumn() {
+  if (!bulkColumnId.value) return
+  await applyBulkUpdate({ column_id: bulkColumnId.value })
+  bulkColumnId.value = ''
+}
+
+async function applyBulkPriority() {
+  if (!bulkPriority.value) return
+  await applyBulkUpdate({ priority: bulkPriority.value })
+  bulkPriority.value = ''
+}
+
+async function applyBulkAssignee() {
+  if (!bulkAssignee.value) return
+  const assignees = bulkAssignee.value === '__none' ? [] : [bulkAssignee.value]
+  await applyBulkUpdate({ assignees })
+  bulkAssignee.value = ''
+}
+
+async function handleDeleteSelectedTasks() {
+  const count = selectedTaskIds.value.length
+  if (count === 0) return
+  const msg = language.value === 'en'
+    ? `Delete ${count} selected task(s)? This cannot be undone.`
+    : `¿Eliminar ${count} tarea(s) seleccionada(s)? Esta acción no se puede deshacer.`
+  if (!confirm(msg)) return
+  try {
+    const ids = [...selectedTaskIds.value]
+    await $fetch(`/api/workspaces/${workspaceId.value}/tasks/batch-delete`, {
+      method: 'POST',
+      body: { task_ids: ids },
+    })
+    tasks.value = tasks.value.filter(task => !ids.includes(task.id))
+    selectedTaskIds.value = []
+  } catch { /* */ }
 }
 
 
@@ -1045,6 +1457,7 @@ async function handleDeleteTask(task: Task) {
   if (!confirm(msg)) return
   try {
     await $fetch(`/api/workspaces/${workspaceId.value}/tasks/${task.id}`, { method: 'DELETE' })
+    selectedTaskIds.value = selectedTaskIds.value.filter(id => id !== task.id)
     await loadTasks()
   } catch { /* */ }
 }
@@ -1090,6 +1503,81 @@ async function handleDeleteAllTasks() {
 </script>
 
 <style scoped>
+.workos-select,
+.workos-cell-select,
+.workos-cell-input,
+.bulk-select {
+  border: 1px solid rgba(209, 213, 219, 0.8);
+  border-radius: 0.5rem;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+.workos-select {
+  min-height: 2.5rem;
+  padding: 0 0.75rem;
+  background: rgba(249, 250, 251, 0.9);
+  color: rgb(55, 65, 81);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.workos-cell-select,
+.workos-cell-input {
+  width: 100%;
+  min-height: 2rem;
+  padding: 0 0.5rem;
+  background: transparent;
+  color: rgb(55, 65, 81);
+  font-size: 0.75rem;
+}
+
+.bulk-select {
+  min-height: 2rem;
+  padding: 0 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.18);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.bulk-select option {
+  color: #111827;
+}
+
+.workos-checkbox {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
+  accent-color: #0d9488;
+  cursor: pointer;
+}
+
+.workos-select:focus,
+.workos-cell-select:focus,
+.workos-cell-input:focus {
+  border-color: rgba(20, 184, 166, 0.65);
+  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.16);
+}
+
+:is(.dark) .workos-select {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgb(229, 231, 235);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+:is(.dark) .workos-cell-select,
+:is(.dark) .workos-cell-input {
+  color: rgb(229, 231, 235);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+:is(.dark) .workos-cell-select option,
+:is(.dark) .workos-select option {
+  color: #111827;
+}
+
 /* Kanban horizontal scroll */
 @media (max-width: 767px) {
   .kanban-scroll::-webkit-scrollbar {

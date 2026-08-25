@@ -470,8 +470,12 @@ const clientSynonyms: Record<string, string[]> = {
 }
 const clientSynLookup = new Map<string, string>()
 for (const [canonical, syns] of Object.entries(clientSynonyms)) {
-  for (const s of syns) clientSynLookup.set(stripAccents(s.toLowerCase()), canonical)
-  clientSynLookup.set(stripAccents(canonical.toLowerCase()), canonical)
+  for (const s of syns) {
+    const key = stripAccents(s.toLowerCase())
+    if (!clientSynLookup.has(key)) clientSynLookup.set(key, canonical)
+  }
+  const canonicalKey = stripAccents(canonical.toLowerCase())
+  if (!clientSynLookup.has(canonicalKey)) clientSynLookup.set(canonicalKey, canonical)
 }
 const clientTemplateSignatures: Record<string, string[]> = {
   simple: ['pendiente', 'en progreso', 'hecho'],

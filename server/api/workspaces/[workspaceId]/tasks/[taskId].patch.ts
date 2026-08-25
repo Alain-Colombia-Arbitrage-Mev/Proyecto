@@ -1,6 +1,7 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
 import { notifyUser } from '~~/server/utils/notifications'
 import { taskAssignedEmailHtml, taskMovedToProjectEmailHtml } from '~~/server/utils/email'
+import { VALID_AGENT_TYPES } from '~~/server/utils/agentAI'
 
 export default defineEventHandler(async (event) => {
   const workspaceId = getRouterParam(event, 'workspaceId')!
@@ -37,6 +38,15 @@ export default defineEventHandler(async (event) => {
   if (body.position !== undefined) updates.position = body.position
   if (body.figma_links !== undefined) updates.figma_links = body.figma_links
   if (body.color !== undefined) updates.color = body.color
+  if (body.ai_agent !== undefined) {
+    if (body.ai_agent === null || body.ai_agent === '') {
+      updates.ai_agent = null
+    } else if (VALID_AGENT_TYPES.includes(body.ai_agent)) {
+      updates.ai_agent = body.ai_agent
+    } else {
+      throw createError({ statusCode: 400, message: 'Invalid AI agent type' })
+    }
+  }
   if (body.translations !== undefined) {
     // Merge with existing translations to avoid overwriting other languages
     const existing = (task as any).translations || {}
