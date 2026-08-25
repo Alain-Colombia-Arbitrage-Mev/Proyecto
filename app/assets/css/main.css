@@ -124,6 +124,19 @@ body {
   box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.12);
 }
 
+.ff-auth-showcase {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.045)),
+    linear-gradient(315deg, rgba(20, 184, 166, 0.16), transparent 56%);
+  box-shadow:
+    0 34px 100px -58px rgba(0, 0, 0, 0.80),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(24px) saturate(1.22);
+  -webkit-backdrop-filter: blur(24px) saturate(1.22);
+}
+
 .ff-auth-card {
   position: relative;
   overflow: hidden;

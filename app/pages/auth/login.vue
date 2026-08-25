@@ -3,20 +3,20 @@
     <NuxtLayout name="auth">
       <div class="animate-fade-up">
         <!-- Tab switcher -->
-        <div class="flex rounded-lg border border-white/60 bg-white/45 p-1 mb-6 shadow-inner shadow-white/40 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.055] dark:shadow-black/10">
+        <div class="mb-7 flex rounded-lg border border-white/60 bg-white/42 p-1 shadow-inner shadow-white/40 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.055] dark:shadow-black/10">
           <button
-            class="flex-1 rounded-md py-2 text-sm font-semibold transition-all duration-200 cursor-pointer"
+            class="flex-1 rounded-md py-2.5 text-sm font-semibold transition-all duration-200 cursor-pointer"
             :class="mode === 'login'
-              ? 'bg-white/90 dark:bg-white/12 text-gray-900 dark:text-white shadow-sm ring-1 ring-white/70 dark:ring-white/10'
+              ? 'bg-white/95 dark:bg-white/12 text-gray-900 dark:text-white shadow-sm ring-1 ring-white/75 dark:ring-white/10'
               : 'text-gray-500 dark:text-white/40 hover:text-gray-700 dark:hover:text-white/60'"
             @click="switchMode('login')"
           >
             {{ t.signIn }}
           </button>
           <button
-            class="flex-1 rounded-md py-2 text-sm font-semibold transition-all duration-200 cursor-pointer"
+            class="flex-1 rounded-md py-2.5 text-sm font-semibold transition-all duration-200 cursor-pointer"
             :class="mode === 'register'
-              ? 'bg-white/90 dark:bg-white/12 text-gray-900 dark:text-white shadow-sm ring-1 ring-white/70 dark:ring-white/10'
+              ? 'bg-white/95 dark:bg-white/12 text-gray-900 dark:text-white shadow-sm ring-1 ring-white/75 dark:ring-white/10'
               : 'text-gray-500 dark:text-white/40 hover:text-gray-700 dark:hover:text-white/60'"
             @click="switchMode('register')"
           >
@@ -45,10 +45,13 @@
 
         <!-- ========== LOGIN FORM ========== -->
         <div v-if="mode === 'login'">
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">{{ t.welcomeBack }}</h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ t.loginSubtitle }}</p>
+          <div class="mb-5">
+            <p class="text-[11px] font-bold uppercase tracking-[0.22em] text-focusflow-600/80 dark:text-focusflow-300/70">{{ lang.language.value === 'en' ? 'Sign in' : 'Acceso' }}</p>
+            <h2 class="mt-2 text-3xl font-bold tracking-tight text-gray-950 dark:text-white" style="font-family: 'Space Grotesk', sans-serif;">{{ t.welcomeBack }}</h2>
+            <p class="mt-1.5 text-sm text-gray-500 dark:text-white/45">{{ t.loginSubtitle }}</p>
+          </div>
 
-          <form class="space-y-5" @submit.prevent="handleLogin">
+          <form class="space-y-4" @submit.prevent="handleLogin">
             <UFormField :label="t.email">
               <UInput v-model="email" type="email" placeholder="tu@email.com" required class="w-full" size="lg" />
             </UFormField>
@@ -57,9 +60,9 @@
               <UInput v-model="password" type="password" :placeholder="t.enterPassword" required class="w-full" size="lg" />
             </UFormField>
 
-            <p v-if="errorMsg" class="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 border border-red-100 dark:border-red-900 rounded-lg px-3 py-2">{{ errorMsg }}</p>
+            <p v-if="errorMsg" class="rounded-lg border border-red-200/70 bg-red-50/70 px-3 py-2 text-sm text-red-600 backdrop-blur-xl dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">{{ errorMsg }}</p>
 
-            <UButton type="submit" block size="lg" :loading="loading" color="primary" class="font-semibold shadow-lg shadow-focusflow-500/20">
+            <UButton type="submit" block size="lg" :loading="loading" color="primary" class="mt-1 font-bold shadow-lg shadow-focusflow-500/25">
               {{ t.signInBtn }}
             </UButton>
           </form>
@@ -67,10 +70,13 @@
 
         <!-- ========== REGISTER FORM ========== -->
         <div v-else>
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">{{ t.createYourAccount }}</h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ t.startManaging }}</p>
+          <div class="mb-5">
+            <p class="text-[11px] font-bold uppercase tracking-[0.22em] text-focusflow-600/80 dark:text-focusflow-300/70">{{ lang.language.value === 'en' ? 'New workspace' : 'Nuevo acceso' }}</p>
+            <h2 class="mt-2 text-3xl font-bold tracking-tight text-gray-950 dark:text-white" style="font-family: 'Space Grotesk', sans-serif;">{{ t.createYourAccount }}</h2>
+            <p class="mt-1.5 text-sm text-gray-500 dark:text-white/45">{{ t.startManaging }}</p>
+          </div>
 
-          <form class="space-y-5" @submit.prevent="handleRegister">
+          <form class="space-y-4" @submit.prevent="handleRegister">
             <UFormField :label="t.email">
               <UInput v-model="email" type="email" placeholder="tu@email.com" required class="w-full" size="lg" />
             </UFormField>
@@ -83,10 +89,10 @@
               <UInput v-model="confirmPassword" type="password" :placeholder="t.repeatPassword" required class="w-full" size="lg" />
             </UFormField>
 
-            <p v-if="successMsg" class="text-sm text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-100 dark:border-emerald-900 rounded-lg px-3 py-2">{{ successMsg }}</p>
-            <p v-if="errorMsg" class="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 border border-red-100 dark:border-red-900 rounded-lg px-3 py-2">{{ errorMsg }}</p>
+            <p v-if="successMsg" class="rounded-lg border border-emerald-200/70 bg-emerald-50/70 px-3 py-2 text-sm text-emerald-600 backdrop-blur-xl dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">{{ successMsg }}</p>
+            <p v-if="errorMsg" class="rounded-lg border border-red-200/70 bg-red-50/70 px-3 py-2 text-sm text-red-600 backdrop-blur-xl dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">{{ errorMsg }}</p>
 
-            <UButton type="submit" block size="lg" :loading="loading" color="primary" class="font-semibold shadow-lg shadow-focusflow-500/20">
+            <UButton type="submit" block size="lg" :loading="loading" color="primary" class="mt-1 font-bold shadow-lg shadow-focusflow-500/25">
               {{ t.createAccountBtn }}
             </UButton>
           </form>
@@ -98,15 +104,15 @@
             <div class="w-full border-t border-white/60 dark:border-white/10" />
           </div>
           <div class="relative flex justify-center text-xs">
-            <span class="rounded-full bg-white/55 px-3 text-gray-400 backdrop-blur-md dark:bg-white/[0.06] dark:text-gray-500">{{ t.orContinueWith }}</span>
+            <span class="rounded-full border border-white/55 bg-white/70 px-3 py-1 font-medium text-gray-500 backdrop-blur-md dark:border-white/10 dark:bg-white/[0.06] dark:text-white/42">{{ t.orContinueWith }}</span>
           </div>
         </div>
 
-        <div class="flex flex-col gap-2.5">
-          <UButton block size="lg" variant="outline" icon="i-simple-icons-google" @click="handleGoogle" class="border-white/60 bg-white/35 font-medium shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
+        <div class="grid gap-2.5 sm:grid-cols-2">
+          <UButton block size="lg" variant="outline" icon="i-simple-icons-google" @click="handleGoogle" class="border-white/60 bg-white/45 font-semibold shadow-sm backdrop-blur-xl transition-transform hover:-translate-y-0.5 dark:border-white/10 dark:bg-white/[0.045]">
             Google
           </UButton>
-          <UButton block size="lg" variant="outline" icon="i-simple-icons-ethereum" @click="handleWallet" :loading="walletLoading" class="border-white/60 bg-white/35 font-medium shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
+          <UButton block size="lg" variant="outline" icon="i-simple-icons-ethereum" @click="handleWallet" :loading="walletLoading" class="border-white/60 bg-white/45 font-semibold shadow-sm backdrop-blur-xl transition-transform hover:-translate-y-0.5 dark:border-white/10 dark:bg-white/[0.045]">
             {{ t.connectWallet || 'Web3 Wallet' }}
           </UButton>
         </div>
@@ -114,13 +120,16 @@
         <!-- Legal -->
         <p class="text-center text-xs text-gray-400 dark:text-gray-500 mt-6 leading-relaxed">
           <template v-if="mode === 'register'">
-            {{ lang.language.value === 'en' ? 'By creating an account, you agree to our' : 'Al crear una cuenta, aceptas nuestros' }}
+            {{ lang.language.value === 'en' ? 'By creating an account, you agree to our ' : 'Al crear una cuenta, aceptas nuestros ' }}
+            <NuxtLink to="/legal/terms" class="text-focusflow-600 dark:text-focusflow-400 hover:underline">{{ lang.language.value === 'en' ? 'Terms & Conditions' : 'Terminos y Condiciones' }}</NuxtLink>
+            {{ lang.language.value === 'en' ? ' and ' : ' y ' }}
+            <NuxtLink to="/legal/privacy" class="text-focusflow-600 dark:text-focusflow-400 hover:underline">{{ lang.language.value === 'en' ? 'Privacy Policy' : 'Politica de Privacidad' }}</NuxtLink>.
           </template>
-          <NuxtLink to="/legal/terms" class="text-focusflow-600 dark:text-focusflow-400 hover:underline">{{ lang.language.value === 'en' ? 'Terms & Conditions' : 'Terminos y Condiciones' }}</NuxtLink>
-          <template v-if="mode === 'register'"> {{ lang.language.value === 'en' ? 'and' : 'y' }} </template>
-          <template v-else><span class="mx-1.5">&middot;</span></template>
-          <NuxtLink to="/legal/privacy" class="text-focusflow-600 dark:text-focusflow-400 hover:underline">{{ lang.language.value === 'en' ? 'Privacy Policy' : 'Politica de Privacidad' }}</NuxtLink>
-          <template v-if="mode === 'register'">.</template>
+          <template v-else>
+            <NuxtLink to="/legal/terms" class="text-focusflow-600 dark:text-focusflow-400 hover:underline">{{ lang.language.value === 'en' ? 'Terms & Conditions' : 'Terminos y Condiciones' }}</NuxtLink>
+            <span class="mx-1.5">&middot;</span>
+            <NuxtLink to="/legal/privacy" class="text-focusflow-600 dark:text-focusflow-400 hover:underline">{{ lang.language.value === 'en' ? 'Privacy Policy' : 'Politica de Privacidad' }}</NuxtLink>
+          </template>
         </p>
       </div>
     </NuxtLayout>
