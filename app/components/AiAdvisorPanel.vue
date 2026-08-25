@@ -15,7 +15,7 @@
       <Transition name="advisor-slide">
         <div
           v-if="open"
-          class="fixed z-[120] inset-x-0 bottom-0 md:inset-x-auto md:right-6 md:bottom-6 md:w-[400px] md:max-h-[600px] h-[75vh] md:h-[560px] bg-white dark:bg-[#161616] md:rounded-2xl rounded-t-2xl border border-gray-200 dark:border-white/10 shadow-2xl shadow-black/20 flex flex-col overflow-hidden"
+          class="ff-floating-glass fixed z-[120] inset-x-0 bottom-0 md:inset-x-auto md:right-6 md:bottom-6 md:w-[400px] md:max-h-[600px] h-[75vh] md:h-[560px] md:rounded-lg rounded-t-lg flex flex-col overflow-hidden"
         >
           <!-- Header -->
           <div class="flex items-center gap-2.5 px-4 py-3 border-b border-gray-100 dark:border-white/[0.06] bg-gradient-to-r from-focusflow-500/10 to-teal-500/10 shrink-0">

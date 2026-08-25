@@ -1,9 +1,10 @@
 <template>
-  <div class="min-h-screen bg-[#f8f9fb] dark:bg-[#111] transition-colors">
+  <div class="ff-glass-surface min-h-screen relative overflow-x-hidden bg-[#eef7f5] dark:bg-[#050807] transition-colors">
+    <div class="ff-aurora-bg pointer-events-none fixed inset-0 z-0 opacity-95" />
     <!-- Desktop Sidebar -->
     <aside
       v-show="!focusMode"
-      class="dark hidden md:flex fixed inset-y-0 left-0 z-30 flex-col bg-[#0d0d0d] border-r border-white/10 transition-all duration-300 ease-out"
+      class="dark ff-sidebar-glass hidden md:flex fixed inset-y-0 left-0 z-30 flex-col border-r transition-all duration-300 ease-out"
       style="color-scheme: dark"
       :class="collapsed ? 'w-[68px]' : 'w-[252px]'"
     >
@@ -34,7 +35,7 @@
           >
             <div
               v-if="showWsSwitcher"
-              class="dark fixed z-[200] w-64 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl shadow-black/40 overflow-hidden"
+              class="dark ff-floating-glass fixed z-[200] w-64 rounded-lg overflow-hidden"
               :style="wsSwitcherStyle"
             >
               <div class="px-3 py-2 border-b border-white/[0.06]">
@@ -209,7 +210,7 @@
     </aside>
 
     <!-- Mobile Header -->
-    <header v-show="!focusMode" class="md:hidden fixed top-0 inset-x-0 z-30 h-14 flex items-center justify-between px-4 bg-white/90 dark:bg-[#111]/90 backdrop-blur-xl border-b border-gray-200/60 dark:border-white/10">
+    <header v-show="!focusMode" class="ff-mobile-glass md:hidden fixed top-0 inset-x-0 z-30 h-14 flex items-center justify-between px-4 border-b">
       <button class="flex items-center gap-2.5 cursor-pointer" @click="toggleMobileWsSwitcher">
         <img src="/logo.png" alt="FocusFlow" class="w-8 h-8 rounded-lg shadow-sm shadow-[#75fc96]/20" />
         <div class="min-w-0">
@@ -225,7 +226,7 @@
 
     <!-- Main Content -->
     <main
-      class="transition-all duration-300 ease-out"
+      class="relative z-10 transition-all duration-300 ease-out"
       :class="[
         focusMode ? 'pt-0 pb-0' : 'md:pt-0 pt-14 pb-24 md:pb-0',
         focusMode ? 'md:pl-0' : (collapsed ? 'md:pl-[68px]' : 'md:pl-[252px]'),
@@ -243,7 +244,7 @@
     <Transition name="slide-up">
       <div
         v-if="pomodoro.activeTask.value && pomodoro.running.value"
-        class="fixed bottom-[6.5rem] md:bottom-6 right-4 md:right-20 z-40 flex items-center gap-2 bg-white/80 dark:bg-[#1b1b1b]/80 backdrop-blur-xl border border-emerald-200 dark:border-[#75fc96]/20 rounded-full pl-3 pr-1.5 py-1.5 shadow-lg shadow-emerald-500/10"
+        class="ff-floating-glass fixed bottom-[6.5rem] md:bottom-6 right-4 md:right-20 z-40 flex items-center gap-2 rounded-full pl-3 pr-1.5 py-1.5"
       >
         <span class="text-sm">&#x23F1;</span>
         <span class="text-[11px] font-medium text-gray-700 dark:text-gray-300 max-w-[120px] truncate">{{ pomodoro.activeTask.value.title }}</span>
@@ -291,7 +292,7 @@
       >
         <div
           v-if="showMobileWsSwitcher"
-          class="fixed z-[200] left-3 right-3 top-[60px] bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-white/10 rounded-xl shadow-2xl shadow-black/20 dark:shadow-black/50 overflow-hidden"
+          class="ff-floating-glass fixed z-[200] left-3 right-3 top-[60px] rounded-lg overflow-hidden"
         >
           <div class="px-3 py-2 border-b border-gray-100 dark:border-white/[0.06]">
             <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-white/30">Workspaces</p>
@@ -322,7 +323,7 @@
     </Teleport>
 
     <!-- Mobile Bottom Nav -->
-    <nav v-show="!focusMode" class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/80 dark:bg-[#111]/80 backdrop-blur-xl border-t border-gray-200 dark:border-white/10">
+    <nav v-show="!focusMode" class="ff-mobile-glass md:hidden fixed bottom-0 inset-x-0 z-30 border-t">
       <div class="flex items-stretch justify-around h-16 px-2">
         <NuxtLink
           v-for="item in mobileNavPrimary"
@@ -352,7 +353,7 @@
     <Transition name="slide-up">
       <div
         v-if="showMobileMore"
-        class="md:hidden fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-3 right-3 z-40 bg-white dark:bg-[#1b1b1b] rounded-2xl border border-gray-200 dark:border-white/10 shadow-xl shadow-black/10 dark:shadow-black/40 overflow-hidden"
+        class="ff-floating-glass md:hidden fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-3 right-3 z-40 rounded-lg overflow-hidden"
       >
         <div class="grid grid-cols-4 gap-1 p-3">
           <NuxtLink

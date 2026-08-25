@@ -3,7 +3,7 @@
 
       <!-- ═══════ HERO / WELCOME ═══════ -->
       <InspiraBlurReveal :delay="0" :duration="800">
-        <div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#0d0d0d] via-[#1a1a2e] to-[#16213e] p-4 sm:p-6 md:p-8">
+        <div class="ff-dashboard-hero relative rounded-lg overflow-hidden p-4 sm:p-6 md:p-8">
           <InspiraMeteors :number="12" />
           <div class="relative z-10">
             <Transition name="quote-fade" mode="out-in">

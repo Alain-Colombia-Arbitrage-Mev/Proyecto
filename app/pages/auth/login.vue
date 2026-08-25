@@ -3,20 +3,20 @@
     <NuxtLayout name="auth">
       <div class="animate-fade-up">
         <!-- Tab switcher -->
-        <div class="flex bg-gray-100 dark:bg-white/[0.06] rounded-xl p-1 mb-6">
+        <div class="flex rounded-lg border border-white/60 bg-white/45 p-1 mb-6 shadow-inner shadow-white/40 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.055] dark:shadow-black/10">
           <button
-            class="flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-200 cursor-pointer"
+            class="flex-1 rounded-md py-2 text-sm font-semibold transition-all duration-200 cursor-pointer"
             :class="mode === 'login'
-              ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-sm'
+              ? 'bg-white/90 dark:bg-white/12 text-gray-900 dark:text-white shadow-sm ring-1 ring-white/70 dark:ring-white/10'
               : 'text-gray-500 dark:text-white/40 hover:text-gray-700 dark:hover:text-white/60'"
             @click="switchMode('login')"
           >
             {{ t.signIn }}
           </button>
           <button
-            class="flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-200 cursor-pointer"
+            class="flex-1 rounded-md py-2 text-sm font-semibold transition-all duration-200 cursor-pointer"
             :class="mode === 'register'
-              ? 'bg-white dark:bg-white/10 text-gray-900 dark:text-white shadow-sm'
+              ? 'bg-white/90 dark:bg-white/12 text-gray-900 dark:text-white shadow-sm ring-1 ring-white/70 dark:ring-white/10'
               : 'text-gray-500 dark:text-white/40 hover:text-gray-700 dark:hover:text-white/60'"
             @click="switchMode('register')"
           >
@@ -25,7 +25,7 @@
         </div>
 
         <!-- Invitation banner -->
-        <div v-if="inviteInfo" class="mb-6 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl px-4 py-3">
+        <div v-if="inviteInfo" class="mb-6 rounded-lg border border-emerald-200/80 bg-emerald-50/70 px-4 py-3 shadow-sm backdrop-blur-xl dark:border-emerald-500/20 dark:bg-emerald-500/10">
           <div class="flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
             <UIcon name="i-heroicons-envelope" class="w-5 h-5 shrink-0" />
             <div class="text-sm">
@@ -59,7 +59,7 @@
 
             <p v-if="errorMsg" class="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 border border-red-100 dark:border-red-900 rounded-lg px-3 py-2">{{ errorMsg }}</p>
 
-            <UButton type="submit" block size="lg" :loading="loading" color="primary" class="font-semibold">
+            <UButton type="submit" block size="lg" :loading="loading" color="primary" class="font-semibold shadow-lg shadow-focusflow-500/20">
               {{ t.signInBtn }}
             </UButton>
           </form>
@@ -86,7 +86,7 @@
             <p v-if="successMsg" class="text-sm text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-100 dark:border-emerald-900 rounded-lg px-3 py-2">{{ successMsg }}</p>
             <p v-if="errorMsg" class="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 border border-red-100 dark:border-red-900 rounded-lg px-3 py-2">{{ errorMsg }}</p>
 
-            <UButton type="submit" block size="lg" :loading="loading" color="primary" class="font-semibold">
+            <UButton type="submit" block size="lg" :loading="loading" color="primary" class="font-semibold shadow-lg shadow-focusflow-500/20">
               {{ t.createAccountBtn }}
             </UButton>
           </form>
@@ -95,18 +95,18 @@
         <!-- Social login / OAuth -->
         <div class="relative my-6">
           <div class="absolute inset-0 flex items-center">
-            <div class="w-full border-t border-gray-200 dark:border-gray-700" />
+            <div class="w-full border-t border-white/60 dark:border-white/10" />
           </div>
           <div class="relative flex justify-center text-xs">
-            <span class="bg-white dark:bg-gray-950 px-3 text-gray-400 dark:text-gray-500">{{ t.orContinueWith }}</span>
+            <span class="rounded-full bg-white/55 px-3 text-gray-400 backdrop-blur-md dark:bg-white/[0.06] dark:text-gray-500">{{ t.orContinueWith }}</span>
           </div>
         </div>
 
         <div class="flex flex-col gap-2.5">
-          <UButton block size="lg" variant="outline" icon="i-simple-icons-google" @click="handleGoogle" class="font-medium">
+          <UButton block size="lg" variant="outline" icon="i-simple-icons-google" @click="handleGoogle" class="border-white/60 bg-white/35 font-medium shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
             Google
           </UButton>
-          <UButton block size="lg" variant="outline" icon="i-simple-icons-ethereum" @click="handleWallet" :loading="walletLoading" class="font-medium">
+          <UButton block size="lg" variant="outline" icon="i-simple-icons-ethereum" @click="handleWallet" :loading="walletLoading" class="border-white/60 bg-white/35 font-medium shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.045]">
             {{ t.connectWallet || 'Web3 Wallet' }}
           </UButton>
         </div>

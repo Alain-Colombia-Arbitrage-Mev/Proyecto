@@ -26,7 +26,7 @@
         <div
           v-if="open"
           ref="panelRef"
-          class="fixed w-80 max-h-[400px] bg-white dark:bg-[#1b1b1b] border border-gray-200/80 dark:border-white/10 rounded-xl shadow-xl z-[100] flex flex-col overflow-hidden"
+          class="ff-floating-glass fixed w-80 max-h-[400px] rounded-lg z-[100] flex flex-col overflow-hidden"
           :style="panelStyle"
         >
           <!-- Header -->
