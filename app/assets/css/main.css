@@ -75,13 +75,16 @@ body {
 
 .ff-sidebar-glass {
   background:
-    linear-gradient(180deg, rgba(5, 14, 13, 0.91), rgba(8, 10, 16, 0.82));
-  border-color: rgba(255, 255, 255, 0.10);
+    linear-gradient(180deg, rgba(0, 0, 0, 0.90), rgba(0, 0, 0, 0.78)),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.10), transparent 38%),
+    linear-gradient(35deg, rgba(20, 184, 166, 0.08), transparent 48%);
+  border-color: rgba(255, 255, 255, 0.14);
   box-shadow:
-    18px 0 50px -34px rgba(0, 0, 0, 0.65),
-    inset -1px 0 0 rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(26px) saturate(1.2);
-  -webkit-backdrop-filter: blur(26px) saturate(1.2);
+    24px 0 70px -42px rgba(0, 0, 0, 0.86),
+    inset -1px 0 0 rgba(255, 255, 255, 0.07),
+    inset 1px 0 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(30px) saturate(1.18);
+  -webkit-backdrop-filter: blur(30px) saturate(1.18);
 }
 
 .ff-mobile-glass {
