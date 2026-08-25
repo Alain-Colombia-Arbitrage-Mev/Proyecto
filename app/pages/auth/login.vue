@@ -109,11 +109,30 @@
         </div>
 
         <div class="grid gap-2.5 sm:grid-cols-2">
-          <UButton block size="lg" variant="outline" icon="i-simple-icons-google" @click="handleGoogle" class="border-white/60 bg-white/45 font-semibold shadow-sm backdrop-blur-xl transition-transform hover:-translate-y-0.5 dark:border-white/10 dark:bg-white/[0.045]">
-            Google
+          <UButton block size="lg" variant="outline" @click="handleGoogle" class="ff-oauth-button border-white/60 bg-white/45 font-semibold shadow-sm backdrop-blur-xl transition-transform hover:-translate-y-0.5 dark:border-white/10 dark:bg-white/[0.045]">
+            <template #leading>
+              <span class="ff-oauth-icon ff-oauth-icon-google" aria-hidden="true">
+                <svg class="size-[18px]" viewBox="0 0 48 48" focusable="false">
+                  <path fill="#FFC107" d="M43.61 20.08H42V20H24v8h11.3c-1.65 4.66-6.08 8-11.3 8a12 12 0 0 1 0-24c3.06 0 5.84 1.15 7.96 3.04l5.66-5.66A19.9 19.9 0 0 0 24 4 20 20 0 1 0 24 44c10.01 0 19.48-7.28 19.48-20 0-1.34-.14-2.63-.39-3.92Z" />
+                  <path fill="#FF3D00" d="m6.31 14.69 6.57 4.82A12 12 0 0 1 24 12c3.06 0 5.84 1.15 7.96 3.04l5.66-5.66A19.9 19.9 0 0 0 24 4 20 20 0 0 0 6.31 14.69Z" />
+                  <path fill="#4CAF50" d="M24 44c5.26 0 10.04-2.01 13.64-5.29l-6.19-5.24A11.9 11.9 0 0 1 24 36a11.98 11.98 0 0 1-11.27-7.91l-6.52 5.03A19.98 19.98 0 0 0 24 44Z" />
+                  <path fill="#1976D2" d="M43.61 20.08H42V20H24v8h11.3a12.04 12.04 0 0 1-3.86 5.47l.01-.01 6.19 5.24C37.2 39.1 44 34 44 24c0-1.34-.14-2.63-.39-3.92Z" />
+                </svg>
+              </span>
+            </template>
+            <span class="relative">Google</span>
           </UButton>
-          <UButton block size="lg" variant="outline" icon="i-simple-icons-ethereum" @click="handleWallet" :loading="walletLoading" class="border-white/60 bg-white/45 font-semibold shadow-sm backdrop-blur-xl transition-transform hover:-translate-y-0.5 dark:border-white/10 dark:bg-white/[0.045]">
-            {{ t.connectWallet || 'Web3 Wallet' }}
+          <UButton block size="lg" variant="outline" @click="handleWallet" :loading="walletLoading" class="ff-oauth-button border-white/60 bg-white/45 font-semibold shadow-sm backdrop-blur-xl transition-transform hover:-translate-y-0.5 dark:border-white/10 dark:bg-white/[0.045]">
+            <template #leading>
+              <span class="ff-oauth-icon ff-oauth-icon-web3" aria-hidden="true">
+                <UIcon v-if="walletLoading" name="i-heroicons-arrow-path" class="size-4 animate-spin" />
+                <span v-else class="relative flex size-full items-center justify-center">
+                  <UIcon name="i-heroicons-wallet" class="size-4" />
+                  <span class="absolute right-1 top-1 size-1.5 rounded-full bg-emerald-300 ring-1 ring-white/80" />
+                </span>
+              </span>
+            </template>
+            <span class="relative">{{ t.connectWallet || 'Web3 Wallet' }}</span>
           </UButton>
         </div>
 
