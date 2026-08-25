@@ -5,6 +5,7 @@ const props = defineProps<{
   taskId: string
   workspaceId: string
   parentDepth?: number
+  title?: string
 }>()
 
 const { labels } = useLanguage()
@@ -43,7 +44,7 @@ onMounted(fetchSubtasks)
   <div>
     <div class="flex items-center justify-between mb-2">
       <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
-        {{ labels.subtasks }}
+        {{ props.title || labels.subtasks }}
         <span v-if="totalCount > 0" class="text-gray-400 font-normal ml-1">
           ({{ completedCount }}/{{ totalCount }})
         </span>

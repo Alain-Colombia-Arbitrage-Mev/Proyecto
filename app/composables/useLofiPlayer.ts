@@ -79,17 +79,17 @@ const stations: LofiStation[] = [
     ],
   },
   {
-    id: 'nature-focus',
+    id: 'late-night-focus',
     focus: true,
-    name: 'Nature Focus',
-    emoji: '🌿',
+    name: '1AM Hyperfocus',
+    emoji: '🌙',
     url: '',
-    color: '#059669',
+    color: '#6366F1',
     fallbackUrls: [],
     type: 'youtube',
-    youtubeId: 'eKFTSSKCzWA',
+    youtubeId: 'lTRiuFIWV54',
     tracks: [
-      { title: 'Forest Waterfall · Calm Focus', artist: 'Nature Sounds', duration: 'LIVE' },
+      { title: '1 A.M Study Session · Hyperfocus', artist: 'Lofi Girl', duration: 'LIVE' },
     ],
   },
   {
@@ -175,6 +175,7 @@ const stations: LofiStation[] = [
   },
   {
     id: 'chillsynth',
+    focus: true,
     name: 'ChillSynth FM',
     emoji: '🕹️',
     url: '',
@@ -201,6 +202,7 @@ const stations: LofiStation[] = [
   },
   {
     id: 'good-life',
+    focus: true,
     name: 'House & Energy',
     emoji: '🔥',
     url: '',
@@ -239,7 +241,7 @@ const stations: LofiStation[] = [
       { title: 'Chillhop Radio', artist: 'Chillhop Music', duration: 'LIVE' },
     ],
   },
-  // === CLASSICAL / AMBIENT ===
+  // === CLASSICAL ===
   {
     id: 'classical',
     name: 'Classical',
@@ -251,32 +253,6 @@ const stations: LofiStation[] = [
     youtubeId: 'mIYzp5rcTvU',
     tracks: [
       { title: 'Classical for Reading', artist: 'Mozart, Chopin, Debussy', duration: 'LIVE' },
-    ],
-  },
-  {
-    id: 'nature',
-    name: 'Naturaleza',
-    emoji: '🌿',
-    url: '',
-    color: '#059669',
-    fallbackUrls: [],
-    type: 'youtube',
-    youtubeId: 'eKFTSSKCzWA',
-    tracks: [
-      { title: 'Rain & Thunder', artist: 'Nature Sounds', duration: 'LIVE' },
-    ],
-  },
-  {
-    id: 'white-noise',
-    name: 'White Noise',
-    emoji: '🔇',
-    url: '',
-    color: '#6B7280',
-    fallbackUrls: [],
-    type: 'youtube',
-    youtubeId: 'nMfPqeZjc2c',
-    tracks: [
-      { title: 'White Noise', artist: 'Deep Focus', duration: 'LIVE' },
     ],
   },
 ]

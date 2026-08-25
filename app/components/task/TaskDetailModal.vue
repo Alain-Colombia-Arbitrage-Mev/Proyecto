@@ -122,12 +122,44 @@
                 <p v-if="descLang === 'ur' && !editForm.description_ur" class="text-[10px] text-amber-500 mt-1">{{ lang.labels.value.noTranslation }}</p>
               </div>
 
-              <!-- Subtasks -->
-              <SubtaskList
-                :task-id="task.id"
-                :workspace-id="workspaceId"
-                :parent-depth="task.depth || 0"
-              />
+              <!-- Deliverables -->
+              <section class="rounded-lg border border-gray-200/80 bg-gray-50/70 p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.035]">
+                <div class="mb-4 flex items-center justify-between gap-3">
+                  <div class="flex min-w-0 items-center gap-2.5">
+                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-focusflow-50 text-focusflow-600 ring-1 ring-focusflow-100 dark:bg-focusflow-500/10 dark:text-focusflow-300 dark:ring-focusflow-500/20">
+                      <UIcon name="i-heroicons-archive-box" class="h-4 w-4" />
+                    </div>
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white">
+                      {{ language === 'en' ? 'Deliverables' : 'Entregables' }}
+                    </h3>
+                  </div>
+                  <div class="hidden shrink-0 items-center gap-1.5 sm:flex">
+                    <span class="rounded-md bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-gray-500 ring-1 ring-gray-200/80 dark:bg-white/[0.06] dark:text-gray-400 dark:ring-white/10">
+                      {{ language === 'en' ? 'Tasks' : 'Tareas' }}
+                    </span>
+                    <span class="rounded-md bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-gray-500 ring-1 ring-gray-200/80 dark:bg-white/[0.06] dark:text-gray-400 dark:ring-white/10">
+                      {{ language === 'en' ? 'Files' : 'Archivos' }}
+                    </span>
+                    <span class="rounded-md bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-gray-500 ring-1 ring-gray-200/80 dark:bg-white/[0.06] dark:text-gray-400 dark:ring-white/10">
+                      {{ language === 'en' ? 'Links' : 'Enlaces' }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="space-y-4">
+                  <SubtaskList
+                    :task-id="task.id"
+                    :workspace-id="workspaceId"
+                    :parent-depth="task.depth || 0"
+                    :title="language === 'en' ? 'Checklist' : 'Checklist'"
+                  />
+
+                  <div class="grid gap-4 lg:grid-cols-2">
+                    <TaskAttachments :task-id="task.id" :workspace-id="workspaceId" />
+                    <TaskFigmaLinks v-model="editForm.figma_links" :title="language === 'en' ? 'Links' : 'Enlaces'" />
+                  </div>
+                </div>
+              </section>
 
               <!-- Comments -->
               <TaskComments
@@ -141,12 +173,6 @@
                 :task-id="task.id"
                 :workspace-id="workspaceId"
               />
-
-              <!-- Attachments -->
-              <TaskAttachments :task-id="task.id" :workspace-id="workspaceId" />
-
-              <!-- Figma Links -->
-              <TaskFigmaLinks v-model="editForm.figma_links" />
             </div>
 
             <!-- Right panel / sidebar (~35%) -->

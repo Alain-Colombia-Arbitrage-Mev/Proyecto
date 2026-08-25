@@ -1,17 +1,11 @@
 <template>
   <div class="space-y-2">
-    <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Figma Links</h4>
+    <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ sectionTitle }}</h4>
 
     <!-- Existing links -->
     <div v-for="(link, i) in modelValue" :key="i" class="flex items-center gap-2 group">
       <div class="flex items-center gap-2 flex-1 min-w-0 bg-gray-50 dark:bg-white/[0.05] rounded-lg px-2.5 py-1.5 border border-gray-200/80 dark:border-white/10">
-        <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 38 57" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M19 28.5C19 23.2533 23.2533 19 28.5 19C33.7467 19 38 23.2533 38 28.5C38 33.7467 33.7467 38 28.5 38C23.2533 38 19 33.7467 19 28.5Z" fill="#1ABCFE"/>
-          <path d="M0 47.5C0 42.2533 4.25329 38 9.5 38H19V47.5C19 52.7467 14.7467 57 9.5 57C4.25329 57 0 52.7467 0 47.5Z" fill="#0ACF83"/>
-          <path d="M19 0V19H28.5C33.7467 19 38 14.7467 38 9.5C38 4.25329 33.7467 0 28.5 0H19Z" fill="#FF7262"/>
-          <path d="M0 9.5C0 14.7467 4.25329 19 9.5 19H19V0H9.5C4.25329 0 0 4.25329 0 9.5Z" fill="#F24E1E"/>
-          <path d="M0 28.5C0 33.7467 4.25329 38 9.5 38H19V19H9.5C4.25329 19 0 23.2533 0 28.5Z" fill="#A259FF"/>
-        </svg>
+        <UIcon :name="iconForUrl(link.url)" class="w-4 h-4 flex-shrink-0" :class="isFigmaUrl(link.url) ? 'text-[#A259FF]' : 'text-focusflow-500 dark:text-focusflow-300'" />
         <a :href="link.url" target="_blank" class="text-xs text-gray-700 dark:text-gray-300 hover:text-focusflow-600 dark:hover:text-focusflow-400 truncate flex-1" :title="link.url">
           {{ link.label || truncateUrl(link.url) }}
         </a>
@@ -24,23 +18,17 @@
     <!-- Add new link -->
     <form @submit.prevent="addLink" class="flex items-center gap-2">
       <div class="flex items-center gap-2 flex-1 bg-white dark:bg-[#1b1b1b] rounded-lg border border-gray-200 dark:border-white/10 px-2.5 py-1.5 focus-within:ring-1 focus-within:ring-focusflow-300 focus-within:border-focusflow-300">
-        <svg class="w-3.5 h-3.5 flex-shrink-0 opacity-40" viewBox="0 0 38 57" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M19 28.5C19 23.2533 23.2533 19 28.5 19C33.7467 19 38 23.2533 38 28.5C38 33.7467 33.7467 38 28.5 38C23.2533 38 19 33.7467 19 28.5Z" fill="#1ABCFE"/>
-          <path d="M0 47.5C0 42.2533 4.25329 38 9.5 38H19V47.5C19 52.7467 14.7467 57 9.5 57C4.25329 57 0 52.7467 0 47.5Z" fill="#0ACF83"/>
-          <path d="M19 0V19H28.5C33.7467 19 38 14.7467 38 9.5C38 4.25329 33.7467 0 28.5 0H19Z" fill="#FF7262"/>
-          <path d="M0 9.5C0 14.7467 4.25329 19 9.5 19H19V0H9.5C4.25329 0 0 4.25329 0 9.5Z" fill="#F24E1E"/>
-          <path d="M0 28.5C0 33.7467 4.25329 38 9.5 38H19V19H9.5C4.25329 19 0 23.2533 0 28.5Z" fill="#A259FF"/>
-        </svg>
+        <UIcon name="i-heroicons-link" class="w-3.5 h-3.5 flex-shrink-0 text-gray-400 dark:text-gray-500" />
         <input
           v-model="newUrl"
           type="url"
-          placeholder="https://figma.com/design/..."
+          :placeholder="placeholder"
           class="flex-1 text-xs bg-transparent outline-none text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500"
         />
       </div>
-      <UButton type="submit" size="xs" variant="soft" :disabled="!isValidFigmaUrl" class="font-medium">Agregar</UButton>
+      <UButton type="submit" size="xs" variant="soft" :disabled="!isValidUrl" class="font-medium">{{ addLabel }}</UButton>
     </form>
-    <p v-if="newUrl && !isValidFigmaUrl" class="text-[10px] text-red-500">URL de Figma no válida</p>
+    <p v-if="newUrl && !isValidUrl" class="text-[10px] text-red-500">{{ invalidLabel }}</p>
   </div>
 </template>
 
@@ -49,6 +37,7 @@ import type { FigmaLink } from '~/types'
 
 const props = defineProps<{
   modelValue: FigmaLink[]
+  title?: string
 }>()
 
 const emit = defineEmits<{
@@ -57,32 +46,61 @@ const emit = defineEmits<{
 
 const newUrl = ref('')
 
-const FIGMA_REGEX = /figma\.com\/(file|design|proto|board|community)\//
+const lang = useLanguage()
+const isEn = computed(() => lang.language.value === 'en')
 
-const isValidFigmaUrl = computed(() => {
-  if (!newUrl.value) return false
+const sectionTitle = computed(() => props.title || (isEn.value ? 'Links' : 'Enlaces'))
+const addLabel = computed(() => isEn.value ? 'Add' : 'Agregar')
+const invalidLabel = computed(() => isEn.value ? 'Enter a valid http or https URL' : 'Ingresa una URL http o https válida')
+const placeholder = computed(() => isEn.value ? 'https://example.com/deliverable' : 'https://ejemplo.com/entregable')
+
+const isValidUrl = computed(() => {
+  const candidate = newUrl.value.trim()
+  if (!candidate) return false
   try {
-    new URL(newUrl.value)
-    return FIGMA_REGEX.test(newUrl.value)
+    const url = new URL(candidate)
+    return url.protocol === 'https:' || url.protocol === 'http:'
   } catch {
     return false
   }
 })
 
+function isFigmaUrl(url: string): boolean {
+  try {
+    return new URL(url).hostname.includes('figma.com')
+  } catch {
+    return false
+  }
+}
+
+function iconForUrl(url: string): string {
+  return isFigmaUrl(url) ? 'i-simple-icons-figma' : 'i-heroicons-link'
+}
+
 function truncateUrl(url: string): string {
   try {
     const u = new URL(url)
     const path = u.pathname.split('/').filter(Boolean)
-    if (path.length >= 3) return `figma.com/${path[0]}/${path[1]}/${path[2]!.slice(0, 20)}...`
+    if (path.length >= 2) return `${u.host}/${path[0]}/${path[1]!.slice(0, 20)}${path[1]!.length > 20 ? '...' : ''}`
     return u.host + u.pathname.slice(0, 40)
   } catch {
     return url.slice(0, 50)
   }
 }
 
+function labelFromUrl(url: string): string {
+  try {
+    const parsed = new URL(url)
+    return parsed.hostname.replace(/^www\./, '')
+  } catch {
+    return ''
+  }
+}
+
 function addLink() {
-  if (!isValidFigmaUrl.value) return
-  const updated = [...props.modelValue, { url: newUrl.value }]
+  if (!isValidUrl.value) return
+  const url = newUrl.value.trim()
+  const updated = [...props.modelValue, { url, label: labelFromUrl(url) }]
   emit('update:modelValue', updated)
   newUrl.value = ''
 }

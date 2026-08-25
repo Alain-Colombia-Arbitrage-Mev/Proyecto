@@ -131,7 +131,7 @@
             </div>
           </UFormField>
 
-          <!-- Figma Links -->
+          <!-- Deliverable Links -->
           <TaskFigmaLinks v-model="form.figma_links" />
 
           <UFormField :label="t.tagsSeparated">
