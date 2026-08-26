@@ -73,7 +73,7 @@
         </header>
 
         <main class="relative flex min-h-0 flex-1 items-center px-4 py-4 sm:px-8 sm:py-6">
-          <div class="mx-auto grid w-full max-w-6xl items-center gap-4 lg:grid-cols-[260px_minmax(300px,1fr)_300px]">
+          <div class="mx-auto grid w-full max-w-7xl items-center gap-4 lg:grid-cols-[260px_minmax(300px,1fr)_360px]">
             <section class="hf-chrome hidden rounded-lg border border-white/[0.08] bg-white/[0.045] p-4 backdrop-blur-xl sm:block">
               <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-white/35">
                 {{ en ? 'Session' : 'Sesión' }}
@@ -255,18 +255,59 @@
                 <UIcon name="i-heroicons-speaker-wave" class="h-3.5 w-3.5 text-white/25" />
               </div>
 
-              <div class="hf-focus-stations mt-4 grid max-h-[13rem] grid-cols-2 gap-2 overflow-y-auto pr-1">
-                <button
-                  v-for="st in focusStations"
-                  :key="st.id"
-                  class="flex min-w-0 items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-semibold transition-colors cursor-pointer"
-                  :class="lofi.currentStationId.value === st.id ? 'text-white' : 'bg-black/20 text-white/48 hover:bg-white/[0.06] hover:text-white/78'"
-                  :style="lofi.currentStationId.value === st.id ? { backgroundColor: st.color + '26', boxShadow: `inset 0 0 0 1px ${st.color}55` } : {}"
-                  @click="lofi.setStation(st.id)"
-                >
-                  <span class="shrink-0 text-base">{{ st.emoji }}</span>
-                  <span class="truncate">{{ st.name }}</span>
-                </button>
+              <div class="mt-4 overflow-hidden rounded-lg border border-white/[0.07] bg-black/20">
+                <div class="flex items-center justify-between gap-3 border-b border-white/[0.06] px-3 py-2">
+                  <div class="flex min-w-0 items-center gap-2">
+                    <UIcon name="i-heroicons-musical-note" class="h-3.5 w-3.5 shrink-0 text-white/42" />
+                    <p class="truncate text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
+                      {{ en ? 'Track List' : 'Lista de canciones' }}
+                    </p>
+                  </div>
+                  <span class="shrink-0 rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] font-bold text-white/36">
+                    {{ hyperfocusPlaylist.length }} {{ en ? 'tracks' : 'canciones' }}
+                  </span>
+                </div>
+
+                <div class="hf-focus-stations max-h-[16rem] space-y-1 overflow-y-auto p-1.5">
+                  <button
+                    v-for="st in hyperfocusPlaylist"
+                    :key="st.id"
+                    class="group flex w-full min-w-0 items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors cursor-pointer"
+                    :class="lofi.currentStationId.value === st.id ? 'text-white' : 'text-white/50 hover:bg-white/[0.055] hover:text-white/82'"
+                    :style="lofi.currentStationId.value === st.id ? { backgroundColor: st.color + '20', boxShadow: `inset 0 0 0 1px ${st.color}55` } : {}"
+                    :aria-current="lofi.currentStationId.value === st.id ? 'true' : 'false'"
+                    @click="selectPlaylistItem(st.id)"
+                  >
+                    <span
+                      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/[0.07] bg-white/[0.045] text-lg"
+                      :style="{ boxShadow: lofi.currentStationId.value === st.id ? `0 0 18px ${st.color}2f` : 'none' }"
+                    >
+                      {{ st.emoji }}
+                    </span>
+                    <span class="min-w-0 flex-1">
+                      <span class="block truncate text-xs font-bold leading-tight text-white/90">
+                        {{ st.tracks[0]?.title || st.name }}
+                      </span>
+                      <span class="mt-0.5 block truncate text-[10px] font-medium text-white/34">
+                        {{ st.tracks[0]?.artist || st.name }} · {{ st.name }}
+                      </span>
+                    </span>
+                    <span class="flex shrink-0 items-center gap-2">
+                      <span
+                        class="rounded-full px-1.5 py-0.5 text-[9px] font-bold"
+                        :class="lofi.currentStationId.value === st.id ? 'bg-emerald-400/12 text-emerald-300' : 'bg-white/[0.055] text-white/30'"
+                      >
+                        {{ st.tracks[0]?.duration || 'LIVE' }}
+                      </span>
+                      <span v-if="lofi.isPlaying.value && lofi.currentStationId.value === st.id" class="flex h-4 items-end gap-[2px] text-white">
+                        <span class="hf-mini-eq h-2 w-[2px] rounded-full bg-current" />
+                        <span class="hf-mini-eq h-3.5 w-[2px] rounded-full bg-current" />
+                        <span class="hf-mini-eq h-2.5 w-[2px] rounded-full bg-current" />
+                      </span>
+                      <UIcon v-else name="i-heroicons-play" class="h-3.5 w-3.5 text-white/28 transition-colors group-hover:text-white/70" />
+                    </span>
+                  </button>
+                </div>
               </div>
             </section>
           </div>
@@ -296,7 +337,14 @@ const modes = computed(() => [
   { value: 'deep' as const, label: '50/10' },
 ])
 
-const focusStations = computed(() => lofi.focusStations.value)
+const hyperfocusPlaylist = computed(() => {
+  const list = [...lofi.focusStations.value]
+  const activeStation = lofi.currentStation.value
+  if (activeStation && !list.some(station => station.id === activeStation.id)) {
+    return [activeStation, ...list]
+  }
+  return list
+})
 
 const glowColor = computed(() => pomodoro.phase.value === 'work' ? '#F59E0B' : '#10B981')
 const stationColor = computed(() => lofi.currentStation.value?.color || '#F59E0B')
@@ -382,6 +430,15 @@ function toggleMusic() {
 
 function skipFocus(direction: -1 | 1) {
   lofi.skipFocus(direction)
+  wakeUI()
+}
+
+function selectPlaylistItem(stationId: string) {
+  if (lofi.currentStationId.value === stationId) {
+    if (!lofi.isPlaying.value && !lofi.isLoading.value) lofi.play()
+  } else {
+    lofi.setStation(stationId)
+  }
   wakeUI()
 }
 
@@ -478,6 +535,17 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.16);
   border-radius: 999px;
 }
+
+@keyframes hf-mini-eq {
+  0%, 100% { transform: scaleY(0.55); opacity: 0.6; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+.hf-mini-eq {
+  transform-origin: bottom;
+  animation: hf-mini-eq 0.8s ease-in-out infinite;
+}
+.hf-mini-eq:nth-child(2) { animation-delay: 0.12s; }
+.hf-mini-eq:nth-child(3) { animation-delay: 0.24s; }
 
 @keyframes hf-breathe {
   0%, 100% { transform: scale(1); }
