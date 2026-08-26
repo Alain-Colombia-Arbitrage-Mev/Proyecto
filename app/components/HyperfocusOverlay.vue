@@ -255,7 +255,7 @@
                 <UIcon name="i-heroicons-speaker-wave" class="h-3.5 w-3.5 text-white/25" />
               </div>
 
-              <div class="mt-4 grid grid-cols-2 gap-2">
+              <div class="hf-focus-stations mt-4 grid max-h-[13rem] grid-cols-2 gap-2 overflow-y-auto pr-1">
                 <button
                   v-for="st in focusStations"
                   :key="st.id"
@@ -462,6 +462,21 @@ onUnmounted(() => {
 .hf-idle .hf-chrome {
   opacity: 0;
   pointer-events: none;
+}
+
+.hf-focus-stations {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+.hf-focus-stations::-webkit-scrollbar {
+  width: 4px;
+}
+.hf-focus-stations::-webkit-scrollbar-track {
+  background: transparent;
+}
+.hf-focus-stations::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
 }
 
 @keyframes hf-breathe {
